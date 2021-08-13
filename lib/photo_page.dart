@@ -12,11 +12,11 @@ enum _ImageLoadStatus {
   completed,
 }
 
-class PhotoView extends StatefulWidget {
-  PhotoView({
+class PhotoPage extends StatefulWidget {
+  PhotoPage({
     Key key,
-    @required this.heroImageProvider,
-    this.imageProvider,
+    @required this.imageProvider,
+    this.heroImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
     this.gaplessPlayback,
@@ -29,7 +29,7 @@ class PhotoView extends StatefulWidget {
 
   final ImageProvider heroImageProvider;
 
-  /// While [imageProvider] is not resolved, [loadingBuilder] is called by [PhotoView]
+  /// While [imageProvider] is not resolved, [loadingBuilder] is called by [PhotoPage]
   /// into the screen, by default it is a centered [CircularProgressIndicator]
   final LoadingBuilder loadingBuilder;
 
@@ -46,7 +46,7 @@ class PhotoView extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _PhotoViewState();
+    return _PhotoPageState();
   }
 }
 
@@ -59,23 +59,23 @@ class ImageProviderInfo {
   ImageProviderInfo(this.imageProvider);
 }
 
-class _PhotoViewState extends State<PhotoView> {
+class _PhotoPageState extends State<PhotoPage> {
   ImageProviderInfo _imageProviderInfo;
   ImageProviderInfo _heroImageProvideInfo;
 
   @override
   void initState() {
     super.initState();
-    if (widget.imageProvider != null) {
-      _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
-      _getImage(_imageProviderInfo);
+    _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
+    _getImage(_imageProviderInfo);
+    if (widget.heroImageProvider != null) {
+      _heroImageProvideInfo = ImageProviderInfo(widget.heroImageProvider);
+      _getImage(_heroImageProvideInfo);
     }
-    _heroImageProvideInfo = ImageProviderInfo(widget.heroImageProvider);
-    _getImage(_heroImageProvideInfo);
   }
 
   @override
-  void didUpdateWidget(PhotoView oldWidget) {
+  void didUpdateWidget(PhotoPage oldWidget) {
     super.didUpdateWidget(oldWidget);
   }
 
@@ -132,9 +132,9 @@ class _PhotoViewState extends State<PhotoView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_heroImageProvideInfo.status == _ImageLoadStatus.failed &&
-        (_imageProviderInfo == null ||
-            _imageProviderInfo?.status == _ImageLoadStatus.failed)) {
+    if (_imageProviderInfo.status == _ImageLoadStatus.failed &&
+        (_heroImageProvideInfo == null ||
+            _heroImageProvideInfo?.status == _ImageLoadStatus.failed)) {
       return _buildLoadFailed();
     }
 
@@ -143,7 +143,8 @@ class _PhotoViewState extends State<PhotoView> {
         BuildContext context,
         BoxConstraints constraints,
       ) {
-        if (_imageProviderInfo?.status == _ImageLoadStatus.completed) {
+        if (_heroImageProvideInfo == null ||
+            _imageProviderInfo?.status == _ImageLoadStatus.completed) {
           return _buildImage(context, constraints, _imageProviderInfo);
         } else {
           return _buildImage(context, constraints, _heroImageProvideInfo);
