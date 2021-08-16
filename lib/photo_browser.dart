@@ -1,29 +1,53 @@
-import 'dart:async';
+import 'package:flutter/cupertino.dart';
+import 'package:photo_browser/photo_page.dart';
 
-import 'package:flutter/services.dart';
+class PhotoBrowser extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _PhotoBrowserState();
+  }
 
-class PhotoBrowser {
-  static String get smallImageParam =>
-      '?x-oss-process=image/resize,w_300/sharpen,100/quality,Q_100';
-  static String get middleImageParam =>
-      '?x-oss-process=image/resize,w_600/sharpen,100/quality,Q_100';
-  static String get largeImageParam =>
-      '?x-oss-process=image/resize,w_1024/sharpen,100/quality,Q_100';
+  /// Given a [imageProvider] it resolves into an zoomable image widget using. It
+  /// is required
+  final ImageProvider imageProvider;
 
-  String domain = 'https://qzasset.jinriaozhou.com';
+  final ImageProvider thumImageProvider;
 
-  List photos = [
-    '/quanzi/2021/20210730/31cd8d37b317d055985e3ffa8e1bb77e_1606x1204.jpeg',
-    '/quanzi/2021/20210730/606a114741bf46bbe2f0365eb6baea2b_1200x1600.jpeg',
-    '/quanzi/2021/20210730/ab7dfe598f5a60165c229d6d3155cf00_1200x1600.jpeg',
-    '/quanzi/2021/20210730/f0e1d5c328b59ba8c2e9ea17a1b31cc6_1200x1600.jpeg',
-    '/quanzi/2021/20210730/9d41e346a0d324bc6ea4e99fb31fddc8_1200x1600.jpeg',
-    '/quanzi/2021/20210730/c725f29809dcac2ba046c9e0156e0654_1606x1204.jpeg'
-  ];
-  static const MethodChannel _channel = const MethodChannel('photo_browser');
+  /// While [imageProvider] is not resolved, [loadingBuilder] is called by [PhotoPage]
+  /// into the screen, by default it is a centered [CircularProgressIndicator]
+  final LoadingBuilder loadingBuilder;
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  /// Show loadFailedChild when the image failed to load
+  final Widget loadFailedChild;
+
+  /// This is used to continue showing the old image (`true`), or briefly show
+  /// nothing (`false`), when the `imageProvider` changes. By default it's set
+  /// to `false`.
+  final bool gaplessPlayback;
+
+  /// Quality levels for image filters.
+  final FilterQuality filterQuality;
+
+  PhotoBrowser({
+    Key key,
+    @required this.imageProvider,
+    this.thumImageProvider,
+    this.loadingBuilder,
+    this.loadFailedChild,
+    this.gaplessPlayback,
+    this.filterQuality,
+  }) : super(key: key);
+}
+
+class _PhotoBrowserState extends State<PhotoBrowser> {
+  @override
+  Widget build(BuildContext context) {
+    return PhotoPage(
+      imageProvider: widget.imageProvider,
+      thumImageProvider: widget.thumImageProvider,
+      loadFailedChild: widget.loadFailedChild,
+      gaplessPlayback: widget.gaplessPlayback,
+      filterQuality: widget.filterQuality,
+    );
   }
 }

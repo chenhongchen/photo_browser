@@ -12,11 +12,20 @@ enum _ImageLoadStatus {
   completed,
 }
 
+class ImageProviderInfo {
+  ImageProvider imageProvider;
+  Size imageSize;
+  _ImageLoadStatus status;
+  ImageChunkEvent imageChunkEvent;
+
+  ImageProviderInfo(this.imageProvider);
+}
+
 class PhotoPage extends StatefulWidget {
   PhotoPage({
     Key key,
     @required this.imageProvider,
-    this.heroImageProvider,
+    this.thumImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
     this.gaplessPlayback,
@@ -27,7 +36,7 @@ class PhotoPage extends StatefulWidget {
   /// is required
   final ImageProvider imageProvider;
 
-  final ImageProvider heroImageProvider;
+  final ImageProvider thumImageProvider;
 
   /// While [imageProvider] is not resolved, [loadingBuilder] is called by [PhotoPage]
   /// into the screen, by default it is a centered [CircularProgressIndicator]
@@ -50,27 +59,26 @@ class PhotoPage extends StatefulWidget {
   }
 }
 
-class ImageProviderInfo {
-  ImageProvider imageProvider;
-  Size childSize;
-  _ImageLoadStatus status;
-  ImageChunkEvent imageChunkEvent;
-
-  ImageProviderInfo(this.imageProvider);
-}
-
 class _PhotoPageState extends State<PhotoPage> {
   ImageProviderInfo _imageProviderInfo;
-  ImageProviderInfo _heroImageProvideInfo;
+  ImageProviderInfo _thumImageProvideInfo;
+
+  Size _imageSize;
+  Offset _offset = Offset.zero;
+  double _scale = 1.0;
+  Offset _normalizedOffset;
+  double _oldScale;
+
+  BoxConstraints _constraints;
 
   @override
   void initState() {
     super.initState();
     _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
     _getImage(_imageProviderInfo);
-    if (widget.heroImageProvider != null) {
-      _heroImageProvideInfo = ImageProviderInfo(widget.heroImageProvider);
-      _getImage(_heroImageProvideInfo);
+    if (widget.thumImageProvider != null) {
+      _thumImageProvideInfo = ImageProviderInfo(widget.thumImageProvider);
+      _getImage(_thumImageProvideInfo);
     }
   }
 
@@ -97,12 +105,13 @@ class _PhotoPageState extends State<PhotoPage> {
         completer.complete(info);
         if (mounted) {
           final setupCallback = () {
-            providerInfo.childSize = Size(
+            providerInfo.imageSize = Size(
               info.image.width.toDouble(),
               info.image.height.toDouble(),
             );
             providerInfo.status = _ImageLoadStatus.loading;
             providerInfo.imageChunkEvent = null;
+            _imageSize = providerInfo.imageSize;
           };
           synchronousCall ? setupCallback() : setState(setupCallback);
         }
@@ -130,11 +139,69 @@ class _PhotoPageState extends State<PhotoPage> {
     return completer.future;
   }
 
+  void _onDoubleTap() {
+    if (_imageSize == null) return;
+    if (_constraints == null) return;
+
+    if (_scale != 1) {
+      _scale = 1;
+      _offset = Offset.zero;
+      setState(() {});
+      return;
+    }
+
+    double imageWidgetW = 0;
+    double imageWidgetH = 0;
+    double imageMaxFitW = 0;
+    double imageMaxFitH = 0;
+    if (_imageSize.width / _imageSize.height >
+        _constraints.maxWidth / _constraints.maxHeight) {
+      imageWidgetW = _constraints.maxWidth;
+      imageWidgetH = imageWidgetW * _imageSize.height / _imageSize.width;
+      imageMaxFitH = _constraints.maxHeight;
+      imageMaxFitW = imageMaxFitH * _imageSize.width / _imageSize.height;
+      _scale = imageMaxFitW / _constraints.maxWidth;
+      _offset = Offset((_constraints.maxWidth - imageMaxFitW) * 0.5,
+          (imageWidgetH - imageMaxFitH) * 0.5 * _scale);
+    } else {
+      imageWidgetH = _constraints.maxHeight;
+      imageWidgetW = imageWidgetH * _imageSize.width / _imageSize.height;
+      imageMaxFitW = _constraints.maxWidth;
+      imageMaxFitH = imageMaxFitW * _imageSize.height / _imageSize.width;
+      _scale = imageMaxFitH / _constraints.maxHeight;
+      _offset = Offset((imageWidgetW - imageMaxFitW) * 0.5 * _scale,
+          (_constraints.maxHeight - imageMaxFitH) * 0.5);
+    }
+    setState(() {});
+  }
+
+  void _onScaleStart(ScaleStartDetails details) {
+    _oldScale = _scale;
+    _normalizedOffset = (details.focalPoint - _offset) / _scale;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    _scale = (_oldScale * details.scale).clamp(1.0, double.infinity);
+    _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
+    // print('$_offset, $_scale');
+    setState(() {});
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {}
+
+  Offset _clampOffset(Offset offset) {
+    final Size size = context.size; //容器的大小
+    final Offset minOffset =
+        new Offset(size.width, size.height) * (1.0 - _scale);
+    return new Offset(
+        offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_imageProviderInfo.status == _ImageLoadStatus.failed &&
-        (_heroImageProvideInfo == null ||
-            _heroImageProvideInfo?.status == _ImageLoadStatus.failed)) {
+        (_thumImageProvideInfo == null ||
+            _thumImageProvideInfo?.status == _ImageLoadStatus.failed)) {
       return _buildLoadFailed();
     }
 
@@ -143,36 +210,61 @@ class _PhotoPageState extends State<PhotoPage> {
         BuildContext context,
         BoxConstraints constraints,
       ) {
-        if (_heroImageProvideInfo == null ||
+        _constraints = constraints;
+        Widget content;
+        if (_thumImageProvideInfo == null ||
             _imageProviderInfo?.status == _ImageLoadStatus.completed) {
-          return _buildImage(context, constraints, _imageProviderInfo);
+          content = _buildContent(context, constraints, _imageProviderInfo);
         } else {
-          return _buildImage(context, constraints, _heroImageProvideInfo);
+          content = _buildContent(context, constraints, _thumImageProvideInfo);
         }
+        return GestureDetector(
+          onDoubleTap: _onDoubleTap,
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
+          child: Container(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            color: Colors.black,
+            child: content,
+          ),
+        );
       },
     );
   }
 
-  Widget _buildImage(BuildContext context, BoxConstraints constraints,
+  Widget _buildContent(BuildContext context, BoxConstraints constraints,
       ImageProviderInfo providerInfo) {
     return FutureBuilder(
         future: _getImage(providerInfo),
         builder: (BuildContext context, AsyncSnapshot<ImageInfo> info) {
           if (info.hasData) {
-            return _buildChild(providerInfo.imageProvider);
+            return _buildImage(constraints, providerInfo.imageProvider);
           } else {
             return _buildLoading(providerInfo.imageChunkEvent);
           }
         });
   }
 
-  Widget _buildChild(ImageProvider imageProvider) {
-    return Image(
-      image: imageProvider,
-      gaplessPlayback: widget.gaplessPlayback ?? false,
-      filterQuality: widget.filterQuality,
-      width: MediaQuery.of(context).size.width,
-      fit: BoxFit.contain,
+  Widget _buildImage(BoxConstraints constraints, ImageProvider imageProvider) {
+    return Container(
+      color: Colors.red,
+      constraints: const BoxConstraints(
+        minWidth: double.maxFinite,
+        minHeight: double.infinity,
+      ),
+      child: Transform(
+        transform: new Matrix4.identity()
+          ..translate(_offset.dx, _offset.dy)
+          ..scale(_scale, _scale, 1.0),
+        child: Image(
+          image: imageProvider,
+          gaplessPlayback: widget.gaplessPlayback ?? false,
+          filterQuality: widget.filterQuality ?? FilterQuality.high,
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 
