@@ -150,26 +150,26 @@ class _PhotoPageState extends State<PhotoPage> {
       return;
     }
 
-    double imageWidgetW = 0;
-    double imageWidgetH = 0;
+    double imageDefW = 0;
+    double imageDefH = 0;
     double imageMaxFitW = 0;
     double imageMaxFitH = 0;
     if (_imageSize.width / _imageSize.height >
         _constraints.maxWidth / _constraints.maxHeight) {
-      imageWidgetW = _constraints.maxWidth;
-      imageWidgetH = imageWidgetW * _imageSize.height / _imageSize.width;
+      imageDefW = _constraints.maxWidth;
+      imageDefH = imageDefW * _imageSize.height / _imageSize.width;
       imageMaxFitH = _constraints.maxHeight;
       imageMaxFitW = imageMaxFitH * _imageSize.width / _imageSize.height;
       _scale = imageMaxFitW / _constraints.maxWidth;
       _offset = Offset((_constraints.maxWidth - imageMaxFitW) * 0.5,
-          (imageWidgetH - imageMaxFitH) * 0.5 * _scale);
+          (imageDefH - imageMaxFitH) * 0.5 * _scale);
     } else {
-      imageWidgetH = _constraints.maxHeight;
-      imageWidgetW = imageWidgetH * _imageSize.width / _imageSize.height;
+      imageDefH = _constraints.maxHeight;
+      imageDefW = imageDefH * _imageSize.width / _imageSize.height;
       imageMaxFitW = _constraints.maxWidth;
       imageMaxFitH = imageMaxFitW * _imageSize.height / _imageSize.width;
       _scale = imageMaxFitH / _constraints.maxHeight;
-      _offset = Offset((imageWidgetW - imageMaxFitW) * 0.5 * _scale,
+      _offset = Offset((imageDefW - imageMaxFitW) * 0.5 * _scale,
           (_constraints.maxHeight - imageMaxFitH) * 0.5);
     }
     setState(() {});
