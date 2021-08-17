@@ -6,6 +6,8 @@ typedef LoadingBuilder = Widget Function(
   ImageChunkEvent event,
 );
 
+typedef OnZoomStatusChanged = void Function(bool isZoom);
+
 enum _ImageLoadStatus {
   loading,
   failed,
@@ -17,6 +19,7 @@ class ImageProviderInfo {
   Size imageSize;
   _ImageLoadStatus status;
   ImageChunkEvent imageChunkEvent;
+  ImageInfo imageInfo;
 
   ImageProviderInfo(this.imageProvider);
 }
@@ -30,7 +33,39 @@ class PhotoPage extends StatefulWidget {
     this.loadFailedChild,
     this.gaplessPlayback,
     this.filterQuality,
+    this.backcolor,
+    this.onZoomStatusChanged,
   }) : super(key: key);
+
+  PhotoPage.network({
+    Key key,
+    @required String url,
+    String thumUrl,
+    this.loadingBuilder,
+    this.loadFailedChild,
+    this.gaplessPlayback,
+    this.filterQuality,
+    this.backcolor,
+    this.onZoomStatusChanged,
+  })  : this.imageProvider = NetworkImage(url),
+        this.thumImageProvider =
+            (thumUrl == null ? null : NetworkImage(thumUrl)),
+        super(key: key);
+
+  PhotoPage.asset({
+    Key key,
+    @required String assetName,
+    String thumAssetName,
+    this.loadingBuilder,
+    this.loadFailedChild,
+    this.gaplessPlayback,
+    this.filterQuality,
+    this.backcolor,
+    this.onZoomStatusChanged,
+  })  : this.imageProvider = AssetImage(assetName),
+        this.thumImageProvider =
+            (thumAssetName == null ? null : AssetImage(thumAssetName)),
+        super(key: key);
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
   /// is required
@@ -53,13 +88,17 @@ class PhotoPage extends StatefulWidget {
   /// Quality levels for image filters.
   final FilterQuality filterQuality;
 
+  final Color backcolor;
+
+  final OnZoomStatusChanged onZoomStatusChanged;
+
   @override
   State<StatefulWidget> createState() {
     return _PhotoPageState();
   }
 }
 
-class _PhotoPageState extends State<PhotoPage> {
+class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   ImageProviderInfo _imageProviderInfo;
   ImageProviderInfo _thumImageProvideInfo;
 
@@ -71,9 +110,23 @@ class _PhotoPageState extends State<PhotoPage> {
 
   BoxConstraints _constraints;
 
+  AnimationController _scaleAnimationController;
+  Animation<double> _scaleAnimation;
+
+  AnimationController _positionAnimationController;
+  Animation<Offset> _positionAnimation;
+
   @override
   void initState() {
     super.initState();
+
+    _scaleAnimationController =
+        AnimationController(duration: Duration(milliseconds: 120), vsync: this)
+          ..addListener(_handleScaleAnimation);
+    _positionAnimationController =
+        AnimationController(duration: Duration(milliseconds: 120), vsync: this)
+          ..addListener(_handlePositionAnimate);
+
     _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
     _getImage(_imageProviderInfo);
     if (widget.thumImageProvider != null) {
@@ -83,17 +136,18 @@ class _PhotoPageState extends State<PhotoPage> {
   }
 
   @override
-  void didUpdateWidget(PhotoPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
   void dispose() {
+    _scaleAnimationController.removeListener(_handleScaleAnimation);
+    _scaleAnimationController.dispose();
+    _positionAnimationController.removeListener(_handlePositionAnimate);
+    _positionAnimationController.dispose();
     super.dispose();
   }
 
-  Future<ImageInfo> _getImage(ImageProviderInfo providerInfo) {
+  Future<ImageInfo> _getImage(ImageProviderInfo providerInfo) async {
+    if (providerInfo.imageInfo != null) return providerInfo.imageInfo;
     final Completer completer = Completer<ImageInfo>();
+    providerInfo.status = _ImageLoadStatus.loading;
     final ImageStream stream = providerInfo.imageProvider.resolve(
       const ImageConfiguration(),
     );
@@ -109,8 +163,9 @@ class _PhotoPageState extends State<PhotoPage> {
               info.image.width.toDouble(),
               info.image.height.toDouble(),
             );
-            providerInfo.status = _ImageLoadStatus.loading;
+            providerInfo.status = _ImageLoadStatus.completed;
             providerInfo.imageChunkEvent = null;
+            providerInfo.imageInfo = info;
             _imageSize = providerInfo.imageSize;
           };
           synchronousCall ? setupCallback() : setState(setupCallback);
@@ -139,40 +194,85 @@ class _PhotoPageState extends State<PhotoPage> {
     return completer.future;
   }
 
+  void _animateScale(double from, double to) {
+    _scaleAnimation = Tween<double>(
+      begin: from,
+      end: to,
+    ).animate(_scaleAnimationController);
+    _scaleAnimationController
+      ..value = 0.0
+      ..fling(velocity: 0.4);
+  }
+
+  void _animatePosition(Offset from, Offset to) {
+    _positionAnimation = Tween<Offset>(begin: from, end: to)
+        .animate(_positionAnimationController);
+    _positionAnimationController
+      ..value = 0.0
+      ..fling(velocity: 0.4);
+  }
+
+  void _handleScaleAnimation() {
+    _scale = _scaleAnimation.value;
+    setState(() {});
+  }
+
+  void _handlePositionAnimate() {
+    _offset = _positionAnimation.value;
+    setState(() {});
+  }
+
   void _onDoubleTap() {
     if (_imageSize == null) return;
     if (_constraints == null) return;
+    if (_constraints.maxWidth == 0 || _constraints.maxHeight == 0) return;
+    if (_imageSize.width == 0 || _imageSize.height == 0) return;
+
+    _scaleAnimationController.stop();
+    _positionAnimationController.stop();
+
+    double oldScale = _scale;
+    Offset oldOffset = _offset;
+    double newScale = _scale;
+    Offset newOffset = _offset;
 
     if (_scale != 1) {
-      _scale = 1;
-      _offset = Offset.zero;
-      setState(() {});
-      return;
-    }
-
-    double imageDefW = 0;
-    double imageDefH = 0;
-    double imageMaxFitW = 0;
-    double imageMaxFitH = 0;
-    if (_imageSize.width / _imageSize.height >
-        _constraints.maxWidth / _constraints.maxHeight) {
-      imageDefW = _constraints.maxWidth;
-      imageDefH = imageDefW * _imageSize.height / _imageSize.width;
-      imageMaxFitH = _constraints.maxHeight;
-      imageMaxFitW = imageMaxFitH * _imageSize.width / _imageSize.height;
-      _scale = imageMaxFitW / _constraints.maxWidth;
-      _offset = Offset((_constraints.maxWidth - imageMaxFitW) * 0.5,
-          (imageDefH - imageMaxFitH) * 0.5 * _scale);
+      newScale = 1;
+      newOffset = Offset.zero;
+      if (widget.onZoomStatusChanged != null) {
+        widget.onZoomStatusChanged(false);
+      }
     } else {
-      imageDefH = _constraints.maxHeight;
-      imageDefW = imageDefH * _imageSize.width / _imageSize.height;
-      imageMaxFitW = _constraints.maxWidth;
-      imageMaxFitH = imageMaxFitW * _imageSize.height / _imageSize.width;
-      _scale = imageMaxFitH / _constraints.maxHeight;
-      _offset = Offset((imageDefW - imageMaxFitW) * 0.5 * _scale,
-          (_constraints.maxHeight - imageMaxFitH) * 0.5);
+      double imageDefW = 0;
+      double imageDefH = 0;
+      double imageMaxFitW = 0;
+      double imageMaxFitH = 0;
+      if (_imageSize.width / _imageSize.height >
+          _constraints.maxWidth / _constraints.maxHeight) {
+        imageDefW = _constraints.maxWidth;
+        imageDefH = imageDefW * _imageSize.height / _imageSize.width;
+        imageMaxFitH = _constraints.maxHeight;
+        imageMaxFitW = imageMaxFitH * _imageSize.width / _imageSize.height;
+        newScale = imageMaxFitW / _constraints.maxWidth;
+        newOffset = Offset((_constraints.maxWidth - imageMaxFitW) * 0.5,
+            (imageDefH - imageMaxFitH) * 0.5 * newScale);
+      } else {
+        imageDefH = _constraints.maxHeight;
+        imageDefW = imageDefH * _imageSize.width / _imageSize.height;
+        imageMaxFitW = _constraints.maxWidth;
+        imageMaxFitH = imageMaxFitW * _imageSize.height / _imageSize.width;
+        newScale = imageMaxFitH / _constraints.maxHeight;
+        newOffset = Offset((imageDefW - imageMaxFitW) * 0.5 * newScale,
+            (_constraints.maxHeight - imageMaxFitH) * 0.5);
+      }
+      if (widget.onZoomStatusChanged != null) {
+        widget.onZoomStatusChanged(true);
+      }
     }
-    setState(() {});
+    _animateScale(oldScale, newScale);
+    _animatePosition(oldOffset, newOffset);
+    _positionAnimationController.forward();
+    _scaleAnimationController.forward();
   }
 
   void _onScaleStart(ScaleStartDetails details) {
@@ -183,7 +283,9 @@ class _PhotoPageState extends State<PhotoPage> {
   void _onScaleUpdate(ScaleUpdateDetails details) {
     _scale = (_oldScale * details.scale).clamp(1.0, double.infinity);
     _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
-    // print('$_offset, $_scale');
+    if (widget.onZoomStatusChanged != null && _scale != _oldScale) {
+      widget.onZoomStatusChanged(_scale != 1.0);
+    }
     setState(() {});
   }
 
@@ -226,7 +328,7 @@ class _PhotoPageState extends State<PhotoPage> {
           child: Container(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
-            color: Colors.black,
+            color: widget.backcolor ?? Colors.black,
             child: content,
           ),
         );
@@ -236,20 +338,24 @@ class _PhotoPageState extends State<PhotoPage> {
 
   Widget _buildContent(BuildContext context, BoxConstraints constraints,
       ImageProviderInfo providerInfo) {
-    return FutureBuilder(
-        future: _getImage(providerInfo),
-        builder: (BuildContext context, AsyncSnapshot<ImageInfo> info) {
-          if (info.hasData) {
-            return _buildImage(constraints, providerInfo.imageProvider);
-          } else {
-            return _buildLoading(providerInfo.imageChunkEvent);
-          }
-        });
+    if (providerInfo.status == _ImageLoadStatus.completed) {
+      return _buildImage(constraints, providerInfo.imageProvider);
+    } else {
+      return _buildLoading(providerInfo.imageChunkEvent);
+    }
+    // return FutureBuilder(
+    //     future: _getImage(providerInfo),
+    //     builder: (BuildContext context, AsyncSnapshot<ImageInfo> info) {
+    //       if (info.hasData) {
+    //         return _buildImage(constraints, providerInfo.imageProvider);
+    //       } else {
+    //         return _buildLoading(providerInfo.imageChunkEvent);
+    //       }
+    //     });
   }
 
   Widget _buildImage(BoxConstraints constraints, ImageProvider imageProvider) {
     return Container(
-      color: Colors.red,
       constraints: const BoxConstraints(
         minWidth: double.maxFinite,
         minHeight: double.infinity,

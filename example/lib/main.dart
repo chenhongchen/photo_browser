@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:photo_browser/photo_browser.dart';
 
 void main() {
@@ -39,16 +36,49 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    String image = domain + photos[0];
-    String thum = image + smallImageParam;
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: PhotoBrowser(
-          imageProvider: NetworkImage(image),
-          thumImageProvider: NetworkImage(thum),
+        body: LayoutBuilder(
+          builder: (
+            BuildContext context,
+            BoxConstraints constraints,
+          ) {
+            return Center(
+              child: GestureDetector(
+                onTap: () {
+                  PhotoBrowser(
+                    itemCount: photos.length,
+                    initIndex: 0,
+                    heroTagBuilder: (int index) {
+                      return '$index';
+                    },
+                    imageUrlBuilder: (int index) {
+                      return domain + photos[index];
+                    },
+                    thumImageUrlBuilder: (int index) {
+                      return domain + photos[index] + smallImageParam;
+                    },
+                  ).show(context, heroTag: '1');
+                },
+                child: Hero(
+                  tag: '1',
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    child: Image.network(
+                      domain + photos[0] + smallImageParam,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
