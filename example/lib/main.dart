@@ -29,6 +29,8 @@ class _MyAppState extends State<MyApp> {
     '/quanzi/2021/20210730/c725f29809dcac2ba046c9e0156e0654_1606x1204.jpeg'
   ];
 
+  int _pageIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -38,47 +40,57 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: LayoutBuilder(
-          builder: (
-            BuildContext context,
-            BoxConstraints constraints,
-          ) {
-            return Center(
-              child: GestureDetector(
-                onTap: () {
-                  PhotoBrowser(
-                    itemCount: photos.length,
-                    initIndex: 0,
-                    heroTagBuilder: (int index) {
-                      return '$index';
-                    },
-                    imageUrlBuilder: (int index) {
-                      return domain + photos[index];
-                    },
-                    thumImageUrlBuilder: (int index) {
-                      return domain + photos[index] + smallImageParam;
-                    },
-                  ).show(context, heroTag: '1');
+          appBar: AppBar(
+            title: const Text('Plugin example app'),
+          ),
+          body: LayoutBuilder(
+            builder: (
+              BuildContext context,
+              BoxConstraints constraints,
+            ) {
+              return ListView.builder(
+                itemCount: photos.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildCell(context, index);
                 },
-                child: Hero(
-                  tag: '1',
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    child: Image.network(
-                      domain + photos[0] + smallImageParam,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              ),
-            );
+              );
+            },
+          )),
+    );
+  }
+
+  Widget _buildCell(BuildContext context, int cellIndex) {
+    return GestureDetector(
+      onTap: () {
+        _pageIndex = cellIndex;
+        PhotoBrowser(
+          itemCount: photos.length,
+          initIndex: cellIndex,
+          heroTagBuilder: (int index) {
+            return photos[index];
           },
+          imageUrlBuilder: (int index) {
+            return domain + photos[index];
+          },
+          thumImageUrlBuilder: (int index) {
+            return domain + photos[index] + smallImageParam;
+          },
+          onPageChanged: (int index) {
+            _pageIndex = index;
+          },
+        ).show(context);
+      },
+      child: Hero(
+        tag: photos[cellIndex],
+        child: Container(
+          width: 120,
+          height: 120,
+          child: Image.network(
+            domain + photos[cellIndex] + smallImageParam,
+            width: 120,
+            height: 120,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );

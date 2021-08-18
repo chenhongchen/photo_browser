@@ -343,15 +343,6 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     } else {
       return _buildLoading(providerInfo.imageChunkEvent);
     }
-    // return FutureBuilder(
-    //     future: _getImage(providerInfo),
-    //     builder: (BuildContext context, AsyncSnapshot<ImageInfo> info) {
-    //       if (info.hasData) {
-    //         return _buildImage(constraints, providerInfo.imageProvider);
-    //       } else {
-    //         return _buildLoading(providerInfo.imageChunkEvent);
-    //       }
-    //     });
   }
 
   Widget _buildImage(BoxConstraints constraints, ImageProvider imageProvider) {
@@ -378,7 +369,21 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     if (widget.loadingBuilder != null) {
       return widget.loadingBuilder(context, imageChunkEvent);
     }
-    return Container();
+    return Center(
+      child: Container(
+        width: 40.0,
+        height: 40.0,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor:
+              new AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(230)),
+          value: imageChunkEvent == null
+              ? 0
+              : imageChunkEvent.cumulativeBytesLoaded /
+                  imageChunkEvent.expectedTotalBytes,
+        ),
+      ),
+    );
   }
 
   Widget _buildLoadFailed() {
