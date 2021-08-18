@@ -11,25 +11,48 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static String get smallImageParam =>
-      '?x-oss-process=image/resize,w_300/sharpen,100/quality,Q_100';
-  static String get middleImageParam =>
-      '?x-oss-process=image/resize,w_600/sharpen,100/quality,Q_100';
-  static String get largeImageParam =>
-      '?x-oss-process=image/resize,w_1024/sharpen,100/quality,Q_100';
-
-  String domain = 'https://qzasset.jinriaozhou.com';
-
-  List photos = [
-    '/quanzi/2021/20210730/31cd8d37b317d055985e3ffa8e1bb77e_1606x1204.jpeg',
-    '/quanzi/2021/20210730/606a114741bf46bbe2f0365eb6baea2b_1200x1600.jpeg',
-    '/quanzi/2021/20210730/ab7dfe598f5a60165c229d6d3155cf00_1200x1600.jpeg',
-    '/quanzi/2021/20210730/f0e1d5c328b59ba8c2e9ea17a1b31cc6_1200x1600.jpeg',
-    '/quanzi/2021/20210730/9d41e346a0d324bc6ea4e99fb31fddc8_1200x1600.jpeg',
-    '/quanzi/2021/20210730/c725f29809dcac2ba046c9e0156e0654_1606x1204.jpeg'
+  List<_PhoteModel> _photos = <_PhoteModel>[
+    _PhoteModel(
+      big:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_1.jpg',
+      thum:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_1.jpg',
+    ),
+    _PhoteModel(
+      big:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_2.jpg',
+      thum:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_2.jpg',
+    ),
+    _PhoteModel(
+      big:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_3.jpg',
+      thum:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_3.jpg',
+    ),
+    _PhoteModel(
+      big:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_4.jpg',
+      thum:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_4.jpg',
+    ),
+    _PhoteModel(
+      big:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_5.jpg',
+      thum:
+          'https://gitee.com/hongchenchen/test_photos_lib/raw/3eb1473cc183f3ff270f00450d6d54b737a0581a/thum_5.jpg',
+    ),
+    _PhoteModel(
+        big:
+            'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_6.jpg',
+        thum:
+            'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_6.jpg'),
+    _PhoteModel(
+        big:
+            'https://gitee.com/hongchenchen/test_photos_lib/raw/fc5d8c7218dddb72d624e8c9c3ea7ea0990754a3/big_7.jpg',
+        thum:
+            'https://gitee.com/hongchenchen/test_photos_lib/raw/fc5d8c7218dddb72d624e8c9c3ea7ea0990754a3/big_7.jpg'),
   ];
-
-  int _pageIndex = 0;
 
   @override
   void initState() {
@@ -49,7 +72,8 @@ class _MyAppState extends State<MyApp> {
               BoxConstraints constraints,
             ) {
               return ListView.builder(
-                itemCount: photos.length,
+                scrollDirection: Axis.vertical,
+                itemCount: _photos.length,
                 itemBuilder: (BuildContext context, int index) {
                   return _buildCell(context, index);
                 },
@@ -62,31 +86,28 @@ class _MyAppState extends State<MyApp> {
   Widget _buildCell(BuildContext context, int cellIndex) {
     return GestureDetector(
       onTap: () {
-        _pageIndex = cellIndex;
         PhotoBrowser(
-          itemCount: photos.length,
+          itemCount: _photos.length,
           initIndex: cellIndex,
           heroTagBuilder: (int index) {
-            return photos[index];
+            return _photos[index].big;
           },
           imageUrlBuilder: (int index) {
-            return domain + photos[index];
+            return _photos[index].big;
           },
           thumImageUrlBuilder: (int index) {
-            return domain + photos[index] + smallImageParam;
+            return _photos[index].thum;
           },
-          onPageChanged: (int index) {
-            _pageIndex = index;
-          },
+          onPageChanged: (int index) {},
         ).show(context);
       },
       child: Hero(
-        tag: photos[cellIndex],
+        tag: _photos[cellIndex].big,
         child: Container(
           width: 120,
           height: 120,
           child: Image.network(
-            domain + photos[cellIndex] + smallImageParam,
+            _photos[cellIndex].thum,
             width: 120,
             height: 120,
             fit: BoxFit.contain,
@@ -95,4 +116,11 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+}
+
+class _PhoteModel {
+  final String big;
+  final String thum;
+
+  _PhoteModel({@required this.big, this.thum});
 }
