@@ -73,6 +73,36 @@ class _MyAppState extends State<MyApp> {
           thumImageUrlBuilder: (int index) {
             return _photos[index].replaceAll('big', 'thum');
           }, // 缩略图设置，可以为空，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
+          positionsBuilder: (int curIndex, int totalNum) {
+            return <Positioned>[
+              Positioned(
+                right: 15,
+                top: 35,
+                child: Text(
+                  '保存图片',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withAlpha(230),
+                    decoration: TextDecoration.none,
+                    shadows: <Shadow>[
+                      Shadow(
+                        offset: Offset(1.0, 1.0),
+                        blurRadius: 3.0,
+                        color: Colors.black,
+                      ),
+                      Shadow(
+                        offset: Offset(1.0, 1.0),
+                        blurRadius: 8.0,
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ];
+          },
           onPageChanged: (int index) {},
         ).show(
           context,

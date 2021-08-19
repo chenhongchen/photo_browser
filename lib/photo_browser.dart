@@ -5,6 +5,8 @@ import 'package:photo_browser/photo_page.dart';
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
 typedef PageCodeBuilder = Positioned Function(int curIndex, int totalNum);
+typedef PositionsBuilder = List<Positioned> Function(
+    int curIndex, int totalNum);
 
 class PhotoBrowser extends StatefulWidget {
   Future<dynamic> show(BuildContext context,
@@ -53,6 +55,7 @@ class PhotoBrowser extends StatefulWidget {
   final LoadingBuilder loadingBuilder;
   final Widget loadFailedChild;
   final PageCodeBuilder pageCodeBuild;
+  final PositionsBuilder positionsBuilder;
   final bool gaplessPlayback;
   final FilterQuality filterQuality;
   final Color backcolor;
@@ -80,6 +83,7 @@ class PhotoBrowser extends StatefulWidget {
     this.loadingBuilder,
     this.loadFailedChild,
     this.pageCodeBuild,
+    this.positionsBuilder,
     this.gaplessPlayback,
     this.filterQuality,
     this.backcolor,
@@ -161,35 +165,37 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   Widget _buildPageView() {
+    List<Widget> children = <Widget>[
+      GestureDetector(
+        onTap: () {
+          Navigator.of(context, rootNavigator: true).pop();
+        },
+        onVerticalDragDown: _isZoom == true ? null : _onVerticalDragDown,
+        onVerticalDragUpdate: _isZoom == true ? null : _onVerticalDragUpdate,
+        child: PageView.builder(
+          reverse: widget.reverse,
+          controller: _controller,
+          onPageChanged: (int index) {
+            _curPage = index;
+            setState(() {});
+            widget.onPageChanged(index);
+          },
+          itemCount: widget.itemCount,
+          itemBuilder: _buildItem,
+          scrollDirection: widget.scrollDirection,
+          physics:
+              _isZoom ? NeverScrollableScrollPhysics() : widget.scrollPhysics,
+        ),
+      ),
+      _buildPageCode(_curPage, widget.itemCount),
+    ];
+    if (widget.positionsBuilder != null) {
+      children.addAll(widget.positionsBuilder(_curPage, widget.itemCount));
+    }
     return Container(
       color: widget.backcolor ?? Colors.black,
       child: Stack(
-        children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context, rootNavigator: true).pop();
-            },
-            onVerticalDragDown: _isZoom == true ? null : _onVerticalDragDown,
-            onVerticalDragUpdate:
-                _isZoom == true ? null : _onVerticalDragUpdate,
-            child: PageView.builder(
-              reverse: widget.reverse,
-              controller: _controller,
-              onPageChanged: (int index) {
-                _curPage = index;
-                setState(() {});
-                widget.onPageChanged(index);
-              },
-              itemCount: widget.itemCount,
-              itemBuilder: _buildItem,
-              scrollDirection: widget.scrollDirection,
-              physics: _isZoom
-                  ? NeverScrollableScrollPhysics()
-                  : widget.scrollPhysics,
-            ),
-          ),
-          _buildPageCode(_curPage, widget.itemCount),
-        ],
+        children: children,
       ),
     );
   }
