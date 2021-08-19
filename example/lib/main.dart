@@ -11,51 +11,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<_PhoteModel> _photos = <_PhoteModel>[
-    _PhoteModel(
-      big:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_1.jpg',
-      thum:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_1.jpg',
-    ),
-    _PhoteModel(
-      big:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_2.jpg',
-      thum:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_2.jpg',
-    ),
-    _PhoteModel(
-      big:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_3.jpg',
-      thum:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_3.jpg',
-    ),
-    _PhoteModel(
-      big:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_4.jpg',
-      thum:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_4.jpg',
-    ),
-    _PhoteModel(
-      big:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_5.jpg',
-      thum:
-          'https://gitee.com/hongchenchen/test_photos_lib/raw/3eb1473cc183f3ff270f00450d6d54b737a0581a/thum_5.jpg',
-    ),
-    _PhoteModel(
-        big:
-            'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/big_6.jpg',
-        thum:
-            'https://gitee.com/hongchenchen/test_photos_lib/raw/111756917769fad2017788933725aa396091b2f2/thum_6.jpg'),
-    _PhoteModel(
-        big:
-            'https://gitee.com/hongchenchen/test_photos_lib/raw/fc5d8c7218dddb72d624e8c9c3ea7ea0990754a3/big_7.jpg',
-        thum:
-            'https://gitee.com/hongchenchen/test_photos_lib/raw/fc5d8c7218dddb72d624e8c9c3ea7ea0990754a3/big_7.jpg'),
-  ];
+  // https://gitee.com/hongchenchen/test_photos_lib/raw/5b67dc144b109336ce0fe6492bd7de1651973cac/pic/big_1.jpg
+  String domain = 'http://gitee.com/hongchenchen/test_photos_lib/raw/';
+  String path = '5b67dc144b109336ce0fe6492bd7de1651973cac';
+  List<String> _photos = <String>[];
 
   @override
   void initState() {
+    for (int i = 1; i <= 6; i++) {
+      String bigPhoto = domain + path + '/pic/big_$i.jpg';
+      _photos.add(bigPhoto);
+    }
     super.initState();
   }
 
@@ -64,19 +30,27 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
           appBar: AppBar(
-            title: const Text('Plugin example app'),
+            title: const Text('Photo browser example'),
           ),
           body: LayoutBuilder(
             builder: (
               BuildContext context,
               BoxConstraints constraints,
             ) {
-              return ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: _photos.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _buildCell(context, index);
-                },
+              return Container(
+                margin: EdgeInsets.all(5),
+                child: GridView.builder(
+                  itemCount: _photos.length,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
+                      childAspectRatio: 1),
+                  itemBuilder: (BuildContext context, int index) {
+                    return _buildCell(context, index);
+                  },
+                ),
               );
             },
           )),
@@ -86,41 +60,34 @@ class _MyAppState extends State<MyApp> {
   Widget _buildCell(BuildContext context, int cellIndex) {
     return GestureDetector(
       onTap: () {
+        // 弹出图片浏览器(单击或下划手势可关闭)
         PhotoBrowser(
           itemCount: _photos.length,
-          initIndex: cellIndex,
+          initIndex: cellIndex, // 设置初始显示页面
           heroTagBuilder: (int index) {
-            return _photos[index].big;
-          },
+            return _photos[index];
+          }, // 飞行动画tag设置，为null则弹出动画为一般的push动画
           imageUrlBuilder: (int index) {
-            return _photos[index].big;
-          },
+            return _photos[index];
+          }, // 大图设置，不能为空，如果想本地缓存图片可换imageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
           thumImageUrlBuilder: (int index) {
-            return _photos[index].thum;
-          },
+            return _photos[index].replaceAll('big', 'thum');
+          }, // 缩略图设置，可以为空，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
           onPageChanged: (int index) {},
-        ).show(context);
+        ).show(
+          context,
+          fullscreenDialog: true, //当heroTagBuilder属性为空时，该属性有效
+        );
       },
       child: Hero(
-        tag: _photos[cellIndex].big,
-        child: Container(
+        tag: _photos[cellIndex],
+        child: Image.network(
+          _photos[cellIndex].replaceAll('big', 'thum'),
           width: 120,
           height: 120,
-          child: Image.network(
-            _photos[cellIndex].thum,
-            width: 120,
-            height: 120,
-            fit: BoxFit.contain,
-          ),
+          fit: BoxFit.cover,
         ),
       ),
     );
   }
-}
-
-class _PhoteModel {
-  final String big;
-  final String thum;
-
-  _PhoteModel({@required this.big, this.thum});
 }
