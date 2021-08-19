@@ -202,7 +202,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       loadFailedChild: widget.loadFailedChild,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
-      backcolor: widget.backcolor,
+      backcolor: Colors.transparent,
       onZoomStatusChanged: (bool isZoom) {
         _isZoom = isZoom;
         setState(() {});
