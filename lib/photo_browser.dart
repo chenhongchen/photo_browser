@@ -19,6 +19,7 @@ class PhotoBrowser extends StatefulWidget {
 
     final TransitionRoute<Null> route = PageRouteBuilder<Null>(
       pageBuilder: _defaultRoutePageBuilder,
+      opaque: false,
     );
     return await Navigator.of(context, rootNavigator: true).push(route);
   }
@@ -160,31 +161,36 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   Widget _buildPageView() {
-    return Stack(
-      children: <Widget>[
-        GestureDetector(
-          onTap: () {
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-          onVerticalDragDown: _isZoom == true ? null : _onVerticalDragDown,
-          onVerticalDragUpdate: _isZoom == true ? null : _onVerticalDragUpdate,
-          child: PageView.builder(
-            reverse: widget.reverse,
-            controller: _controller,
-            onPageChanged: (int index) {
-              _curPage = index;
-              setState(() {});
-              widget.onPageChanged(index);
+    return Container(
+      color: widget.backcolor ?? Colors.black,
+      child: Stack(
+        children: <Widget>[
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).pop();
             },
-            itemCount: widget.itemCount,
-            itemBuilder: _buildItem,
-            scrollDirection: widget.scrollDirection,
-            physics:
-                _isZoom ? NeverScrollableScrollPhysics() : widget.scrollPhysics,
+            onVerticalDragDown: _isZoom == true ? null : _onVerticalDragDown,
+            onVerticalDragUpdate:
+                _isZoom == true ? null : _onVerticalDragUpdate,
+            child: PageView.builder(
+              reverse: widget.reverse,
+              controller: _controller,
+              onPageChanged: (int index) {
+                _curPage = index;
+                setState(() {});
+                widget.onPageChanged(index);
+              },
+              itemCount: widget.itemCount,
+              itemBuilder: _buildItem,
+              scrollDirection: widget.scrollDirection,
+              physics: _isZoom
+                  ? NeverScrollableScrollPhysics()
+                  : widget.scrollPhysics,
+            ),
           ),
-        ),
-        _buildPageCode(_curPage, widget.itemCount),
-      ],
+          _buildPageCode(_curPage, widget.itemCount),
+        ],
+      ),
     );
   }
 
