@@ -4,12 +4,24 @@ import 'package:photo_browser/photo_page.dart';
 
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
-typedef PageCodeBuilder = Positioned Function(int curIndex, int totalNum);
+typedef PageCodeBuilder = Positioned Function(
+  BuildContext,
+  int curIndex,
+  int totalNum,
+);
 typedef PositionsBuilder = List<Positioned> Function(
-    int curIndex, int totalNum);
+  BuildContext context,
+  int curIndex,
+  int totalNum,
+);
+
+enum HeroType {
+  fade,
+  scale,
+}
 
 class PhotoBrowser extends StatefulWidget {
-  Future<dynamic> show(BuildContext context,
+  Future<dynamic> push(BuildContext context,
       {bool fullscreenDialog = true}) async {
     if (heroTagBuilder == null) {
       return await Navigator.of(context).push(CupertinoPageRoute(
@@ -18,24 +30,40 @@ class PhotoBrowser extends StatefulWidget {
             return this;
           }));
     }
-
-    final TransitionRoute<Null> route = PageRouteBuilder<Null>(
-      pageBuilder: _defaultRoutePageBuilder,
-      opaque: false,
-    );
-    return await Navigator.of(context, rootNavigator: true).push(route);
+    return heroPush(context);
   }
 
-  AnimatedWidget _defaultRoutePageBuilder(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget child) {
-        return this;
-      },
+  Future<dynamic> heroPush(BuildContext context) async {
+    return await Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (BuildContext context, Animation animation,
+            Animation secondaryAnimation) {
+          //目标页面
+          return this;
+        },
+        //动画时间
+        transitionDuration: Duration(milliseconds: 400),
+        //过渡动画构建
+        transitionsBuilder: (
+          BuildContext context,
+          Animation animation,
+          Animation secondaryAnimation,
+          Widget child,
+        ) {
+          //渐变过渡动画
+          return FadeTransition(
+            // 透明度从 0.0-1.0
+            opacity: Tween(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(
+                parent: animation,
+                //动画曲线规则，这里使用的是先快后慢
+                curve: Curves.fastOutSlowIn,
+              ),
+            ),
+            child: child,
+          );
+        },
+      ),
     );
   }
 
@@ -45,6 +73,9 @@ class PhotoBrowser extends StatefulWidget {
   }
 
   final int itemCount;
+  final int initIndex;
+  final PhotoBrowerController controller;
+  final HeroType heroType;
   final StringBuilder heroTagBuilder;
   final ImageProviderBuilder imageProviderBuilder;
   final ImageProviderBuilder thumImageProviderBuilder;
@@ -59,13 +90,15 @@ class PhotoBrowser extends StatefulWidget {
   final bool gaplessPlayback;
   final FilterQuality filterQuality;
   final Color backcolor;
+  final bool allowTapToPop;
+  final bool allowSwipeDownToPop;
   final bool reverse;
   final PageController pageController;
   final ScrollPhysics scrollPhysics;
   final Axis scrollDirection;
   final ValueChanged<int> onPageChanged;
+
   //
-  final int initIndex;
   ImageProvider _initImageProvider;
   ImageProvider _initThumImageProvider;
 
@@ -73,6 +106,8 @@ class PhotoBrowser extends StatefulWidget {
     Key key,
     @required this.itemCount,
     @required this.initIndex,
+    this.controller,
+    this.heroType = HeroType.fade,
     this.heroTagBuilder,
     this.imageProviderBuilder,
     this.thumImageProviderBuilder,
@@ -87,6 +122,8 @@ class PhotoBrowser extends StatefulWidget {
     this.gaplessPlayback,
     this.filterQuality,
     this.backcolor,
+    this.allowTapToPop = true,
+    this.allowSwipeDownToPop = true,
     this.reverse = false,
     this.pageController,
     this.scrollPhysics,
@@ -133,15 +170,18 @@ class PhotoBrowser extends StatefulWidget {
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
-  PageController _controller;
+  PageController _pageController;
   bool _isZoom = false;
   int _curPage = 0;
   double _lastDownY;
+  bool _willPop = false;
+  BoxConstraints _constraints;
 
   @override
   void initState() {
+    widget.controller?._state = this;
     _curPage = widget.initIndex;
-    _controller =
+    _pageController =
         widget.pageController ?? PageController(initialPage: _curPage);
     super.initState();
   }
@@ -149,32 +189,42 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   @override
   void dispose() {
     if (widget.pageController == null) {
-      _controller.dispose();
+      _pageController.dispose();
     }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.heroTagBuilder == null
-        ? _buildPageView()
-        : Hero(
-            tag: '${widget.heroTagBuilder(_curPage)}',
-            child: _buildPageView(),
-          );
+    return LayoutBuilder(builder: (
+      BuildContext context,
+      BoxConstraints constraints,
+    ) {
+      _constraints = constraints;
+      if (widget.heroTagBuilder == null || widget.heroType == HeroType.fade) {
+        return _buildPageView();
+      } else {
+        return Hero(
+          tag: '${widget.heroTagBuilder(_curPage)}',
+          child: _buildPageView(),
+        );
+      }
+    });
   }
 
   Widget _buildPageView() {
     List<Widget> children = <Widget>[
       GestureDetector(
-        onTap: () {
-          Navigator.of(context, rootNavigator: true).pop();
-        },
-        onVerticalDragDown: _isZoom == true ? null : _onVerticalDragDown,
-        onVerticalDragUpdate: _isZoom == true ? null : _onVerticalDragUpdate,
+        onTap: widget.allowTapToPop ? _onTap : null,
+        onVerticalDragDown: _isZoom == true || !widget.allowSwipeDownToPop
+            ? null
+            : _onVerticalDragDown,
+        onVerticalDragUpdate: _isZoom == true || !widget.allowSwipeDownToPop
+            ? null
+            : _onVerticalDragUpdate,
         child: PageView.builder(
           reverse: widget.reverse,
-          controller: _controller,
+          controller: _pageController,
           onPageChanged: (int index) {
             _curPage = index;
             setState(() {});
@@ -190,7 +240,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       _buildPageCode(_curPage, widget.itemCount),
     ];
     if (widget.positionsBuilder != null) {
-      children.addAll(widget.positionsBuilder(_curPage, widget.itemCount));
+      children
+          .addAll(widget.positionsBuilder(context, _curPage, widget.itemCount));
     }
     return Container(
       color: widget.backcolor ?? Colors.black,
@@ -204,11 +255,21 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     return PhotoPage(
       imageProvider: widget._getImageProvider(index),
       thumImageProvider: widget._getThumImageProvider(index),
+      imageLoadSuccess: (ImageInfo imageInfo) {
+        widget.controller.imageInfos[index] = imageInfo;
+      },
+      thumImageLoadSuccess: (ImageInfo imageInfo) {
+        widget.controller.thumImageInfos[index] = imageInfo;
+      },
       loadingBuilder: widget.loadingBuilder,
       loadFailedChild: widget.loadFailedChild,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
       backcolor: Colors.transparent,
+      heroType: widget.heroType,
+      heroTag:
+          widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
+      willPop: _willPop,
       onZoomStatusChanged: (bool isZoom) {
         _isZoom = isZoom;
         setState(() {});
@@ -218,7 +279,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   Positioned _buildPageCode(int curIndex, int totalNum) {
     if (widget.pageCodeBuild != null) {
-      return widget.pageCodeBuild(curIndex + 1, totalNum);
+      return widget.pageCodeBuild(context, curIndex + 1, totalNum);
     }
     return Positioned(
       right: 15,
@@ -248,15 +309,47 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     );
   }
 
-  _onVerticalDragDown(DragDownDetails details) {
+  void _onTap() {
+    _pop();
+  }
+
+  void _onVerticalDragDown(DragDownDetails details) {
     _lastDownY = details.localPosition.dy;
   }
 
-  _onVerticalDragUpdate(DragUpdateDetails details) async {
+  void _onVerticalDragUpdate(DragUpdateDetails details) async {
     var position = details.localPosition.dy;
     var detal = position - _lastDownY;
     if (detal > 50) {
-      Navigator.of(context, rootNavigator: true).pop();
+      _pop();
     }
+  }
+
+  void _pop() {
+    // 显示一页时，才允许pop
+    if (((_pageController.position.pixels * 1000).toInt() %
+            (_constraints.maxWidth * 1000).toInt()) !=
+        0) return;
+    _willPop = true;
+    setState(() {});
+    Navigator.of(context).pop();
+  }
+}
+
+class PhotoBrowerController {
+  _PhotoBrowserState _state;
+  final Map<int, ImageInfo> imageInfos = Map<int, ImageInfo>();
+  final Map<int, ImageInfo> thumImageInfos = Map<int, ImageInfo>();
+
+  void pop() {
+    _state?._pop();
+  }
+
+  setState(VoidCallback fn) {
+    _state?.setState(fn);
+  }
+
+  dispose() {
+    _state = null;
   }
 }

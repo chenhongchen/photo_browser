@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:photo_browser/photo_browser.dart';
 
 typedef LoadingBuilder = Widget Function(
   BuildContext context,
@@ -7,6 +8,8 @@ typedef LoadingBuilder = Widget Function(
 );
 
 typedef OnZoomStatusChanged = void Function(bool isZoom);
+
+typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
 
 enum _ImageLoadStatus {
   loading,
@@ -28,6 +31,8 @@ class PhotoPage extends StatefulWidget {
   PhotoPage({
     Key key,
     @required this.imageProvider,
+    this.imageLoadSuccess,
+    this.thumImageLoadSuccess,
     this.thumImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
@@ -35,18 +40,26 @@ class PhotoPage extends StatefulWidget {
     this.filterQuality,
     this.backcolor,
     this.onZoomStatusChanged,
+    this.heroTag,
+    this.heroType = HeroType.fade,
+    this.willPop = false,
   }) : super(key: key);
 
   PhotoPage.network({
     Key key,
     @required String url,
     String thumUrl,
+    this.imageLoadSuccess,
+    this.thumImageLoadSuccess,
     this.loadingBuilder,
     this.loadFailedChild,
     this.gaplessPlayback,
     this.filterQuality,
     this.backcolor,
     this.onZoomStatusChanged,
+    this.heroTag,
+    this.heroType = HeroType.fade,
+    this.willPop = false,
   })  : this.imageProvider = NetworkImage(url),
         this.thumImageProvider =
             (thumUrl == null ? null : NetworkImage(thumUrl)),
@@ -56,12 +69,17 @@ class PhotoPage extends StatefulWidget {
     Key key,
     @required String assetName,
     String thumAssetName,
+    this.imageLoadSuccess,
+    this.thumImageLoadSuccess,
     this.loadingBuilder,
     this.loadFailedChild,
     this.gaplessPlayback,
     this.filterQuality,
     this.backcolor,
     this.onZoomStatusChanged,
+    this.heroTag,
+    this.heroType = HeroType.fade,
+    this.willPop = false,
   })  : this.imageProvider = AssetImage(assetName),
         this.thumImageProvider =
             (thumAssetName == null ? null : AssetImage(thumAssetName)),
@@ -72,6 +90,10 @@ class PhotoPage extends StatefulWidget {
   final ImageProvider imageProvider;
 
   final ImageProvider thumImageProvider;
+
+  final ImageLoadSuccess imageLoadSuccess;
+
+  final ImageLoadSuccess thumImageLoadSuccess;
 
   /// While [imageProvider] is not resolved, [loadingBuilder] is called by [PhotoPage]
   /// into the screen, by default it is a centered [CircularProgressIndicator]
@@ -92,6 +114,12 @@ class PhotoPage extends StatefulWidget {
 
   final OnZoomStatusChanged onZoomStatusChanged;
 
+  final String heroTag;
+
+  final HeroType heroType;
+
+  final bool willPop;
+
   @override
   State<StatefulWidget> createState() {
     return _PhotoPageState();
@@ -107,6 +135,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   double _scale = 1.0;
   Offset _normalizedOffset;
   double _oldScale;
+  bool _isZoom = false;
 
   BoxConstraints _constraints;
 
@@ -127,12 +156,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         AnimationController(duration: Duration(milliseconds: 120), vsync: this)
           ..addListener(_handlePositionAnimate);
 
-    _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
-    _getImage(_imageProviderInfo);
-    if (widget.thumImageProvider != null) {
-      _thumImageProvideInfo = ImageProviderInfo(widget.thumImageProvider);
-      _getImage(_thumImageProvideInfo);
-    }
+    _getImageInfo();
+    _getThumImageInfo();
   }
 
   @override
@@ -142,6 +167,23 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     _positionAnimationController.removeListener(_handlePositionAnimate);
     _positionAnimationController.dispose();
     super.dispose();
+  }
+
+  void _getImageInfo() async {
+    _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
+    var imageInfo = await _getImage(_imageProviderInfo);
+    if (widget.imageLoadSuccess != null) {
+      widget.imageLoadSuccess(imageInfo);
+    }
+  }
+
+  void _getThumImageInfo() async {
+    if (widget.thumImageProvider == null) return;
+    _thumImageProvideInfo = ImageProviderInfo(widget.thumImageProvider);
+    var imageInfo = await _getImage(_thumImageProvideInfo);
+    if (widget.thumImageLoadSuccess != null) {
+      widget.thumImageLoadSuccess(imageInfo);
+    }
   }
 
   Future<ImageInfo> _getImage(ImageProviderInfo providerInfo) async {
@@ -240,7 +282,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       newScale = 1;
       newOffset = Offset.zero;
       if (widget.onZoomStatusChanged != null) {
-        widget.onZoomStatusChanged(false);
+        _isZoom = false;
+        widget.onZoomStatusChanged(_isZoom);
       }
     } else {
       double imageDefW = 0;
@@ -266,7 +309,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             (_constraints.maxHeight - imageMaxFitH) * 0.5);
       }
       if (widget.onZoomStatusChanged != null) {
-        widget.onZoomStatusChanged(true);
+        _isZoom = true;
+        widget.onZoomStatusChanged(_isZoom);
       }
     }
     _animateScale(oldScale, newScale);
@@ -284,7 +328,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     _scale = (_oldScale * details.scale).clamp(1.0, double.infinity);
     _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
     if (widget.onZoomStatusChanged != null && _scale != _oldScale) {
-      widget.onZoomStatusChanged(_scale != 1.0);
+      _isZoom = _scale != 1.0;
+      widget.onZoomStatusChanged(_isZoom);
     }
     setState(() {});
   }
@@ -351,16 +396,50 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         minWidth: double.maxFinite,
         minHeight: double.infinity,
       ),
-      child: Transform(
-        transform: new Matrix4.identity()
-          ..translate(_offset.dx, _offset.dy)
-          ..scale(_scale, _scale, 1.0),
-        child: Image(
-          image: imageProvider,
-          gaplessPlayback: widget.gaplessPlayback ?? false,
-          filterQuality: widget.filterQuality ?? FilterQuality.high,
-          fit: BoxFit.contain,
-        ),
+      child: widget.heroTag != null && widget.heroType == HeroType.fade
+          ? _buildHeroImage(imageProvider)
+          : _buildTransformImage(imageProvider),
+    );
+  }
+
+  Widget _buildHeroImage(ImageProvider imageProvider) {
+    double imageDefW = 0;
+    double imageDefH = 0;
+    if (_imageSize.width / _imageSize.height >
+        _constraints.maxWidth / _constraints.maxHeight) {
+      imageDefW = _constraints.maxWidth;
+      imageDefH = imageDefW * _imageSize.height / _imageSize.width;
+    } else {
+      imageDefH = _constraints.maxHeight;
+      imageDefW = imageDefH * _imageSize.width / _imageSize.height;
+    }
+    return widget.willPop && !_isZoom
+        ? Center(
+            child: Container(
+              width: imageDefW,
+              height: imageDefH,
+              child: Hero(
+                tag: widget.heroTag,
+                child: _buildTransformImage(imageProvider),
+              ),
+            ),
+          )
+        : Hero(
+            tag: widget.heroTag,
+            child: _buildTransformImage(imageProvider),
+          );
+  }
+
+  Widget _buildTransformImage(ImageProvider imageProvider) {
+    return Transform(
+      transform: new Matrix4.identity()
+        ..translate(_offset.dx, _offset.dy)
+        ..scale(_scale, _scale, 1.0),
+      child: Image(
+        image: imageProvider,
+        gaplessPlayback: widget.gaplessPlayback ?? false,
+        filterQuality: widget.filterQuality ?? FilterQuality.high,
+        fit: BoxFit.contain,
       ),
     );
   }
