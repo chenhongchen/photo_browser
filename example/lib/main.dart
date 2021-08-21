@@ -19,8 +19,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   // https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/big_1.jpg
   String domain =
-      'http://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
-  List<String> _photos = <String>[];
+      'https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
+  List<String> _bigPhotos = <String>[];
+  List<String> _thumPhotos = <String>[];
+  List<String> _heroTags = <String>[];
   PhotoBrowerController _browerController = PhotoBrowerController();
   bool _showTip = true;
 
@@ -28,7 +30,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     for (int i = 1; i <= 6; i++) {
       String bigPhoto = domain + 'big_$i.jpg';
-      _photos.add(bigPhoto);
+      _bigPhotos.add(bigPhoto);
+      String thumPhoto = domain + 'thum_$i.jpg';
+      _thumPhotos.add(thumPhoto);
+      _heroTags.add(thumPhoto);
     }
     super.initState();
   }
@@ -55,7 +60,7 @@ class _MyAppState extends State<MyApp> {
               return Container(
                 margin: EdgeInsets.all(5),
                 child: GridView.builder(
-                  itemCount: _photos.length,
+                  itemCount: _thumPhotos.length,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
@@ -77,19 +82,19 @@ class _MyAppState extends State<MyApp> {
       onTap: () {
         // 弹出图片浏览器(单击或下划手势可关闭)
         PhotoBrowser(
-          itemCount: _photos.length,
+          itemCount: _bigPhotos.length,
           initIndex: cellIndex, // 设置初始显示页面索引
           controller: _browerController,
           allowTapToPop: true, // 允许单击关闭
           allowSwipeDownToPop: true, // 允许向下轻扫关闭
           heroTagBuilder: (int index) {
-            return _photos[index];
+            return _heroTags[index];
           }, // 飞行动画tag设置，为null则弹出动画为一般的push动画
           imageUrlBuilder: (int index) {
-            return _photos[index];
+            return _bigPhotos[index];
           }, // 大图设置，不能为空，如果想本地缓存图片可换imageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
           thumImageUrlBuilder: (int index) {
-            return _photos[index].replaceAll('big', 'thum');
+            return _thumPhotos[index];
           }, // 缩略图设置，可以为空，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
           positionsBuilder: _positionsBuilder, // 可在图片浏览器上自定义Widget，如关闭按钮、保存按钮
           onPageChanged: (int index) {},
@@ -99,9 +104,9 @@ class _MyAppState extends State<MyApp> {
         );
       },
       child: Hero(
-        tag: _photos[cellIndex],
+        tag: _heroTags[cellIndex],
         child: Image.network(
-          _photos[cellIndex].replaceAll('big', 'thum'),
+          _thumPhotos[cellIndex],
           fit: BoxFit.cover,
         ),
       ),
