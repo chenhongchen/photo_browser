@@ -97,6 +97,7 @@ class _MyAppState extends State<MyApp> {
             return _thumPhotos[index];
           }, // 缩略图设置，可以为空，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
           positionsBuilder: _positionsBuilder, // 可在图片浏览器上自定义Widget，如关闭按钮、保存按钮
+          loadFailedChild: _failedChild(),
           onPageChanged: (int index) {},
         ).push(
           context,
@@ -297,5 +298,18 @@ class _MyAppState extends State<MyApp> {
         : Positioned(
             child: Container(),
           );
+  }
+
+  Widget _failedChild() {
+    return Center(
+      child: Material(
+        child: Container(
+          child: Text(
+            '加载图片失败',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
+    );
   }
 }
