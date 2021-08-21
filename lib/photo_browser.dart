@@ -22,24 +22,24 @@ enum HeroType {
 
 class PhotoBrowser extends StatefulWidget {
   Future<dynamic> push(BuildContext context,
-      {bool fullscreenDialog = true}) async {
+      {bool fullscreenDialog = true, Widget page}) async {
     if (heroTagBuilder == null) {
       return await Navigator.of(context).push(CupertinoPageRoute(
           fullscreenDialog: fullscreenDialog,
           builder: (BuildContext context) {
-            return this;
+            return page ?? this;
           }));
     }
-    return _heroPush(context);
+    return _heroPush(context, page: page);
   }
 
-  Future<dynamic> _heroPush(BuildContext context) async {
+  Future<dynamic> _heroPush(BuildContext context, {Widget page}) async {
     return await Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         pageBuilder: (BuildContext context, Animation animation,
             Animation secondaryAnimation) {
-          return this;
+          return page ?? this;
         },
         //动画时间
         transitionDuration: Duration(milliseconds: 400),
