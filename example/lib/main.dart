@@ -17,9 +17,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // https://gitee.com/hongchenchen/test_photos_lib/raw/5b67dc144b109336ce0fe6492bd7de1651973cac/pic/big_1.jpg
-  String domain = 'http://gitee.com/hongchenchen/test_photos_lib/raw/';
-  String path = '5b67dc144b109336ce0fe6492bd7de1651973cac';
+  // https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/big_1.jpg
+  String domain =
+      'http://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
   List<String> _photos = <String>[];
   PhotoBrowerController _browerController = PhotoBrowerController();
   bool _showTip = true;
@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     for (int i = 1; i <= 6; i++) {
-      String bigPhoto = domain + path + '/pic/big_$i.jpg';
+      String bigPhoto = domain + 'big_$i.jpg';
       _photos.add(bigPhoto);
     }
     super.initState();
