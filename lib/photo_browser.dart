@@ -16,8 +16,8 @@ typedef PositionsBuilder = List<Positioned> Function(
 );
 
 enum HeroType {
-  fade,
-  scale,
+  fade, // 淡入淡出
+  scale, // 比例放大
 }
 
 class PhotoBrowser extends StatefulWidget {
@@ -30,15 +30,15 @@ class PhotoBrowser extends StatefulWidget {
             return this;
           }));
     }
-    return heroPush(context);
+    return _heroPush(context);
   }
 
-  Future<dynamic> heroPush(BuildContext context) async {
+  Future<dynamic> _heroPush(BuildContext context) async {
     return await Navigator.of(context).push(
       PageRouteBuilder(
+        opaque: false,
         pageBuilder: (BuildContext context, Animation animation,
             Animation secondaryAnimation) {
-          //目标页面
           return this;
         },
         //动画时间
@@ -56,7 +56,6 @@ class PhotoBrowser extends StatefulWidget {
             opacity: Tween(begin: 0.0, end: 1.0).animate(
               CurvedAnimation(
                 parent: animation,
-                //动画曲线规则，这里使用的是先快后慢
                 curve: Curves.fastOutSlowIn,
               ),
             ),
@@ -72,27 +71,65 @@ class PhotoBrowser extends StatefulWidget {
     return _PhotoBrowserState();
   }
 
+  /// 图片总数
   final int itemCount;
+
+  /// 初始索引
   final int initIndex;
+
+  /// 控制器，用于给外部提供一些功能，如图片数据、pop、刷新相册浏览器状态
   final PhotoBrowerController controller;
+
+  /// 飞行动画类型，默认值：HeroType.fade
   final HeroType heroType;
+
+  /// 设置每张图片飞行动画的tag
   final StringBuilder heroTagBuilder;
+
+  /// 设置每张大图的imageProvider
+  /// imageProviderBuilder、imageUrlBuilder、imageAssetBuilder三选一，必选
   final ImageProviderBuilder imageProviderBuilder;
+
+  /// 设置每张缩略图的imageProvider
+  /// thumImageProviderBuilder、thumImageUrlBuilder、thumImageAssetBuilder三选一，可选
   final ImageProviderBuilder thumImageProviderBuilder;
+
+  /// 设置每张大图的url
   final StringBuilder imageUrlBuilder;
+
+  /// 设置每张缩略图的url
   final StringBuilder thumImageUrlBuilder;
+
+  /// 设置每张缩大图的asset
   final StringBuilder imageAssetBuilder;
+
+  /// 设置每张缩略图的asset
   final StringBuilder thumImageAssetBuilder;
+
+  /// 设置自定义图片加载指示器，为null则使用默认的
   final LoadingBuilder loadingBuilder;
+
+  /// 图片加载失败Widget
   final Widget loadFailedChild;
+
+  /// 设置自定义页码，为null则使用默认的
   final PageCodeBuilder pageCodeBuild;
+
+  /// 设置更多自定控件
   final PositionsBuilder positionsBuilder;
+
+  /// 设置背景色
+  final Color backcolor;
+
+  /// 单击关闭功能开关
+  final bool allowTapToPop;
+
+  /// 向下轻扫关闭功能开关
+  final bool allowSwipeDownToPop;
+
+  final bool reverse;
   final bool gaplessPlayback;
   final FilterQuality filterQuality;
-  final Color backcolor;
-  final bool allowTapToPop;
-  final bool allowSwipeDownToPop;
-  final bool reverse;
   final PageController pageController;
   final ScrollPhysics scrollPhysics;
   final Axis scrollDirection;
@@ -130,9 +167,11 @@ class PhotoBrowser extends StatefulWidget {
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
   })  : assert(itemCount != null),
-        assert(imageProviderBuilder != null ||
-            imageUrlBuilder != null ||
-            imageAssetBuilder != null),
+        assert(
+            imageProviderBuilder != null ||
+                imageUrlBuilder != null ||
+                imageAssetBuilder != null,
+            'imageProviderBuilder,imageUrlBuilder,imageAssetBuilder can not all null'),
         super(key: key) {
     _initImageProvider = _getImageProvider(initIndex);
     _initThumImageProvider = _getThumImageProvider(initIndex);
@@ -171,8 +210,8 @@ class PhotoBrowser extends StatefulWidget {
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
   PageController _pageController;
-  bool _isZoom = false;
   int _curPage = 0;
+  bool _isZoom = false;
   double _lastDownY;
   bool _willPop = false;
   BoxConstraints _constraints;
@@ -202,41 +241,19 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     ) {
       _constraints = constraints;
       if (widget.heroTagBuilder == null || widget.heroType == HeroType.fade) {
-        return _buildPageView();
+        return _buildContent();
       } else {
         return Hero(
           tag: '${widget.heroTagBuilder(_curPage)}',
-          child: _buildPageView(),
+          child: _buildContent(),
         );
       }
     });
   }
 
-  Widget _buildPageView() {
+  Widget _buildContent() {
     List<Widget> children = <Widget>[
-      GestureDetector(
-        onTap: widget.allowTapToPop ? _onTap : null,
-        onVerticalDragDown: _isZoom == true || !widget.allowSwipeDownToPop
-            ? null
-            : _onVerticalDragDown,
-        onVerticalDragUpdate: _isZoom == true || !widget.allowSwipeDownToPop
-            ? null
-            : _onVerticalDragUpdate,
-        child: PageView.builder(
-          reverse: widget.reverse,
-          controller: _pageController,
-          onPageChanged: (int index) {
-            _curPage = index;
-            setState(() {});
-            widget.onPageChanged(index);
-          },
-          itemCount: widget.itemCount,
-          itemBuilder: _buildItem,
-          scrollDirection: widget.scrollDirection,
-          physics:
-              _isZoom ? NeverScrollableScrollPhysics() : widget.scrollPhysics,
-        ),
-      ),
+      _buildPageView(),
       _buildPageCode(_curPage, widget.itemCount),
     ];
     if (widget.positionsBuilder != null) {
@@ -251,25 +268,51 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     );
   }
 
+  Widget _buildPageView() {
+    return GestureDetector(
+      onTap: widget.allowTapToPop ? _onTap : null,
+      onVerticalDragDown: _isZoom == true || !widget.allowSwipeDownToPop
+          ? null
+          : _onVerticalDragDown,
+      onVerticalDragUpdate: _isZoom == true || !widget.allowSwipeDownToPop
+          ? null
+          : _onVerticalDragUpdate,
+      child: PageView.builder(
+        reverse: widget.reverse,
+        controller: _pageController,
+        onPageChanged: (int index) {
+          _curPage = index;
+          setState(() {});
+          widget.onPageChanged(index);
+        },
+        itemCount: widget.itemCount,
+        itemBuilder: _buildItem,
+        scrollDirection: widget.scrollDirection,
+        physics:
+            _isZoom ? NeverScrollableScrollPhysics() : widget.scrollPhysics,
+      ),
+    );
+  }
+
   Widget _buildItem(BuildContext context, int index) {
     return PhotoPage(
       imageProvider: widget._getImageProvider(index),
       thumImageProvider: widget._getThumImageProvider(index),
+      loadingBuilder: widget.loadingBuilder,
+      loadFailedChild: widget.loadFailedChild,
+      backcolor: Colors.transparent,
+      heroType: widget.heroType,
+      heroTag:
+          widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
+      willPop: _willPop,
+      gaplessPlayback: widget.gaplessPlayback,
+      filterQuality: widget.filterQuality,
       imageLoadSuccess: (ImageInfo imageInfo) {
         widget.controller.imageInfos[index] = imageInfo;
       },
       thumImageLoadSuccess: (ImageInfo imageInfo) {
         widget.controller.thumImageInfos[index] = imageInfo;
       },
-      loadingBuilder: widget.loadingBuilder,
-      loadFailedChild: widget.loadFailedChild,
-      gaplessPlayback: widget.gaplessPlayback,
-      filterQuality: widget.filterQuality,
-      backcolor: Colors.transparent,
-      heroType: widget.heroType,
-      heroTag:
-          widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
-      willPop: _willPop,
       onZoomStatusChanged: (bool isZoom) {
         _isZoom = isZoom;
         setState(() {});

@@ -31,94 +31,33 @@ class PhotoPage extends StatefulWidget {
   PhotoPage({
     Key key,
     @required this.imageProvider,
-    this.imageLoadSuccess,
-    this.thumImageLoadSuccess,
     this.thumImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
-    this.gaplessPlayback,
-    this.filterQuality,
     this.backcolor,
-    this.onZoomStatusChanged,
     this.heroTag,
     this.heroType = HeroType.fade,
     this.willPop = false,
+    this.gaplessPlayback,
+    this.filterQuality,
+    this.imageLoadSuccess,
+    this.thumImageLoadSuccess,
+    this.onZoomStatusChanged,
   }) : super(key: key);
 
-  PhotoPage.network({
-    Key key,
-    @required String url,
-    String thumUrl,
-    this.imageLoadSuccess,
-    this.thumImageLoadSuccess,
-    this.loadingBuilder,
-    this.loadFailedChild,
-    this.gaplessPlayback,
-    this.filterQuality,
-    this.backcolor,
-    this.onZoomStatusChanged,
-    this.heroTag,
-    this.heroType = HeroType.fade,
-    this.willPop = false,
-  })  : this.imageProvider = NetworkImage(url),
-        this.thumImageProvider =
-            (thumUrl == null ? null : NetworkImage(thumUrl)),
-        super(key: key);
-
-  PhotoPage.asset({
-    Key key,
-    @required String assetName,
-    String thumAssetName,
-    this.imageLoadSuccess,
-    this.thumImageLoadSuccess,
-    this.loadingBuilder,
-    this.loadFailedChild,
-    this.gaplessPlayback,
-    this.filterQuality,
-    this.backcolor,
-    this.onZoomStatusChanged,
-    this.heroTag,
-    this.heroType = HeroType.fade,
-    this.willPop = false,
-  })  : this.imageProvider = AssetImage(assetName),
-        this.thumImageProvider =
-            (thumAssetName == null ? null : AssetImage(thumAssetName)),
-        super(key: key);
-
-  /// Given a [imageProvider] it resolves into an zoomable image widget using. It
-  /// is required
   final ImageProvider imageProvider;
-
   final ImageProvider thumImageProvider;
-
-  final ImageLoadSuccess imageLoadSuccess;
-
-  final ImageLoadSuccess thumImageLoadSuccess;
-
-  /// While [imageProvider] is not resolved, [loadingBuilder] is called by [PhotoPage]
-  /// into the screen, by default it is a centered [CircularProgressIndicator]
   final LoadingBuilder loadingBuilder;
-
-  /// Show loadFailedChild when the image failed to load
   final Widget loadFailedChild;
-
-  /// This is used to continue showing the old image (`true`), or briefly show
-  /// nothing (`false`), when the `imageProvider` changes. By default it's set
-  /// to `false`.
-  final bool gaplessPlayback;
-
-  /// Quality levels for image filters.
-  final FilterQuality filterQuality;
-
   final Color backcolor;
-
-  final OnZoomStatusChanged onZoomStatusChanged;
-
   final String heroTag;
-
   final HeroType heroType;
-
   final bool willPop;
+  final bool gaplessPlayback;
+  final FilterQuality filterQuality;
+  final ImageLoadSuccess imageLoadSuccess;
+  final ImageLoadSuccess thumImageLoadSuccess;
+  final OnZoomStatusChanged onZoomStatusChanged;
 
   @override
   State<StatefulWidget> createState() {

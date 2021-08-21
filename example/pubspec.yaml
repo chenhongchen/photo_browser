@@ -15,7 +15,6 @@ dependencies:
   image_gallery_saver: 1.6.8
   fluttertoast: 7.1.6
   permission_handler: 5.1.0+2
-  dio: 3.0.10
 
   photo_browser:
     # When depending on this package from a real application you should use:

@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -43,6 +42,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
           appBar: AppBar(
             title: const Text('Photo browser example'),
@@ -82,7 +82,6 @@ class _MyAppState extends State<MyApp> {
           controller: _browerController,
           allowTapToPop: true, // 允许单击关闭
           allowSwipeDownToPop: true, // 允许向下轻扫关闭
-          heroType: HeroType.fade, // 飞行动画类型设置
           heroTagBuilder: (int index) {
             return _photos[index];
           }, // 飞行动画tag设置，为null则弹出动画为一般的push动画
@@ -92,7 +91,7 @@ class _MyAppState extends State<MyApp> {
           thumImageUrlBuilder: (int index) {
             return _photos[index].replaceAll('big', 'thum');
           }, // 缩略图设置，可以为空，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带缓存功能的imageProvider
-          positionsBuilder: _positionsBuilder, // 可在图片浏览器上面自定义Widget，如关闭按钮
+          positionsBuilder: _positionsBuilder, // 可在图片浏览器上自定义Widget，如关闭按钮、保存按钮
           onPageChanged: (int index) {},
         ).push(
           context,
@@ -103,8 +102,6 @@ class _MyAppState extends State<MyApp> {
         tag: _photos[cellIndex],
         child: Image.network(
           _photos[cellIndex].replaceAll('big', 'thum'),
-          width: 120,
-          height: 120,
           fit: BoxFit.cover,
         ),
       ),
@@ -120,12 +117,14 @@ class _MyAppState extends State<MyApp> {
     ];
   }
 
+  // 关闭按钮
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
       right: 15,
       top: MediaQuery.of(context).padding.top,
       child: GestureDetector(
         onTap: () {
+          // 通过控制器pop
           _browerController.pop();
         },
         child: Container(
@@ -159,6 +158,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  // 保存图片按钮
   Positioned _buildSaveImageBtn(
       BuildContext context, int curIndex, int totalNum) {
     return Positioned(
@@ -166,29 +166,38 @@ class _MyAppState extends State<MyApp> {
       bottom: 15,
       child: GestureDetector(
         onTap: () async {
+          // 使用相册授权
           var status = await Permission.photos.request();
           if (status.isDenied) {
-            print('暂无相册权限');
             showDialog(
-                context: context,
-                builder: (context) {
-                  return GestureDetector(
-                    child: Container(
-                      width: 280,
-                      height: 280,
-                      color: Colors.white,
-                      child: GestureDetector(
-                        onTap: () {
-                          openAppSettings();
-                          Navigator.of(context).pop();
-                        },
-                      ),
+              context: context,
+              barrierDismissible: false, //// user must tap button!
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('提示'),
+                  content: Text('需要授权使用相册才能保存，去授权？'),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('取消'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                     ),
-                  );
-                });
+                    FlatButton(
+                      child: Text('去授权'),
+                      onPressed: () {
+                        openAppSettings();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
             return;
           }
 
+          // 通过控制器，获取图片数据
           ImageInfo imageInfo;
           if (_browerController.imageInfos[curIndex] != null) {
             imageInfo = _browerController.imageInfos[curIndex];
@@ -196,26 +205,16 @@ class _MyAppState extends State<MyApp> {
             imageInfo = _browerController.thumImageInfos[curIndex];
           }
           if (imageInfo == null) {
+            Fluttertoast.showToast(msg: '没有发现图片', gravity: ToastGravity.CENTER);
             return;
           }
-          // var response = await Dio().get(_photos[curIndex],
-          //     options: Options(responseType: ResponseType.bytes));
-          // final result = await ImageGallerySaver.saveImage(
-          //     Uint8List.fromList(response.data),
-          //     quality: 60,
-          //     name: "hello");
 
+          // 转换数据及保存为图片
           var byteData =
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           Uint8List uint8list = byteData.buffer.asUint8List();
-          var result;
-          try {
-            result = await ImageGallerySaver.saveImage(
-                Uint8List.fromList(uint8list));
-          } catch (e) {
-            print('result error = $e');
-          }
-          print(result);
+          var result =
+              await ImageGallerySaver.saveImage(Uint8List.fromList(uint8list));
           if (result != null) {
             Fluttertoast.showToast(msg: '保存成功', gravity: ToastGravity.CENTER);
           } else {
@@ -248,6 +247,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  // 手势引导界面
   Positioned _buildGuide(BuildContext context, int curIndex, int totalNum) {
     return _showTip
         ? Positioned(
@@ -258,8 +258,8 @@ class _MyAppState extends State<MyApp> {
             child: GestureDetector(
               onTap: () {
                 _showTip = false;
+                // 通过控制器，刷新PhotoBrowser
                 _browerController.setState(() {});
-                // setState(() {});
               },
               child: Container(
                 color: Colors.black.withOpacity(0.3),
