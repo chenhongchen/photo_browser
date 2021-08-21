@@ -160,6 +160,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       if (!mounted) {
         return;
       }
+      // 释放缓存，避免下次加载直接失败
+      providerInfo.imageProvider.evict();
       setState(() {
         providerInfo.status = _ImageLoadStatus.failed;
       });
