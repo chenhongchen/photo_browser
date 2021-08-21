@@ -96,7 +96,7 @@ class _MyAppState extends State<MyApp> {
           thumImageUrlBuilder: (int index) {
             return _thumPhotos[index];
           }, // 缩略图设置，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带本地缓存功能的imageProvider
-          positionsBuilder: _positionsBuilder, // 可在图片浏览器上自定义Widget，如关闭按钮、保存按钮
+          positionsBuilder: _positionsBuilder, // 可自定义Widget，如关闭按钮、保存按钮
           loadFailedChild: _failedChild(), // 加载失败
           onPageChanged: (int index) {},
         ).push(
