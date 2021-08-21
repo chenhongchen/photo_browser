@@ -4,7 +4,7 @@ import 'package:photo_browser/photo_browser.dart';
 
 typedef LoadingBuilder = Widget Function(
   BuildContext context,
-  ImageChunkEvent event,
+  double progress,
 );
 
 typedef OnZoomStatusChanged = void Function(bool isZoom);
@@ -325,7 +325,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     if (providerInfo.status == _ImageLoadStatus.completed) {
       return _buildImage(constraints, providerInfo.imageProvider);
     } else {
-      return _buildLoading(providerInfo.imageChunkEvent);
+      return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent);
     }
   }
 
@@ -383,9 +383,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildLoading(ImageChunkEvent imageChunkEvent) {
+  Widget _buildLoading({ImageChunkEvent imageChunkEvent}) {
+    double progress = 0.0;
+    if (imageChunkEvent?.cumulativeBytesLoaded != null &&
+        imageChunkEvent?.expectedTotalBytes != null) {
+      progress = imageChunkEvent.cumulativeBytesLoaded /
+          imageChunkEvent.expectedTotalBytes;
+    }
     if (widget.loadingBuilder != null) {
-      return widget.loadingBuilder(context, imageChunkEvent);
+      return widget.loadingBuilder(context, progress);
     }
     return Center(
       child: Container(
@@ -395,10 +401,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
           strokeWidth: 2,
           valueColor:
               new AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(230)),
-          value: imageChunkEvent == null
-              ? 0
-              : imageChunkEvent.cumulativeBytesLoaded /
-                  imageChunkEvent.expectedTotalBytes,
+          value: progress,
         ),
       ),
     );
