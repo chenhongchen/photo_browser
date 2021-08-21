@@ -1,8 +1,7 @@
 name: photo_browser
-description: A new Flutter project.
-version: 0.0.1
-author:
-homepage:
+description: Flutter plugin for photos browse.
+version: 1.0.0
+homepage: https://github.com/chenhongchen/photo_browser
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
