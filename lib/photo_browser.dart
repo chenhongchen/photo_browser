@@ -282,7 +282,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         onPageChanged: (int index) {
           _curPage = index;
           setState(() {});
-          widget.onPageChanged(index);
+          if (widget.onPageChanged != null) {
+            widget.onPageChanged(index);
+          }
         },
         itemCount: widget.itemCount,
         itemBuilder: _buildItem,
