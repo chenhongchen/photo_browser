@@ -4,20 +4,20 @@ Flutter plugin for photos browse.
 
 ## Demo
 
-<img src="https://gitee.com/hongchenchen/test_photos_lib/raw/ff250fe8f51a4022c3edd5ac4fa3eda04089d281/gif/photo_browser.gif" width="360" height="640" alt="demo"/><br/>
+<img src="https://gitee.com/hongchenchen/test_photos_lib/raw/master/gif/photo_browser_1.gif" width="360" height="640" alt="demo"/><br/>
+
+## Use it
 
 ```yaml
 dependencies:
   photo_browser: 1.0.0
 ```
 
-## Use it
-
 ```dart
 import 'package:photo_browser/photo_browser.dart';
 ```
 
-### Creation and display of Photobrowser instance
+### Creation and display of PhotoBrowser instance
 
 ```dart
 Widget _buildCell(BuildContext context, int cellIndex) {
@@ -58,7 +58,7 @@ Widget _buildCell(BuildContext context, int cellIndex) {
 }
 ```
 
-### Use of Photobrowercontroller
+### Use of PhotoBrowerController
 
 ```dart
 onTap: () {
