@@ -127,7 +127,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
 
   Future<ImageInfo> _getImage(ImageProviderInfo providerInfo) async {
     if (providerInfo.imageInfo != null) return providerInfo.imageInfo;
-    final Completer completer = Completer<ImageInfo>();
+    final Completer<ImageInfo> completer = Completer<ImageInfo>();
     providerInfo.status = _ImageLoadStatus.loading;
     final ImageStream stream = providerInfo.imageProvider.resolve(
       const ImageConfiguration(),
