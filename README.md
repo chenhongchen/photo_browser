@@ -17,6 +17,8 @@ dependencies:
 import 'package:photo_browser/photo_browser.dart';
 ```
 
+### Creation and display of Photobrowser instance
+
 ```dart
 Widget _buildCell(BuildContext context, int cellIndex) {
   return GestureDetector(
@@ -54,4 +56,37 @@ Widget _buildCell(BuildContext context, int cellIndex) {
     ),
   );
 }
+```
+
+### Use of Photobrowercontroller
+
+```dart
+onTap: () {
+  // 通过控制器pop退出，显示效果和默认单击退出效果一样
+  _browerController.pop();
+},
+```
+
+```dart
+// 通过控制器，获取图片数据，转换为Uint8List，可以用于保存图片
+ImageInfo imageInfo;
+if (_browerController.imageInfos[curIndex] != null) {
+  imageInfo = _browerController.imageInfos[curIndex];
+} else if (_browerController.thumImageInfos[curIndex] != null) {
+  imageInfo = _browerController.thumImageInfos[curIndex];
+}
+if (imageInfo == null) {
+  return;
+}
+
+var byteData =
+    await imageInfo.image.toByteData(format: ImageByteFormat.png);
+Uint8List uint8list = byteData.buffer.asUint8List();
+```
+
+```dart
+onTap: () {
+  // 通过控制器，刷新PhotoBrowser
+  _browerController.setState(() {});
+},
 ```
