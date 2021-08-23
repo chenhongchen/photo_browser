@@ -83,6 +83,9 @@ class PhotoBrowser extends StatefulWidget {
   /// 飞行动画类型，默认值：HeroType.fade
   final HeroType heroType;
 
+  /// 允许缩小图片
+  final bool allowShrinkPhoto;
+
   /// 设置每张图片飞行动画的tag
   final StringBuilder heroTagBuilder;
 
@@ -145,6 +148,7 @@ class PhotoBrowser extends StatefulWidget {
     @required this.initIndex,
     this.controller,
     this.heroType = HeroType.fade,
+    this.allowShrinkPhoto = true,
     this.heroTagBuilder,
     this.imageProviderBuilder,
     this.thumImageProviderBuilder,
@@ -211,7 +215,7 @@ class PhotoBrowser extends StatefulWidget {
 class _PhotoBrowserState extends State<PhotoBrowser> {
   PageController _pageController;
   int _curPage = 0;
-  bool _isZoom = false;
+  bool _forbitScroll = false;
   double _lastDownY;
   bool _willPop = false;
   BoxConstraints _constraints;
@@ -271,10 +275,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildPageView() {
     return GestureDetector(
       onTap: widget.allowTapToPop ? _onTap : null,
-      onVerticalDragDown: _isZoom == true || !widget.allowSwipeDownToPop
+      onVerticalDragDown: _forbitScroll == true || !widget.allowSwipeDownToPop
           ? null
           : _onVerticalDragDown,
-      onVerticalDragUpdate: _isZoom == true || !widget.allowSwipeDownToPop
+      onVerticalDragUpdate: _forbitScroll == true || !widget.allowSwipeDownToPop
           ? null
           : _onVerticalDragUpdate,
       child: PageView.builder(
@@ -290,8 +294,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         itemCount: widget.itemCount,
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
-        physics:
-            _isZoom ? NeverScrollableScrollPhysics() : widget.scrollPhysics,
+        physics: _forbitScroll
+            ? NeverScrollableScrollPhysics()
+            : widget.scrollPhysics,
       ),
     );
   }
@@ -306,6 +311,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       heroType: widget.heroType,
       heroTag:
           widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
+      allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
@@ -315,8 +321,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       thumImageLoadSuccess: (ImageInfo imageInfo) {
         widget.controller.thumImageInfos[index] = imageInfo;
       },
-      onZoomStatusChanged: (bool isZoom) {
-        _isZoom = isZoom;
+      onPhotoScaleChanged: (double scale) {
+        _forbitScroll = scale > 1;
         setState(() {});
       },
     );
