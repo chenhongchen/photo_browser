@@ -183,13 +183,13 @@ class _MyAppState extends State<MyApp> {
                   title: Text('提示'),
                   content: Text('需要授权使用相册才能保存，去授权？'),
                   actions: <Widget>[
-                    FlatButton(
+                    TextButton(
                       child: Text('取消'),
                       onPressed: () {
                         Navigator.pop(context);
                       },
                     ),
-                    FlatButton(
+                    TextButton(
                       child: Text('去授权'),
                       onPressed: () {
                         openAppSettings();
@@ -204,7 +204,7 @@ class _MyAppState extends State<MyApp> {
           }
 
           // 通过控制器，获取图片数据
-          ImageInfo imageInfo;
+          ImageInfo? imageInfo;
           if (_browerController.imageInfos[curIndex] != null) {
             imageInfo = _browerController.imageInfos[curIndex];
           } else if (_browerController.thumImageInfos[curIndex] != null) {
@@ -218,13 +218,16 @@ class _MyAppState extends State<MyApp> {
           // 转换数据及保存为图片
           var byteData =
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
-          Uint8List uint8list = byteData.buffer.asUint8List();
-          var result =
-              await ImageGallerySaver.saveImage(Uint8List.fromList(uint8list));
-          if (result != null) {
-            Fluttertoast.showToast(msg: '保存成功', gravity: ToastGravity.CENTER);
-          } else {
-            Fluttertoast.showToast(msg: '保存失败', gravity: ToastGravity.CENTER);
+          var result;
+          if (byteData != null) {
+            Uint8List uint8list = byteData.buffer.asUint8List();
+            result = await ImageGallerySaver.saveImage(
+                Uint8List.fromList(uint8list));
+            if (result != null) {
+              Fluttertoast.showToast(msg: '保存成功', gravity: ToastGravity.CENTER);
+            } else {
+              Fluttertoast.showToast(msg: '保存失败', gravity: ToastGravity.CENTER);
+            }
           }
         },
         child: Text(

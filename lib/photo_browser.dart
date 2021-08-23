@@ -256,8 +256,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       _buildPageCode(_curPage, widget.itemCount),
     ];
     if (widget.positionsBuilder != null) {
-      children
-          .addAll(widget.positionsBuilder!(context, _curPage, widget.itemCount));
+      children.addAll(
+          widget.positionsBuilder!(context, _curPage, widget.itemCount));
     }
     return Container(
       color: widget.backcolor ?? Colors.black,
@@ -283,7 +283,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
           _curPage = index;
           setState(() {});
           if (widget.onPageChanged != null) {
-            widget.onPageChanged(index);
+            widget.onPageChanged!(index);
           }
         },
         itemCount: widget.itemCount,
@@ -304,15 +304,15 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       backcolor: Colors.transparent,
       heroType: widget.heroType,
       heroTag:
-          widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
+          widget.heroTagBuilder != null ? widget.heroTagBuilder!(index) : null,
       willPop: _willPop,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
       imageLoadSuccess: (ImageInfo imageInfo) {
-        widget.controller.imageInfos[index] = imageInfo;
+        widget.controller?.imageInfos[index] = imageInfo;
       },
       thumImageLoadSuccess: (ImageInfo imageInfo) {
-        widget.controller.thumImageInfos[index] = imageInfo;
+        widget.controller?.thumImageInfos[index] = imageInfo;
       },
       onZoomStatusChanged: (bool isZoom) {
         _isZoom = isZoom;
@@ -323,7 +323,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   Positioned _buildPageCode(int curIndex, int totalNum) {
     if (widget.pageCodeBuild != null) {
-      return widget.pageCodeBuild(context, curIndex + 1, totalNum);
+      return widget.pageCodeBuild!(context, curIndex + 1, totalNum);
     }
     return Positioned(
       right: 15,
@@ -363,7 +363,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   void _onVerticalDragUpdate(DragUpdateDetails details) async {
     var position = details.localPosition.dy;
-    var detal = position - _lastDownY;
+    var detal = position - (_lastDownY ?? 0);
     if (detal > 50) {
       _pop();
     }
@@ -372,7 +372,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   void _pop() {
     // 显示一页时，才允许pop
     if (((_pageController.position.pixels * 1000).toInt() %
-            (_constraints.maxWidth * 1000).toInt()) !=
+            (_constraints!.maxWidth * 1000).toInt()) !=
         0) return;
     _willPop = true;
     setState(() {});
@@ -381,7 +381,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 }
 
 class PhotoBrowerController {
-  _PhotoBrowserState _state;
+  _PhotoBrowserState? _state;
   final Map<int, ImageInfo> imageInfos = Map<int, ImageInfo>();
   final Map<int, ImageInfo> thumImageInfos = Map<int, ImageInfo>();
 
