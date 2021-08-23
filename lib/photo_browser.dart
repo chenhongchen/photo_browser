@@ -22,7 +22,7 @@ enum HeroType {
 
 class PhotoBrowser extends StatefulWidget {
   Future<dynamic> push(BuildContext context,
-      {bool fullscreenDialog = true, Widget page}) async {
+      {bool fullscreenDialog = true, Widget? page}) async {
     if (heroTagBuilder == null) {
       return await Navigator.of(context).push(CupertinoPageRoute(
           fullscreenDialog: fullscreenDialog,
@@ -33,7 +33,7 @@ class PhotoBrowser extends StatefulWidget {
     return _heroPush(context, page: page);
   }
 
-  Future<dynamic> _heroPush(BuildContext context, {Widget page}) async {
+  Future<dynamic> _heroPush(BuildContext context, {Widget? page}) async {
     return await Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
@@ -46,7 +46,7 @@ class PhotoBrowser extends StatefulWidget {
         //过渡动画构建
         transitionsBuilder: (
           BuildContext context,
-          Animation animation,
+          Animation<double> animation,
           Animation secondaryAnimation,
           Widget child,
         ) {
@@ -78,48 +78,48 @@ class PhotoBrowser extends StatefulWidget {
   final int initIndex;
 
   /// 控制器，用于给外部提供一些功能，如图片数据、pop、刷新相册浏览器状态
-  final PhotoBrowerController controller;
+  final PhotoBrowerController? controller;
 
   /// 飞行动画类型，默认值：HeroType.fade
   final HeroType heroType;
 
   /// 设置每张图片飞行动画的tag
-  final StringBuilder heroTagBuilder;
+  final StringBuilder? heroTagBuilder;
 
   /// 设置每张大图的imageProvider
   /// imageProviderBuilder、imageUrlBuilder、imageAssetBuilder三选一，必选
-  final ImageProviderBuilder imageProviderBuilder;
+  final ImageProviderBuilder? imageProviderBuilder;
 
   /// 设置每张缩略图的imageProvider
   /// thumImageProviderBuilder、thumImageUrlBuilder、thumImageAssetBuilder三选一，可选
-  final ImageProviderBuilder thumImageProviderBuilder;
+  final ImageProviderBuilder? thumImageProviderBuilder;
 
   /// 设置每张大图的url
-  final StringBuilder imageUrlBuilder;
+  final StringBuilder? imageUrlBuilder;
 
   /// 设置每张缩略图的url
-  final StringBuilder thumImageUrlBuilder;
+  final StringBuilder? thumImageUrlBuilder;
 
   /// 设置每张缩大图的asset
-  final StringBuilder imageAssetBuilder;
+  final StringBuilder? imageAssetBuilder;
 
   /// 设置每张缩略图的asset
-  final StringBuilder thumImageAssetBuilder;
+  final StringBuilder? thumImageAssetBuilder;
 
   /// 设置自定义图片加载指示器，为null则使用默认的
-  final LoadingBuilder loadingBuilder;
+  final LoadingBuilder? loadingBuilder;
 
   /// 图片加载失败Widget
-  final Widget loadFailedChild;
+  final Widget? loadFailedChild;
 
   /// 设置自定义页码，为null则使用默认的
-  final PageCodeBuilder pageCodeBuild;
+  final PageCodeBuilder? pageCodeBuild;
 
   /// 设置更多自定控件
-  final PositionsBuilder positionsBuilder;
+  final PositionsBuilder? positionsBuilder;
 
   /// 设置背景色
-  final Color backcolor;
+  final Color? backcolor;
 
   /// 单击关闭功能开关
   final bool allowTapToPop;
@@ -128,21 +128,21 @@ class PhotoBrowser extends StatefulWidget {
   final bool allowSwipeDownToPop;
 
   final bool reverse;
-  final bool gaplessPlayback;
-  final FilterQuality filterQuality;
-  final PageController pageController;
-  final ScrollPhysics scrollPhysics;
+  final bool? gaplessPlayback;
+  final FilterQuality? filterQuality;
+  final PageController? pageController;
+  final ScrollPhysics? scrollPhysics;
   final Axis scrollDirection;
-  final ValueChanged<int> onPageChanged;
+  final ValueChanged<int>? onPageChanged;
 
   //
-  ImageProvider _initImageProvider;
-  ImageProvider _initThumImageProvider;
+  ImageProvider? _initImageProvider;
+  ImageProvider? _initThumImageProvider;
 
   PhotoBrowser({
-    Key key,
-    @required this.itemCount,
-    @required this.initIndex,
+    Key? key,
+    required this.itemCount,
+    required this.initIndex,
     this.controller,
     this.heroType = HeroType.fade,
     this.heroTagBuilder,
@@ -166,8 +166,7 @@ class PhotoBrowser extends StatefulWidget {
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
-  })  : assert(itemCount != null),
-        assert(
+  })  : assert(
             imageProviderBuilder != null ||
                 imageUrlBuilder != null ||
                 imageAssetBuilder != null,
@@ -179,42 +178,42 @@ class PhotoBrowser extends StatefulWidget {
 
   ImageProvider _getImageProvider(int index) {
     if (index == initIndex && _initImageProvider != null) {
-      return _initImageProvider;
+      return _initImageProvider!;
     }
-    ImageProvider imageProvider;
+    ImageProvider? imageProvider;
     if (imageProviderBuilder != null) {
-      imageProvider = imageProviderBuilder(index);
+      imageProvider = imageProviderBuilder!(index);
     } else if (imageUrlBuilder != null) {
-      imageProvider = NetworkImage(imageUrlBuilder(index));
+      imageProvider = NetworkImage(imageUrlBuilder!(index));
     } else if (imageAssetBuilder != null) {
-      imageProvider = AssetImage(imageAssetBuilder(index));
+      imageProvider = AssetImage(imageAssetBuilder!(index));
     }
-    return imageProvider;
+    return imageProvider!;
   }
 
-  ImageProvider _getThumImageProvider(int index) {
+  ImageProvider? _getThumImageProvider(int index) {
     if (index == initIndex && _initThumImageProvider != null) {
-      return _initThumImageProvider;
+      return _initThumImageProvider!;
     }
-    ImageProvider thumImageProvider;
+    ImageProvider? thumImageProvider;
     if (thumImageProviderBuilder != null) {
-      thumImageProvider = thumImageProviderBuilder(index);
+      thumImageProvider = thumImageProviderBuilder!(index);
     } else if (thumImageUrlBuilder != null) {
-      thumImageProvider = NetworkImage(thumImageUrlBuilder(index));
+      thumImageProvider = NetworkImage(thumImageUrlBuilder!(index));
     } else if (thumImageAssetBuilder != null) {
-      thumImageProvider = AssetImage(thumImageAssetBuilder(index));
+      thumImageProvider = AssetImage(thumImageAssetBuilder!(index));
     }
     return thumImageProvider;
   }
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
-  PageController _pageController;
+  late PageController _pageController;
   int _curPage = 0;
   bool _isZoom = false;
-  double _lastDownY;
+  double? _lastDownY;
   bool _willPop = false;
-  BoxConstraints _constraints;
+  BoxConstraints? _constraints;
 
   @override
   void initState() {
@@ -244,7 +243,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         return _buildContent();
       } else {
         return Hero(
-          tag: '${widget.heroTagBuilder(_curPage)}',
+          tag: '${widget.heroTagBuilder!(_curPage)}',
           child: _buildContent(),
         );
       }
@@ -258,7 +257,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     ];
     if (widget.positionsBuilder != null) {
       children
-          .addAll(widget.positionsBuilder(context, _curPage, widget.itemCount));
+          .addAll(widget.positionsBuilder!(context, _curPage, widget.itemCount));
     }
     return Container(
       color: widget.backcolor ?? Colors.black,

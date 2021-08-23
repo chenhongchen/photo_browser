@@ -19,18 +19,18 @@ enum _ImageLoadStatus {
 
 class ImageProviderInfo {
   ImageProvider imageProvider;
-  Size imageSize;
-  _ImageLoadStatus status;
-  ImageChunkEvent imageChunkEvent;
-  ImageInfo imageInfo;
+  Size? imageSize;
+  _ImageLoadStatus? status;
+  ImageChunkEvent? imageChunkEvent;
+  ImageInfo? imageInfo;
 
   ImageProviderInfo(this.imageProvider);
 }
 
 class PhotoPage extends StatefulWidget {
   PhotoPage({
-    Key key,
-    @required this.imageProvider,
+    Key? key,
+    required this.imageProvider,
     this.thumImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
@@ -46,18 +46,18 @@ class PhotoPage extends StatefulWidget {
   }) : super(key: key);
 
   final ImageProvider imageProvider;
-  final ImageProvider thumImageProvider;
-  final LoadingBuilder loadingBuilder;
-  final Widget loadFailedChild;
-  final Color backcolor;
-  final String heroTag;
+  final ImageProvider? thumImageProvider;
+  final LoadingBuilder? loadingBuilder;
+  final Widget? loadFailedChild;
+  final Color? backcolor;
+  final String? heroTag;
   final HeroType heroType;
   final bool willPop;
-  final bool gaplessPlayback;
-  final FilterQuality filterQuality;
-  final ImageLoadSuccess imageLoadSuccess;
-  final ImageLoadSuccess thumImageLoadSuccess;
-  final OnZoomStatusChanged onZoomStatusChanged;
+  final bool? gaplessPlayback;
+  final FilterQuality? filterQuality;
+  final ImageLoadSuccess? imageLoadSuccess;
+  final ImageLoadSuccess? thumImageLoadSuccess;
+  final OnZoomStatusChanged? onZoomStatusChanged;
 
   @override
   State<StatefulWidget> createState() {
@@ -66,23 +66,23 @@ class PhotoPage extends StatefulWidget {
 }
 
 class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
-  ImageProviderInfo _imageProviderInfo;
-  ImageProviderInfo _thumImageProvideInfo;
+  late ImageProviderInfo _imageProviderInfo;
+  ImageProviderInfo? _thumImageProvideInfo;
 
-  Size _imageSize;
+  Size? _imageSize;
   Offset _offset = Offset.zero;
   double _scale = 1.0;
   Offset _normalizedOffset = Offset.zero;
   double _oldScale = 1.0;
   bool _isZoom = false;
 
-  BoxConstraints _constraints;
+  BoxConstraints? _constraints;
 
-  AnimationController _scaleAnimationController;
-  Animation<double> _scaleAnimation;
+  late AnimationController _scaleAnimationController;
+  Animation<double>? _scaleAnimation;
 
-  AnimationController _positionAnimationController;
-  Animation<Offset> _positionAnimation;
+  late AnimationController _positionAnimationController;
+  Animation<Offset>? _positionAnimation;
 
   @override
   void initState() {
@@ -112,21 +112,21 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     _imageProviderInfo = ImageProviderInfo(widget.imageProvider);
     var imageInfo = await _getImage(_imageProviderInfo);
     if (widget.imageLoadSuccess != null) {
-      widget.imageLoadSuccess(imageInfo);
+      widget.imageLoadSuccess!(imageInfo);
     }
   }
 
   void _getThumImageInfo() async {
     if (widget.thumImageProvider == null) return;
-    _thumImageProvideInfo = ImageProviderInfo(widget.thumImageProvider);
-    var imageInfo = await _getImage(_thumImageProvideInfo);
+    _thumImageProvideInfo = ImageProviderInfo(widget.thumImageProvider!);
+    var imageInfo = await _getImage(_thumImageProvideInfo!);
     if (widget.thumImageLoadSuccess != null) {
-      widget.thumImageLoadSuccess(imageInfo);
+      widget.thumImageLoadSuccess!(imageInfo);
     }
   }
 
   Future<ImageInfo> _getImage(ImageProviderInfo providerInfo) async {
-    if (providerInfo.imageInfo != null) return providerInfo.imageInfo;
+    if (providerInfo.imageInfo != null) return providerInfo.imageInfo!;
     final Completer<ImageInfo> completer = Completer<ImageInfo>();
     providerInfo.status = _ImageLoadStatus.loading;
     final ImageStream stream = providerInfo.imageProvider.resolve(
@@ -196,20 +196,20 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   void _handleScaleAnimation() {
-    _scale = _scaleAnimation.value;
+    _scale = _scaleAnimation?.value ?? 1.0;
     setState(() {});
   }
 
   void _handlePositionAnimate() {
-    _offset = _positionAnimation.value;
+    _offset = _positionAnimation?.value ?? Offset.zero;
     setState(() {});
   }
 
   void _onDoubleTap() {
     if (_imageSize == null) return;
     if (_constraints == null) return;
-    if (_constraints.maxWidth == 0 || _constraints.maxHeight == 0) return;
-    if (_imageSize.width == 0 || _imageSize.height == 0) return;
+    if (_constraints!.maxWidth == 0 || _constraints!.maxHeight == 0) return;
+    if (_imageSize!.width == 0 || _imageSize!.height == 0) return;
 
     _scaleAnimationController.stop();
     _positionAnimationController.stop();
@@ -224,34 +224,34 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       newOffset = Offset.zero;
       if (widget.onZoomStatusChanged != null) {
         _isZoom = false;
-        widget.onZoomStatusChanged(_isZoom);
+        widget.onZoomStatusChanged!(_isZoom);
       }
     } else {
       double imageDefW = 0;
       double imageDefH = 0;
       double imageMaxFitW = 0;
       double imageMaxFitH = 0;
-      if (_imageSize.width / _imageSize.height >
-          _constraints.maxWidth / _constraints.maxHeight) {
-        imageDefW = _constraints.maxWidth;
-        imageDefH = imageDefW * _imageSize.height / _imageSize.width;
-        imageMaxFitH = _constraints.maxHeight;
-        imageMaxFitW = imageMaxFitH * _imageSize.width / _imageSize.height;
-        newScale = imageMaxFitW / _constraints.maxWidth;
-        newOffset = Offset((_constraints.maxWidth - imageMaxFitW) * 0.5,
+      if (_imageSize!.width / _imageSize!.height >
+          _constraints!.maxWidth / _constraints!.maxHeight) {
+        imageDefW = _constraints!.maxWidth;
+        imageDefH = imageDefW * _imageSize!.height / _imageSize!.width;
+        imageMaxFitH = _constraints!.maxHeight;
+        imageMaxFitW = imageMaxFitH * _imageSize!.width / _imageSize!.height;
+        newScale = imageMaxFitW / _constraints!.maxWidth;
+        newOffset = Offset((_constraints!.maxWidth - imageMaxFitW) * 0.5,
             (imageDefH - imageMaxFitH) * 0.5 * newScale);
       } else {
-        imageDefH = _constraints.maxHeight;
-        imageDefW = imageDefH * _imageSize.width / _imageSize.height;
-        imageMaxFitW = _constraints.maxWidth;
-        imageMaxFitH = imageMaxFitW * _imageSize.height / _imageSize.width;
-        newScale = imageMaxFitH / _constraints.maxHeight;
+        imageDefH = _constraints!.maxHeight;
+        imageDefW = imageDefH * _imageSize!.width / _imageSize!.height;
+        imageMaxFitW = _constraints!.maxWidth;
+        imageMaxFitH = imageMaxFitW * _imageSize!.height / _imageSize!.width;
+        newScale = imageMaxFitH / _constraints!.maxHeight;
         newOffset = Offset((imageDefW - imageMaxFitW) * 0.5 * newScale,
-            (_constraints.maxHeight - imageMaxFitH) * 0.5);
+            (_constraints!.maxHeight - imageMaxFitH) * 0.5);
       }
       if (widget.onZoomStatusChanged != null) {
         _isZoom = true;
-        widget.onZoomStatusChanged(_isZoom);
+        widget.onZoomStatusChanged!(_isZoom);
       }
     }
     _animateScale(oldScale, newScale);
@@ -270,7 +270,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
     if (widget.onZoomStatusChanged != null && _scale != _oldScale) {
       _isZoom = _scale != 1.0;
-      widget.onZoomStatusChanged(_isZoom);
+      widget.onZoomStatusChanged!(_isZoom);
     }
     setState(() {});
   }
@@ -278,7 +278,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   void _onScaleEnd(ScaleEndDetails details) {}
 
   Offset _clampOffset(Offset offset) {
-    final Size size = context.size; //容器的大小
+    final Size size = context.size ?? Size.zero; //容器的大小
     final Offset minOffset =
         new Offset(size.width, size.height) * (1.0 - _scale);
     return new Offset(
@@ -301,10 +301,10 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         _constraints = constraints;
         Widget content;
         if (_thumImageProvideInfo == null ||
-            _imageProviderInfo?.status == _ImageLoadStatus.completed) {
+            _imageProviderInfo.status == _ImageLoadStatus.completed) {
           content = _buildContent(context, constraints, _imageProviderInfo);
         } else {
-          content = _buildContent(context, constraints, _thumImageProvideInfo);
+          content = _buildContent(context, constraints, _thumImageProvideInfo!);
         }
         return GestureDetector(
           onDoubleTap: _onDoubleTap,
@@ -346,13 +346,13 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Widget _buildHeroImage(ImageProvider imageProvider) {
     double imageDefW = 0;
     double imageDefH = 0;
-    if (_imageSize.width / _imageSize.height >
-        _constraints.maxWidth / _constraints.maxHeight) {
-      imageDefW = _constraints.maxWidth;
-      imageDefH = imageDefW * _imageSize.height / _imageSize.width;
+    if (_imageSize!.width / _imageSize!.height >
+        _constraints!.maxWidth / _constraints!.maxHeight) {
+      imageDefW = _constraints!.maxWidth;
+      imageDefH = imageDefW * _imageSize!.height / _imageSize!.width;
     } else {
-      imageDefH = _constraints.maxHeight;
-      imageDefW = imageDefH * _imageSize.width / _imageSize.height;
+      imageDefH = _constraints!.maxHeight;
+      imageDefW = imageDefH * _imageSize!.width / _imageSize!.height;
     }
     return widget.willPop && !_isZoom
         ? Center(
@@ -360,13 +360,13 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
               width: imageDefW,
               height: imageDefH,
               child: Hero(
-                tag: widget.heroTag,
+                tag: widget.heroTag!,
                 child: _buildTransformImage(imageProvider),
               ),
             ),
           )
         : Hero(
-            tag: widget.heroTag,
+            tag: widget.heroTag!,
             child: _buildTransformImage(imageProvider),
           );
   }
@@ -385,15 +385,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildLoading({ImageChunkEvent imageChunkEvent}) {
+  Widget _buildLoading({ImageChunkEvent? imageChunkEvent}) {
     double progress = 0.0;
     if (imageChunkEvent?.cumulativeBytesLoaded != null &&
         imageChunkEvent?.expectedTotalBytes != null) {
-      progress = imageChunkEvent.cumulativeBytesLoaded /
-          imageChunkEvent.expectedTotalBytes;
+      progress = imageChunkEvent!.cumulativeBytesLoaded /
+          imageChunkEvent.expectedTotalBytes!;
     }
     if (widget.loadingBuilder != null) {
-      return widget.loadingBuilder(context, progress);
+      return widget.loadingBuilder!(context, progress);
     }
     return Center(
       child: Container(
