@@ -73,7 +73,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Offset _offset = Offset.zero;
   double _scale = 1.0;
   Offset _normalizedOffset;
-  double _oldScale;
+  double _oldScale = 1.0;
   bool _isZoom = false;
 
   BoxConstraints _constraints;
