@@ -7,7 +7,7 @@ typedef LoadingBuilder = Widget Function(
   double progress,
 );
 
-typedef OnZoomStatusChanged = void Function(bool isZoom);
+typedef OnPhotoScaleChanged = void Function(double scale);
 
 typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
 
@@ -37,12 +37,13 @@ class PhotoPage extends StatefulWidget {
     this.backcolor,
     this.heroTag,
     this.heroType = HeroType.fade,
+    this.allowShrinkPhoto = true,
     this.willPop = false,
     this.gaplessPlayback,
     this.filterQuality,
     this.imageLoadSuccess,
     this.thumImageLoadSuccess,
-    this.onZoomStatusChanged,
+    this.onPhotoScaleChanged,
   }) : super(key: key);
 
   final ImageProvider imageProvider;
@@ -52,12 +53,13 @@ class PhotoPage extends StatefulWidget {
   final Color? backcolor;
   final String? heroTag;
   final HeroType heroType;
+  final bool allowShrinkPhoto;
   final bool willPop;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
   final ImageLoadSuccess? imageLoadSuccess;
   final ImageLoadSuccess? thumImageLoadSuccess;
-  final OnZoomStatusChanged? onZoomStatusChanged;
+  final OnPhotoScaleChanged? onPhotoScaleChanged;
 
   @override
   State<StatefulWidget> createState() {
@@ -74,7 +76,6 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   double _scale = 1.0;
   Offset _normalizedOffset = Offset.zero;
   double _oldScale = 1.0;
-  bool _isZoom = false;
 
   BoxConstraints? _constraints;
 
@@ -196,12 +197,12 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   void _handleScaleAnimation() {
-    _scale = _scaleAnimation?.value ?? 1.0;
+    _scale = _scaleAnimation!.value;
     setState(() {});
   }
 
   void _handlePositionAnimate() {
-    _offset = _positionAnimation?.value ?? Offset.zero;
+    _offset = _positionAnimation!.value;
     setState(() {});
   }
 
@@ -222,10 +223,6 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     if (_scale != 1) {
       newScale = 1;
       newOffset = Offset.zero;
-      if (widget.onZoomStatusChanged != null) {
-        _isZoom = false;
-        widget.onZoomStatusChanged!(_isZoom);
-      }
     } else {
       double imageDefW = 0;
       double imageDefH = 0;
@@ -249,10 +246,9 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         newOffset = Offset((imageDefW - imageMaxFitW) * 0.5 * newScale,
             (_constraints!.maxHeight - imageMaxFitH) * 0.5);
       }
-      if (widget.onZoomStatusChanged != null) {
-        _isZoom = true;
-        widget.onZoomStatusChanged!(_isZoom);
-      }
+    }
+    if (widget.onPhotoScaleChanged != null) {
+      widget.onPhotoScaleChanged!(newScale);
     }
     _animateScale(oldScale, newScale);
     _animatePosition(oldOffset, newOffset);
@@ -266,11 +262,22 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    _scale = (_oldScale * details.scale).clamp(1.0, double.infinity);
-    _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
-    if (widget.onZoomStatusChanged != null && _scale != _oldScale) {
-      _isZoom = _scale != 1.0;
-      widget.onZoomStatusChanged!(_isZoom);
+    if (!widget.allowShrinkPhoto) {
+      _scale = (_oldScale * details.scale).clamp(1.0, double.infinity);
+      _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
+    } else {
+      _scale = (_oldScale * details.scale).clamp(0.1, double.infinity);
+      if (_scale > 1) {
+        _offset = _clampOffset(details.focalPoint - _normalizedOffset * _scale);
+      } else {
+        _offset = Offset(
+            (_constraints!.maxWidth - _constraints!.maxWidth * _scale) * 0.5,
+            (_constraints!.maxHeight - _constraints!.maxHeight * _scale) * 0.5);
+        _normalizedOffset = (details.focalPoint - _offset) / _scale;
+      }
+    }
+    if (widget.onPhotoScaleChanged != null && _scale != _oldScale) {
+      widget.onPhotoScaleChanged!(_scale);
     }
     setState(() {});
   }
@@ -327,7 +334,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     if (providerInfo.status == _ImageLoadStatus.completed) {
       return _buildImage(constraints, providerInfo.imageProvider);
     } else {
-      return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent);
+      return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent!);
     }
   }
 
@@ -344,24 +351,21 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    double imageDefW = 0;
-    double imageDefH = 0;
-    if (_imageSize!.width / _imageSize!.height >
-        _constraints!.maxWidth / _constraints!.maxHeight) {
-      imageDefW = _constraints!.maxWidth;
-      imageDefH = imageDefW * _imageSize!.height / _imageSize!.width;
-    } else {
-      imageDefH = _constraints!.maxHeight;
-      imageDefW = imageDefH * _imageSize!.width / _imageSize!.height;
-    }
-    return widget.willPop && !_isZoom
+    return (widget.willPop && _scale <= 1)
         ? Center(
-            child: Container(
-              width: imageDefW,
-              height: imageDefH,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: _constraints!.maxWidth * _scale,
+                maxHeight: _constraints!.maxHeight * _scale,
+              ),
               child: Hero(
                 tag: widget.heroTag!,
-                child: _buildTransformImage(imageProvider),
+                child: Image(
+                  image: imageProvider,
+                  gaplessPlayback: widget.gaplessPlayback ?? false,
+                  filterQuality: widget.filterQuality ?? FilterQuality.high,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           )
