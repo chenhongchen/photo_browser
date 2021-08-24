@@ -351,25 +351,13 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    double imageDefW = 0;
-    double imageDefH = 0;
-    if (widget.willPop && _scale <= 1) {
-      if (_imageSize.width / _imageSize.height >
-          _constraints.maxWidth / _constraints.maxHeight) {
-        imageDefW = _constraints.maxWidth;
-        imageDefH = imageDefW * _imageSize.height / _imageSize.width;
-      } else {
-        imageDefH = _constraints.maxHeight;
-        imageDefW = imageDefH * _imageSize.width / _imageSize.height;
-      }
-      imageDefW = imageDefW * _scale;
-      imageDefH = imageDefH * _scale;
-    }
     return (widget.willPop && _scale <= 1)
         ? Center(
-            child: Container(
-              width: imageDefW,
-              height: imageDefH,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: _constraints.maxWidth * _scale,
+                maxHeight: _constraints.maxHeight * _scale,
+              ),
               child: Hero(
                 tag: widget.heroTag,
                 child: Image(
