@@ -1,3 +1,7 @@
+## 1.0.3
+
+* TODO: Optimized code.
+
 ## 1.0.2
 
 * TODO: Optimized hero animation display effect when exiting.

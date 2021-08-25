@@ -366,30 +366,31 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    double x = (_constraints.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
-    double y =
-        (_constraints.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
-    Widget popChild = CustomSingleChildLayout(
-      delegate: _SingleChildLayoutDelegate(
-        Size(_imageDefW * _scale, _imageDefH * _scale),
-        Offset(x, y),
-      ),
-      child: Hero(
-        tag: widget.heroTag,
-        child: Image(
-          image: imageProvider,
-          gaplessPlayback: widget.gaplessPlayback ?? false,
-          filterQuality: widget.filterQuality ?? FilterQuality.high,
-          fit: BoxFit.contain,
+    if (widget.willPop) {
+      double x =
+          (_constraints.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
+      double y =
+          (_constraints.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
+      return CustomSingleChildLayout(
+        delegate: _SingleChildLayoutDelegate(
+          Size(_imageDefW * _scale, _imageDefH * _scale),
+          Offset(x, y),
         ),
-      ),
+        child: Hero(
+          tag: widget.heroTag,
+          child: Image(
+            image: imageProvider,
+            gaplessPlayback: widget.gaplessPlayback ?? false,
+            filterQuality: widget.filterQuality ?? FilterQuality.high,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    }
+    return Hero(
+      tag: widget.heroTag,
+      child: _buildTransformImage(imageProvider),
     );
-    return (widget.willPop)
-        ? popChild
-        : Hero(
-            tag: widget.heroTag,
-            child: _buildTransformImage(imageProvider),
-          );
   }
 
   Widget _buildTransformImage(ImageProvider imageProvider) {
