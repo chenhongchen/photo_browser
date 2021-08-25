@@ -24,32 +24,26 @@ class PhotoBrowser extends StatefulWidget {
   Future<dynamic> push(
     BuildContext context, {
     bool rootNavigator = true,
-    bool nullOk = false,
     bool fullscreenDialog = true,
-    Widget page,
+    Widget? page,
   }) async {
     if (heroTagBuilder == null) {
-      return await Navigator.of(context,
-              rootNavigator: rootNavigator, nullOk: nullOk)
+      return await Navigator.of(context, rootNavigator: rootNavigator)
           .push(CupertinoPageRoute(
               fullscreenDialog: fullscreenDialog,
               builder: (BuildContext context) {
                 return page ?? this;
               }));
     }
-    return _heroPush(context,
-        rootNavigator: rootNavigator, nullOk: nullOk, page: page);
+    return _heroPush(context, rootNavigator: rootNavigator, page: page);
   }
 
   Future<dynamic> _heroPush(
     BuildContext context, {
     bool rootNavigator = true,
-    bool nullOk = false,
-    Widget page,
+    Widget? page,
   }) async {
-    return await Navigator.of(context,
-            rootNavigator: rootNavigator, nullOk: nullOk)
-        .push(
+    return await Navigator.of(context, rootNavigator: rootNavigator).push(
       PageRouteBuilder(
         opaque: false,
         pageBuilder: (BuildContext context, Animation animation,
