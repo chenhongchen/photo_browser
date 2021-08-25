@@ -77,6 +77,11 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Offset _normalizedOffset = Offset.zero;
   double _oldScale = 1.0;
 
+  double _imageDefW = 0;
+  double _imageDefH = 0;
+  double _imageMaxFitW = 0;
+  double _imageMaxFitH = 0;
+
   BoxConstraints? _constraints;
 
   late AnimationController _scaleAnimationController;
@@ -149,6 +154,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             providerInfo.imageChunkEvent = null;
             providerInfo.imageInfo = info;
             _imageSize = providerInfo.imageSize;
+            _setImageSize();
           };
           synchronousCall ? setupCallback() : setState(setupCallback);
         }
@@ -206,11 +212,32 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     setState(() {});
   }
 
+  bool _setImageSize() {
+    if (_imageDefW > 0 && _imageDefH > 0) return true;
+
+    if (_imageSize == null) return false;
+    if (_constraints == null) return false;
+    if (_constraints!.maxWidth == 0 || _constraints!.maxHeight == 0)
+      return false;
+    if (_imageSize!.width == 0 || _imageSize!.height == 0) return false;
+
+    if (_imageSize!.width / _imageSize!.height >
+        _constraints!.maxWidth / _constraints!.maxHeight) {
+      _imageDefW = _constraints!.maxWidth;
+      _imageDefH = _imageDefW * _imageSize!.height / _imageSize!.width;
+      _imageMaxFitH = _constraints!.maxHeight;
+      _imageMaxFitW = _imageMaxFitH * _imageSize!.width / _imageSize!.height;
+    } else {
+      _imageDefH = _constraints!.maxHeight;
+      _imageDefW = _imageDefH * _imageSize!.width / _imageSize!.height;
+      _imageMaxFitW = _constraints!.maxWidth;
+      _imageMaxFitH = _imageMaxFitW * _imageSize!.height / _imageSize!.width;
+    }
+    return true;
+  }
+
   void _onDoubleTap() {
-    if (_imageSize == null) return;
-    if (_constraints == null) return;
-    if (_constraints!.maxWidth == 0 || _constraints!.maxHeight == 0) return;
-    if (_imageSize!.width == 0 || _imageSize!.height == 0) return;
+    if (_setImageSize() == false) return;
 
     _scaleAnimationController.stop();
     _positionAnimationController.stop();
@@ -224,27 +251,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       newScale = 1;
       newOffset = Offset.zero;
     } else {
-      double imageDefW = 0;
-      double imageDefH = 0;
-      double imageMaxFitW = 0;
-      double imageMaxFitH = 0;
       if (_imageSize!.width / _imageSize!.height >
           _constraints!.maxWidth / _constraints!.maxHeight) {
-        imageDefW = _constraints!.maxWidth;
-        imageDefH = imageDefW * _imageSize!.height / _imageSize!.width;
-        imageMaxFitH = _constraints!.maxHeight;
-        imageMaxFitW = imageMaxFitH * _imageSize!.width / _imageSize!.height;
-        newScale = imageMaxFitW / _constraints!.maxWidth;
-        newOffset = Offset((_constraints!.maxWidth - imageMaxFitW) * 0.5,
-            (imageDefH - imageMaxFitH) * 0.5 * newScale);
+        newScale = _imageMaxFitW / _constraints!.maxWidth;
+        newOffset = Offset((_constraints!.maxWidth - _imageMaxFitW) * 0.5,
+            (_imageDefH - _imageMaxFitH) * 0.5 * newScale);
       } else {
-        imageDefH = _constraints!.maxHeight;
-        imageDefW = imageDefH * _imageSize!.width / _imageSize!.height;
-        imageMaxFitW = _constraints!.maxWidth;
-        imageMaxFitH = imageMaxFitW * _imageSize!.height / _imageSize!.width;
-        newScale = imageMaxFitH / _constraints!.maxHeight;
-        newOffset = Offset((imageDefW - imageMaxFitW) * 0.5 * newScale,
-            (_constraints!.maxHeight - imageMaxFitH) * 0.5);
+        newScale = _imageMaxFitH / _constraints!.maxHeight;
+        newOffset = Offset((_imageDefW - _imageMaxFitW) * 0.5 * newScale,
+            (_constraints!.maxHeight - _imageMaxFitH) * 0.5);
       }
     }
     if (widget.onPhotoScaleChanged != null) {
@@ -306,6 +321,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         BoxConstraints constraints,
       ) {
         _constraints = constraints;
+        _setImageSize();
         Widget content;
         if (_thumImageProvideInfo == null ||
             _imageProviderInfo.status == _ImageLoadStatus.completed) {
@@ -334,7 +350,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     if (providerInfo.status == _ImageLoadStatus.completed) {
       return _buildImage(constraints, providerInfo.imageProvider);
     } else {
-      return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent!);
+      return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent);
     }
   }
 
@@ -351,28 +367,31 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    return (widget.willPop && _scale <= 1)
-        ? Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: _constraints!.maxWidth * _scale,
-                maxHeight: _constraints!.maxHeight * _scale,
-              ),
-              child: Hero(
-                tag: widget.heroTag!,
-                child: Image(
-                  image: imageProvider,
-                  gaplessPlayback: widget.gaplessPlayback ?? false,
-                  filterQuality: widget.filterQuality ?? FilterQuality.high,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          )
-        : Hero(
-            tag: widget.heroTag!,
-            child: _buildTransformImage(imageProvider),
-          );
+    if (widget.willPop) {
+      double x =
+          (_constraints!.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
+      double y =
+          (_constraints!.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
+      return CustomSingleChildLayout(
+        delegate: _SingleChildLayoutDelegate(
+          Size(_imageDefW * _scale, _imageDefH * _scale),
+          Offset(x, y),
+        ),
+        child: Hero(
+          tag: widget.heroTag!,
+          child: Image(
+            image: imageProvider,
+            gaplessPlayback: widget.gaplessPlayback ?? false,
+            filterQuality: widget.filterQuality ?? FilterQuality.high,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    }
+    return Hero(
+      tag: widget.heroTag!,
+      child: _buildTransformImage(imageProvider),
+    );
   }
 
   Widget _buildTransformImage(ImageProvider imageProvider) {
@@ -416,4 +435,40 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Widget _buildLoadFailed() {
     return widget.loadFailedChild ?? Container();
   }
+}
+
+class _SingleChildLayoutDelegate extends SingleChildLayoutDelegate {
+  const _SingleChildLayoutDelegate(
+    this.subjectSize,
+    this.offset,
+  );
+
+  final Size subjectSize;
+  final Offset offset;
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    return offset;
+  }
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return BoxConstraints.tight(subjectSize);
+  }
+
+  @override
+  bool shouldRelayout(_SingleChildLayoutDelegate oldDelegate) {
+    return oldDelegate != this;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _SingleChildLayoutDelegate &&
+          runtimeType == other.runtimeType &&
+          subjectSize == other.subjectSize &&
+          offset == other.offset;
+
+  @override
+  int get hashCode => subjectSize.hashCode ^ offset.hashCode;
 }

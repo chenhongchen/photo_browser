@@ -218,10 +218,9 @@ class _MyAppState extends State<MyApp> {
           // 转换数据及保存为图片
           var byteData =
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
-          var result;
           if (byteData != null) {
             Uint8List uint8list = byteData.buffer.asUint8List();
-            result = await ImageGallerySaver.saveImage(
+            var result = await ImageGallerySaver.saveImage(
                 Uint8List.fromList(uint8list));
             if (result != null) {
               Fluttertoast.showToast(msg: '保存成功', gravity: ToastGravity.CENTER);

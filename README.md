@@ -10,7 +10,7 @@ Flutter plugin for photos browse.
 
 ```yaml
 dependencies:
-  photo_browser: 1.0.0
+  photo_browser: 2.0.0
 ```
 
 ```dart
@@ -69,7 +69,7 @@ onTap: () {
 
 ```dart
 // 通过控制器，获取图片数据，转换为Uint8List，可以用于保存图片
-ImageInfo imageInfo;
+ImageInfo? imageInfo;
 if (_browerController.imageInfos[curIndex] != null) {
   imageInfo = _browerController.imageInfos[curIndex];
 } else if (_browerController.thumImageInfos[curIndex] != null) {
@@ -81,7 +81,8 @@ if (imageInfo == null) {
 
 var byteData =
     await imageInfo.image.toByteData(format: ImageByteFormat.png);
-Uint8List uint8list = byteData.buffer.asUint8List();
+if (byteData != null) {
+  Uint8List uint8list = byteData.buffer.asUint8List();
 ```
 
 ```dart
