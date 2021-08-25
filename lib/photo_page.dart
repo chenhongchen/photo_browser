@@ -213,6 +213,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   bool _setImageSize() {
+    if (_imageDefW > 0 && _imageDefH > 0) return true;
+
     if (_imageSize == null) return false;
     if (_constraints == null) return false;
     if (_constraints.maxWidth == 0 || _constraints.maxHeight == 0) return false;
@@ -230,6 +232,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       _imageMaxFitW = _constraints.maxWidth;
       _imageMaxFitH = _imageMaxFitW * _imageSize.height / _imageSize.width;
     }
+    return true;
   }
 
   void _onDoubleTap() {
@@ -317,6 +320,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         BoxConstraints constraints,
       ) {
         _constraints = constraints;
+        _setImageSize();
         Widget content;
         if (_thumImageProvideInfo == null ||
             _imageProviderInfo?.status == _ImageLoadStatus.completed) {
@@ -362,24 +366,26 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    return (widget.willPop && _scale <= 1)
-        ? Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: _constraints.maxWidth * _scale,
-                maxHeight: _constraints.maxHeight * _scale,
-              ),
-              child: Hero(
-                tag: widget.heroTag,
-                child: Image(
-                  image: imageProvider,
-                  gaplessPlayback: widget.gaplessPlayback ?? false,
-                  filterQuality: widget.filterQuality ?? FilterQuality.high,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          )
+    double x = (_constraints.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
+    double y =
+        (_constraints.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
+    Widget popChild = CustomSingleChildLayout(
+      delegate: _SingleChildLayoutDelegate(
+        Size(_imageDefW * _scale, _imageDefH * _scale),
+        Offset(x, y),
+      ),
+      child: Hero(
+        tag: widget.heroTag,
+        child: Image(
+          image: imageProvider,
+          gaplessPlayback: widget.gaplessPlayback ?? false,
+          filterQuality: widget.filterQuality ?? FilterQuality.high,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+    return (widget.willPop)
+        ? popChild
         : Hero(
             tag: widget.heroTag,
             child: _buildTransformImage(imageProvider),
@@ -427,4 +433,40 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Widget _buildLoadFailed() {
     return widget.loadFailedChild ?? Container();
   }
+}
+
+class _SingleChildLayoutDelegate extends SingleChildLayoutDelegate {
+  const _SingleChildLayoutDelegate(
+    this.subjectSize,
+    this.offset,
+  );
+
+  final Size subjectSize;
+  final Offset offset;
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    return offset;
+  }
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return BoxConstraints.tight(subjectSize);
+  }
+
+  @override
+  bool shouldRelayout(_SingleChildLayoutDelegate oldDelegate) {
+    return oldDelegate != this;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _SingleChildLayoutDelegate &&
+          runtimeType == other.runtimeType &&
+          subjectSize == other.subjectSize &&
+          offset == other.offset;
+
+  @override
+  int get hashCode => subjectSize.hashCode ^ offset.hashCode;
 }
