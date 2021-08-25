@@ -1,3 +1,7 @@
+## 1.0.4
+
+* TODO: Add some parameters to the push method.
+
 ## 1.0.3
 
 * TODO: Optimized code.
