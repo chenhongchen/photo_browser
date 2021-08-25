@@ -4,7 +4,7 @@ Flutter plugin for photos browse.
 
 ## Demo
 
-<img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_0.gif" width="360" height="640" alt="demo"/><br/>
+<img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_0.gif" width="360" height="640" alt="demo"/>
 
 ## Use it
 
