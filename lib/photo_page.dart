@@ -36,7 +36,7 @@ class PhotoPage extends StatefulWidget {
     this.loadFailedChild,
     this.backcolor,
     this.heroTag,
-    this.heroType = HeroType.fade,
+    this.routeType = RouteType.fade,
     this.allowShrinkPhoto = true,
     this.willPop = false,
     this.gaplessPlayback,
@@ -52,7 +52,7 @@ class PhotoPage extends StatefulWidget {
   final Widget loadFailedChild;
   final Color backcolor;
   final String heroTag;
-  final HeroType heroType;
+  final RouteType routeType;
   final bool allowShrinkPhoto;
   final bool willPop;
   final bool gaplessPlayback;
@@ -359,7 +359,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         minWidth: double.maxFinite,
         minHeight: double.infinity,
       ),
-      child: widget.heroTag != null && widget.heroType == HeroType.fade
+      child: widget.heroTag != null && widget.routeType != RouteType.scale
           ? _buildHeroImage(imageProvider)
           : _buildTransformImage(imageProvider),
     );

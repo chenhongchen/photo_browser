@@ -15,9 +15,10 @@ typedef PositionsBuilder = List<Positioned> Function(
   int totalNum,
 );
 
-enum HeroType {
+enum RouteType {
   fade, // 淡入淡出
   scale, // 比例放大
+  normal, // 从右到左，或下到上
 }
 
 class PhotoBrowser extends StatefulWidget {
@@ -28,7 +29,7 @@ class PhotoBrowser extends StatefulWidget {
     bool fullscreenDialog = true,
     Widget page,
   }) async {
-    if (heroTagBuilder == null) {
+    if (heroTagBuilder == null || routeType == RouteType.normal) {
       return await Navigator.of(context,
               rootNavigator: rootNavigator, nullOk: nullOk)
           .push(CupertinoPageRoute(
@@ -37,11 +38,11 @@ class PhotoBrowser extends StatefulWidget {
                 return page ?? this;
               }));
     }
-    return _heroPush(context,
+    return _fadePush(context,
         rootNavigator: rootNavigator, nullOk: nullOk, page: page);
   }
 
-  Future<dynamic> _heroPush(
+  Future<dynamic> _fadePush(
     BuildContext context, {
     bool rootNavigator = true,
     bool nullOk = false,
@@ -95,8 +96,8 @@ class PhotoBrowser extends StatefulWidget {
   /// 控制器，用于给外部提供一些功能，如图片数据、pop、刷新相册浏览器状态
   final PhotoBrowerController controller;
 
-  /// 飞行动画类型，默认值：HeroType.fade
-  final HeroType heroType;
+  /// 路由类型，默认值：RouteType.fade
+  final RouteType routeType;
 
   /// 允许缩小图片
   final bool allowShrinkPhoto;
@@ -162,7 +163,7 @@ class PhotoBrowser extends StatefulWidget {
     @required this.itemCount,
     @required this.initIndex,
     this.controller,
-    this.heroType = HeroType.fade,
+    this.routeType = RouteType.fade,
     this.allowShrinkPhoto = true,
     this.heroTagBuilder,
     this.imageProviderBuilder,
@@ -259,7 +260,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       BoxConstraints constraints,
     ) {
       _constraints = constraints;
-      if (widget.heroTagBuilder == null || widget.heroType == HeroType.fade) {
+      if (widget.heroTagBuilder == null ||
+          widget.routeType != RouteType.scale) {
         return _buildContent();
       } else {
         return Hero(
@@ -323,7 +325,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       loadingBuilder: widget.loadingBuilder,
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
-      heroType: widget.heroType,
+      routeType: widget.routeType,
       heroTag:
           widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
