@@ -27,6 +27,7 @@ class PhotoBrowser extends StatefulWidget {
     bool rootNavigator = true,
     bool nullOk = false,
     bool fullscreenDialog = true,
+    Duration transitionDuration,
     Widget page,
   }) async {
     if (heroTagBuilder == null || routeType == RouteType.normal) {
@@ -38,14 +39,20 @@ class PhotoBrowser extends StatefulWidget {
                 return page ?? this;
               }));
     }
-    return _fadePush(context,
-        rootNavigator: rootNavigator, nullOk: nullOk, page: page);
+    return _fadePush(
+      context,
+      rootNavigator: rootNavigator,
+      nullOk: nullOk,
+      transitionDuration: transitionDuration,
+      page: page,
+    );
   }
 
   Future<dynamic> _fadePush(
     BuildContext context, {
     bool rootNavigator = true,
     bool nullOk = false,
+    Duration transitionDuration,
     Widget page,
   }) async {
     return await Navigator.of(context,
@@ -58,7 +65,7 @@ class PhotoBrowser extends StatefulWidget {
           return page ?? this;
         },
         //动画时间
-        transitionDuration: Duration(milliseconds: 400),
+        transitionDuration: transitionDuration ?? Duration(milliseconds: 400),
         //过渡动画构建
         transitionsBuilder: (
           BuildContext context,
