@@ -1,3 +1,7 @@
+## 2.0.2
+
+* TODO: Migrate from 1.0.5
+
 ## 2.0.1
 
 * TODO: Migrate from 1.0.4
@@ -5,6 +9,10 @@
 ## 2.0.0
 
 * TODO: Migrate to Null Safety
+
+## 1.0.5
+
+* TODO: Add route type, and add "canPopWhenScrolling" attribute.
 
 ## 1.0.4
 

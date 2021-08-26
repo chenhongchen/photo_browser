@@ -10,7 +10,7 @@ Flutter plugin for photos browse.
 
 ```yaml
 dependencies:
-  photo_browser: 2.0.1
+  photo_browser: 2.0.2
 ```
 
 ```dart

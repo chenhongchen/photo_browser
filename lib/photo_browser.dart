@@ -15,9 +15,10 @@ typedef PositionsBuilder = List<Positioned> Function(
   int totalNum,
 );
 
-enum HeroType {
+enum RouteType {
   fade, // 淡入淡出
   scale, // 比例放大
+  normal, // 从右到左，或下到上
 }
 
 class PhotoBrowser extends StatefulWidget {
@@ -27,7 +28,7 @@ class PhotoBrowser extends StatefulWidget {
     bool fullscreenDialog = true,
     Widget? page,
   }) async {
-    if (heroTagBuilder == null) {
+    if (heroTagBuilder == null || routeType == RouteType.normal) {
       return await Navigator.of(context, rootNavigator: rootNavigator)
           .push(CupertinoPageRoute(
               fullscreenDialog: fullscreenDialog,
@@ -35,10 +36,10 @@ class PhotoBrowser extends StatefulWidget {
                 return page ?? this;
               }));
     }
-    return _heroPush(context, rootNavigator: rootNavigator, page: page);
+    return _fadePush(context, rootNavigator: rootNavigator, page: page);
   }
 
-  Future<dynamic> _heroPush(
+  Future<dynamic> _fadePush(
     BuildContext context, {
     bool rootNavigator = true,
     Widget? page,
@@ -89,8 +90,8 @@ class PhotoBrowser extends StatefulWidget {
   /// 控制器，用于给外部提供一些功能，如图片数据、pop、刷新相册浏览器状态
   final PhotoBrowerController? controller;
 
-  /// 飞行动画类型，默认值：HeroType.fade
-  final HeroType heroType;
+  /// 路由类型，默认值：RouteType.fade
+  final RouteType routeType;
 
   /// 允许缩小图片
   final bool allowShrinkPhoto;
@@ -139,6 +140,9 @@ class PhotoBrowser extends StatefulWidget {
   /// 向下轻扫关闭功能开关
   final bool allowSwipeDownToPop;
 
+  /// 滚动状态可否关闭
+  final bool canPopWhenScrolling;
+
   final bool reverse;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
@@ -156,7 +160,7 @@ class PhotoBrowser extends StatefulWidget {
     required this.itemCount,
     required this.initIndex,
     this.controller,
-    this.heroType = HeroType.fade,
+    this.routeType = RouteType.fade,
     this.allowShrinkPhoto = true,
     this.heroTagBuilder,
     this.imageProviderBuilder,
@@ -174,6 +178,7 @@ class PhotoBrowser extends StatefulWidget {
     this.backcolor,
     this.allowTapToPop = true,
     this.allowSwipeDownToPop = true,
+    this.canPopWhenScrolling = true,
     this.reverse = false,
     this.pageController,
     this.scrollPhysics,
@@ -252,7 +257,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       BoxConstraints constraints,
     ) {
       _constraints = constraints;
-      if (widget.heroTagBuilder == null || widget.heroType == HeroType.fade) {
+      if (widget.heroTagBuilder == null ||
+          widget.routeType != RouteType.scale) {
         return _buildContent();
       } else {
         return Hero(
@@ -316,9 +322,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       loadingBuilder: widget.loadingBuilder,
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
-      heroType: widget.heroType,
-      heroTag:
-          widget.heroTagBuilder != null ? widget.heroTagBuilder!(index) : null,
+      routeType: widget.routeType,
+      heroTag: widget.heroTagBuilder != null && _curPage == index
+          ? widget.heroTagBuilder!(index)
+          : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       gaplessPlayback: widget.gaplessPlayback,
@@ -341,8 +348,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       return widget.pageCodeBuild!(context, curIndex + 1, totalNum);
     }
     return Positioned(
-      right: 15,
-      bottom: 15,
+      right: 20,
+      bottom: 20,
       child: Text(
         '${curIndex + 1}/$totalNum',
         textAlign: TextAlign.right,
@@ -385,10 +392,11 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   void _pop() {
-    // 显示一页时，才允许pop
-    if (((_pageController.position.pixels * 1000).toInt() %
-            (_constraints!.maxWidth * 1000).toInt()) !=
-        0) return;
+    // 滚动状态不允许pop处理
+    if (!widget.canPopWhenScrolling &&
+        (((_pageController.position.pixels * 1000).toInt() %
+                (_constraints!.maxWidth * 1000).toInt()) !=
+            0)) return;
     _willPop = true;
     setState(() {});
     Navigator.of(context).pop();
