@@ -126,7 +126,7 @@ class _MyAppState extends State<MyApp> {
   // 关闭按钮
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
-      right: 15,
+      right: 20,
       top: MediaQuery.of(context).padding.top,
       child: GestureDetector(
         onTap: () {
@@ -168,8 +168,8 @@ class _MyAppState extends State<MyApp> {
   Positioned _buildSaveImageBtn(
       BuildContext context, int curIndex, int totalNum) {
     return Positioned(
-      left: 15,
-      bottom: 15,
+      left: 20,
+      bottom: 20,
       child: GestureDetector(
         onTap: () async {
           // 使用相册授权

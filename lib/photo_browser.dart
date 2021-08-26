@@ -348,8 +348,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       return widget.pageCodeBuild(context, curIndex + 1, totalNum);
     }
     return Positioned(
-      right: 15,
-      bottom: 15,
+      right: 20,
+      bottom: 20,
       child: Text(
         '${curIndex + 1}/$totalNum',
         textAlign: TextAlign.right,
