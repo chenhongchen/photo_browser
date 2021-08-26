@@ -1,6 +1,6 @@
 name: photo_browser
 description: Flutter plugin for photos browse.
-version: 1.0.4
+version: 1.0.5
 homepage: https://github.com/chenhongchen/photo_browser
 
 environment:

@@ -1,3 +1,7 @@
+## 1.0.5
+
+* TODO: Add route type, and add "canPopWhenScrolling" attribute.
+
 ## 1.0.4
 
 * TODO: Add some parameters to the push method.

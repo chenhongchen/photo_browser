@@ -146,6 +146,9 @@ class PhotoBrowser extends StatefulWidget {
   /// 向下轻扫关闭功能开关
   final bool allowSwipeDownToPop;
 
+  /// 滚动状态可否关闭
+  final bool canPopWhenScrolling;
+
   final bool reverse;
   final bool gaplessPlayback;
   final FilterQuality filterQuality;
@@ -181,6 +184,7 @@ class PhotoBrowser extends StatefulWidget {
     this.backcolor,
     this.allowTapToPop = true,
     this.allowSwipeDownToPop = true,
+    this.canPopWhenScrolling = true,
     this.reverse = false,
     this.pageController,
     this.scrollPhysics,
@@ -326,8 +330,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
       routeType: widget.routeType,
-      heroTag:
-          widget.heroTagBuilder != null ? widget.heroTagBuilder(index) : null,
+      heroTag: widget.heroTagBuilder != null && _curPage == index
+          ? widget.heroTagBuilder(index)
+          : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       gaplessPlayback: widget.gaplessPlayback,
@@ -394,10 +399,11 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   void _pop() {
-    // 显示一页时，才允许pop
-    if (((_pageController.position.pixels * 1000).toInt() %
-            (_constraints.maxWidth * 1000).toInt()) !=
-        0) return;
+    // 滚动状态不允许pop处理
+    if (!widget.canPopWhenScrolling &&
+        (((_pageController.position.pixels * 1000).toInt() %
+                (_constraints.maxWidth * 1000).toInt()) !=
+            0)) return;
     _willPop = true;
     setState(() {});
     Navigator.of(context).pop();
