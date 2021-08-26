@@ -44,7 +44,6 @@ Widget _buildCell(BuildContext context, int cellIndex) {
         onPageChanged: (int index) {},
       ).push(
         context,
-        fullscreenDialog: true, //当heroTagBuilder属性为空时，该属性有效
       );
     },
     child: Hero(
