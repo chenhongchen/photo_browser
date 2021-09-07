@@ -1,3 +1,7 @@
+## 1.0.6
+
+* TODO: Add imageFileBuilder and thumbImageFileBuilder properties.
+
 ## 1.0.5
 
 * TODO: Add route type, and add "canPopWhenScrolling" attribute.

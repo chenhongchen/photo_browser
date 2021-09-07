@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/photo_page.dart';
 
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
+typedef ImageFileBuilder = File Function(int index);
 typedef PageCodeBuilder = Positioned Function(
   BuildContext,
   int curIndex,
@@ -126,6 +129,12 @@ class PhotoBrowser extends StatefulWidget {
   /// 设置每张缩略图的url
   final StringBuilder thumImageUrlBuilder;
 
+  /// 设置每张缩大图的file
+  final ImageFileBuilder imageFileBuilder;
+
+  /// 设置每张缩略图的file
+  final ImageFileBuilder thumImageFileBuilder;
+
   /// 设置每张缩大图的asset
   final StringBuilder imageAssetBuilder;
 
@@ -180,6 +189,8 @@ class PhotoBrowser extends StatefulWidget {
     this.thumImageProviderBuilder,
     this.imageUrlBuilder,
     this.thumImageUrlBuilder,
+    this.imageFileBuilder,
+    this.thumImageFileBuilder,
     this.imageAssetBuilder,
     this.thumImageAssetBuilder,
     this.loadingBuilder,
@@ -201,8 +212,9 @@ class PhotoBrowser extends StatefulWidget {
         assert(
             imageProviderBuilder != null ||
                 imageUrlBuilder != null ||
+                imageFileBuilder != null ||
                 imageAssetBuilder != null,
-            'imageProviderBuilder,imageUrlBuilder,imageAssetBuilder can not all null'),
+            'imageProviderBuilder,imageUrlBuilder,imageFileBuilder,imageAssetBuilder can not all null'),
         super(key: key) {
     _initImageProvider = _getImageProvider(initIndex);
     _initThumImageProvider = _getThumImageProvider(initIndex);
@@ -217,6 +229,8 @@ class PhotoBrowser extends StatefulWidget {
       imageProvider = imageProviderBuilder(index);
     } else if (imageUrlBuilder != null) {
       imageProvider = NetworkImage(imageUrlBuilder(index));
+    } else if (imageFileBuilder != null) {
+      imageProvider = FileImage(imageFileBuilder(index));
     } else if (imageAssetBuilder != null) {
       imageProvider = AssetImage(imageAssetBuilder(index));
     }
@@ -232,6 +246,8 @@ class PhotoBrowser extends StatefulWidget {
       thumImageProvider = thumImageProviderBuilder(index);
     } else if (thumImageUrlBuilder != null) {
       thumImageProvider = NetworkImage(thumImageUrlBuilder(index));
+    } else if (thumImageFileBuilder != null) {
+      thumImageProvider = FileImage(thumImageFileBuilder(index));
     } else if (thumImageAssetBuilder != null) {
       thumImageProvider = AssetImage(thumImageAssetBuilder(index));
     }
