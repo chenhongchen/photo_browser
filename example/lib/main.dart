@@ -2,10 +2,10 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/photo_browser.dart';
+import 'package:flt_hc_hud/flt_hc_hud.dart';
 
 void main() {
   runApp(MyApp());
@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
     return GestureDetector(
       onTap: () {
         // 弹出图片浏览器(默认单击或下划手势可关闭)
-        PhotoBrowser(
+        PhotoBrowser photoBrowser = PhotoBrowser(
           itemCount: _bigPhotos.length,
           initIndex: cellIndex,
           controller: _browerController,
@@ -99,9 +99,13 @@ class _MyAppState extends State<MyApp> {
           positionsBuilder: _positionsBuilder, // 可自定义Widget，如关闭按钮、保存按钮
           loadFailedChild: _failedChild(), // 加载失败
           onPageChanged: (int index) {},
-        ).push(
-          context,
         );
+
+        // 可以直接push
+        // photoBrowser.push(context);
+
+        // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
+        photoBrowser.push(context, page: HCHud(child: photoBrowser));
       },
       child: Hero(
         tag: _heroTags[cellIndex],
@@ -210,9 +214,11 @@ class _MyAppState extends State<MyApp> {
             imageInfo = _browerController.thumImageInfos[curIndex];
           }
           if (imageInfo == null) {
-            Fluttertoast.showToast(msg: '没有发现图片', gravity: ToastGravity.CENTER);
+            HCHud.of(context).showErrorAndDismiss(text: '没有发现图片');
             return;
           }
+
+          HCHud.of(context).showLoading(text: '正在保存...');
 
           // 转换数据及保存为图片
           var byteData =
@@ -222,9 +228,9 @@ class _MyAppState extends State<MyApp> {
             var result = await ImageGallerySaver.saveImage(
                 Uint8List.fromList(uint8list));
             if (result != null) {
-              Fluttertoast.showToast(msg: '保存成功', gravity: ToastGravity.CENTER);
+              HCHud.of(context).showSuccessAndDismiss(text: '保存成功');
             } else {
-              Fluttertoast.showToast(msg: '保存失败', gravity: ToastGravity.CENTER);
+              HCHud.of(context).showErrorAndDismiss(text: '保存失败');
             }
           }
         },

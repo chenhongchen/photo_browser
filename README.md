@@ -10,7 +10,7 @@ Flutter plugin for photos browse.
 
 ```yaml
 dependencies:
-  photo_browser: 2.0.2
+  photo_browser: 2.0.3
 ```
 
 ```dart
@@ -24,7 +24,7 @@ Widget _buildCell(BuildContext context, int cellIndex) {
   return GestureDetector(
     onTap: () {
       // 弹出图片浏览器(默认单击或下划手势可关闭)
-      PhotoBrowser(
+      PhotoBrowser photoBrowser = PhotoBrowser(
         itemCount: _bigPhotos.length,
         initIndex: cellIndex,
         controller: _browerController,
@@ -42,9 +42,13 @@ Widget _buildCell(BuildContext context, int cellIndex) {
         positionsBuilder: _positionsBuilder, // 可自定义Widget，如关闭按钮、保存按钮
         loadFailedChild: _failedChild(), // 加载失败
         onPageChanged: (int index) {},
-      ).push(
-        context,
       );
+
+      // 可以直接push
+      // photoBrowser.push(context);
+
+      // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
+      photoBrowser.push(context, page: HCHud(child: photoBrowser));
     },
     child: Hero(
       tag: _heroTags[cellIndex],
