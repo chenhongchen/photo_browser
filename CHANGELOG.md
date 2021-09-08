@@ -1,3 +1,7 @@
+## 2.0.4
+
+* TODO: Migrate from 1.0.7
+
 ## 2.0.3
 
 * TODO: Migrate from 1.0.6
@@ -13,6 +17,10 @@
 ## 2.0.0
 
 * TODO: Migrate to Null Safety
+
+## 1.0.7
+
+* TODO: Remove imageFileBuilder thumbImageFileBuilder imageAssetBuilder and thumImageAssetBuilder properties.
 
 ## 1.0.6
 

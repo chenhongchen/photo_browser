@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/photo_page.dart';
 
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
-typedef ImageFileBuilder = File Function(int index);
 typedef PageCodeBuilder = Positioned Function(
   BuildContext,
   int curIndex,
@@ -110,11 +107,11 @@ class PhotoBrowser extends StatefulWidget {
   final StringBuilder? heroTagBuilder;
 
   /// 设置每张大图的imageProvider
-  /// imageProviderBuilder、imageUrlBuilder、imageAssetBuilder三选一，必选
+  /// imageProviderBuilder、imageUrlBuilder二选一，必选
   final ImageProviderBuilder? imageProviderBuilder;
 
   /// 设置每张缩略图的imageProvider
-  /// thumImageProviderBuilder、thumImageUrlBuilder、thumImageAssetBuilder三选一，可选
+  /// thumImageProviderBuilder、thumImageUrlBuilder二选一，可选
   final ImageProviderBuilder? thumImageProviderBuilder;
 
   /// 设置每张大图的url
@@ -122,18 +119,6 @@ class PhotoBrowser extends StatefulWidget {
 
   /// 设置每张缩略图的url
   final StringBuilder? thumImageUrlBuilder;
-
-  /// 设置每张缩大图的file
-  final ImageFileBuilder? imageFileBuilder;
-
-  /// 设置每张缩略图的file
-  final ImageFileBuilder? thumImageFileBuilder;
-
-  /// 设置每张缩大图的asset
-  final StringBuilder? imageAssetBuilder;
-
-  /// 设置每张缩略图的asset
-  final StringBuilder? thumImageAssetBuilder;
 
   /// 设置自定义图片加载指示器，为null则使用默认的
   final LoadingBuilder? loadingBuilder;
@@ -183,10 +168,6 @@ class PhotoBrowser extends StatefulWidget {
     this.thumImageProviderBuilder,
     this.imageUrlBuilder,
     this.thumImageUrlBuilder,
-    this.imageFileBuilder,
-    this.thumImageFileBuilder,
-    this.imageAssetBuilder,
-    this.thumImageAssetBuilder,
     this.loadingBuilder,
     this.loadFailedChild,
     this.pageCodeBuild,
@@ -202,12 +183,8 @@ class PhotoBrowser extends StatefulWidget {
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
-  })  : assert(
-            imageProviderBuilder != null ||
-                imageUrlBuilder != null ||
-                imageFileBuilder != null ||
-                imageAssetBuilder != null,
-            'imageProviderBuilder,imageUrlBuilder,imageFileBuilder,imageAssetBuilder can not all null'),
+  })  : assert(imageProviderBuilder != null || imageUrlBuilder != null,
+            'imageProviderBuilder,imageUrlBuilder can not all null'),
         super(key: key) {
     _initImageProvider = _getImageProvider(initIndex);
     _initThumImageProvider = _getThumImageProvider(initIndex);
@@ -222,10 +199,6 @@ class PhotoBrowser extends StatefulWidget {
       imageProvider = imageProviderBuilder!(index);
     } else if (imageUrlBuilder != null) {
       imageProvider = NetworkImage(imageUrlBuilder!(index));
-    } else if (imageFileBuilder != null) {
-      imageProvider = FileImage(imageFileBuilder!(index));
-    } else if (imageAssetBuilder != null) {
-      imageProvider = AssetImage(imageAssetBuilder!(index));
     }
     return imageProvider!;
   }
@@ -239,10 +212,6 @@ class PhotoBrowser extends StatefulWidget {
       thumImageProvider = thumImageProviderBuilder!(index);
     } else if (thumImageUrlBuilder != null) {
       thumImageProvider = NetworkImage(thumImageUrlBuilder!(index));
-    } else if (thumImageFileBuilder != null) {
-      thumImageProvider = FileImage(thumImageFileBuilder!(index));
-    } else if (thumImageAssetBuilder != null) {
-      thumImageProvider = AssetImage(thumImageAssetBuilder!(index));
     }
     return thumImageProvider;
   }
