@@ -1,3 +1,7 @@
+## 1.0.7
+
+* TODO: Remove imageFileBuilder thumbImageFileBuilder imageAssetBuilder and thumImageAssetBuilder properties.
+
 ## 1.0.6
 
 * TODO: Add imageFileBuilder and thumbImageFileBuilder properties.

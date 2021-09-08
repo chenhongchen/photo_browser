@@ -1,6 +1,6 @@
 # photo_browser
 
-Flutter plugin for photos browse.
+PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and provides picture data that you can use to download to your local album.
 
 ## Demo
 
@@ -10,7 +10,7 @@ Flutter plugin for photos browse.
 
 ```yaml
 dependencies:
-  photo_browser: 1.0.6
+  photo_browser: 1.0.7
 ```
 
 ```dart
