@@ -5,7 +5,7 @@ import 'package:photo_browser/photo_page.dart';
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
 typedef PageCodeBuilder = Positioned Function(
-  BuildContext,
+  BuildContext context,
   int curIndex,
   int totalNum,
 );
