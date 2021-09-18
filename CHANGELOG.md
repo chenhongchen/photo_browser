@@ -1,3 +1,7 @@
+## 1.0.8
+
+* TODO: Can monitor pod completion.
+
 ## 1.0.7
 
 * TODO: Remove imageFileBuilder thumbImageFileBuilder imageAssetBuilder and thumImageAssetBuilder properties.

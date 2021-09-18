@@ -39,10 +39,11 @@ class PhotoBrowser extends StatefulWidget {
                 return page ?? this;
               }));
     }
-    return _fadePush(
+    return await _fadePush(
       context,
       rootNavigator: rootNavigator,
       nullOk: nullOk,
+      fullscreenDialog: fullscreenDialog,
       transitionDuration: transitionDuration,
       page: page,
     );
@@ -52,6 +53,7 @@ class PhotoBrowser extends StatefulWidget {
     BuildContext context, {
     bool rootNavigator = true,
     bool nullOk = false,
+    bool fullscreenDialog = true,
     Duration transitionDuration,
     Widget page,
   }) async {
@@ -60,6 +62,7 @@ class PhotoBrowser extends StatefulWidget {
         .push(
       PageRouteBuilder(
         opaque: false,
+        fullscreenDialog: fullscreenDialog,
         pageBuilder: (BuildContext context, Animation animation,
             Animation secondaryAnimation) {
           return page ?? this;

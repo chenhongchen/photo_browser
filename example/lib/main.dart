@@ -105,7 +105,11 @@ class _MyAppState extends State<MyApp> {
         // photoBrowser.push(context);
 
         // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
-        photoBrowser.push(context, page: HCHud(child: photoBrowser));
+        photoBrowser
+            .push(context, page: HCHud(child: photoBrowser))
+            .then((value) {
+          print('PhotoBrowser poped');
+        });
       },
       child: Hero(
         tag: _heroTags[cellIndex],
