@@ -1,3 +1,7 @@
+## 2.0.5
+
+* TODO: Migrate from 1.0.8
+
 ## 2.0.4
 
 * TODO: Migrate from 1.0.7
@@ -17,6 +21,10 @@
 ## 2.0.0
 
 * TODO: Migrate to Null Safety
+
+## 1.0.8
+
+* TODO: Can monitor pod completion.
 
 ## 1.0.7
 

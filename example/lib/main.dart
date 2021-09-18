@@ -105,7 +105,11 @@ class _MyAppState extends State<MyApp> {
         // photoBrowser.push(context);
 
         // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
-        photoBrowser.push(context, page: HCHud(child: photoBrowser));
+        photoBrowser
+            .push(context, page: HCHud(child: photoBrowser))
+            .then((value) {
+          print('PhotoBrowser poped');
+        });
       },
       child: Hero(
         tag: _heroTags[cellIndex],
@@ -214,11 +218,11 @@ class _MyAppState extends State<MyApp> {
             imageInfo = _browerController.thumImageInfos[curIndex];
           }
           if (imageInfo == null) {
-            HCHud.of(context).showErrorAndDismiss(text: '没有发现图片');
+            HCHud.of(context)?.showErrorAndDismiss(text: '没有发现图片');
             return;
           }
 
-          HCHud.of(context).showLoading(text: '正在保存...');
+          HCHud.of(context)?.showLoading(text: '正在保存...');
 
           // 转换数据及保存为图片
           var byteData =
@@ -228,9 +232,9 @@ class _MyAppState extends State<MyApp> {
             var result = await ImageGallerySaver.saveImage(
                 Uint8List.fromList(uint8list));
             if (result != null) {
-              HCHud.of(context).showSuccessAndDismiss(text: '保存成功');
+              HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {
-              HCHud.of(context).showErrorAndDismiss(text: '保存失败');
+              HCHud.of(context)?.showErrorAndDismiss(text: '保存失败');
             }
           }
         },

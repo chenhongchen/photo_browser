@@ -10,7 +10,7 @@ PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and 
 
 ```yaml
 dependencies:
-  photo_browser: 2.0.4
+  photo_browser: 2.0.5
 ```
 
 ```dart
@@ -48,7 +48,11 @@ Widget _buildCell(BuildContext context, int cellIndex) {
       // photoBrowser.push(context);
 
       // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
-      photoBrowser.push(context, page: HCHud(child: photoBrowser));
+      photoBrowser
+          .push(context, page: HCHud(child: photoBrowser))
+          .then((value) {
+        print('PhotoBrowser poped');
+      });
     },
     child: Hero(
       tag: _heroTags[cellIndex],
