@@ -230,7 +230,6 @@ class PhotoBrowser extends StatefulWidget {
 class _PhotoBrowserState extends State<PhotoBrowser> {
   PageController _pageController;
   int _curPage = 0;
-  bool _forbitScroll = false;
   double _lastDownY;
   bool _willPop = false;
   BoxConstraints _constraints;
@@ -291,12 +290,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildPageView() {
     return GestureDetector(
       onTap: widget.allowTapToPop ? _onTap : null,
-      onVerticalDragDown: _forbitScroll == true || !widget.allowSwipeDownToPop
-          ? null
-          : _onVerticalDragDown,
-      onVerticalDragUpdate: _forbitScroll == true || !widget.allowSwipeDownToPop
-          ? null
-          : _onVerticalDragUpdate,
+      onVerticalDragDown:
+          !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
+      onVerticalDragUpdate:
+          !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
       child: PageView.builder(
         reverse: widget.reverse,
         controller: _pageController,
@@ -310,9 +307,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         itemCount: widget.itemCount,
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
-        physics: _forbitScroll
-            ? NeverScrollableScrollPhysics()
-            : widget.scrollPhysics,
+        physics: widget.scrollPhysics,
       ),
     );
   }
@@ -338,10 +333,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       thumImageLoadSuccess: (ImageInfo imageInfo) {
         widget.controller.thumImageInfos[index] = imageInfo;
       },
-      onPhotoScaleChanged: (double scale) {
-        _forbitScroll = scale > 1;
-        setState(() {});
-      },
+      onPhotoScaleChanged: (double scale) {},
     );
   }
 

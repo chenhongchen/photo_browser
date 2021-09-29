@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/photo_browser.dart';
 
@@ -89,6 +90,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
 
   AnimationController _positionAnimationController;
   Animation<Offset> _positionAnimation;
+
+  _Hit _hit = _Hit();
 
   @override
   void initState() {
@@ -204,6 +207,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
 
   void _handleScaleAnimation() {
     _scale = _scaleAnimation.value;
+    _setHit();
     setState(() {});
   }
 
@@ -293,6 +297,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     if (widget.onPhotoScaleChanged != null && _scale != _oldScale) {
       widget.onPhotoScaleChanged(_scale);
     }
+    _setHit();
     setState(() {});
   }
 
@@ -306,6 +311,20 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
   }
 
+  void _setHit() {
+    _hit.hitType = _HitType.all;
+    if (_scale > 1) {
+      _hit.hitType = _HitType.none;
+      double rightDistance =
+          (_offset.dx - (_imageDefW - _constraints.maxWidth * _scale)).abs();
+      if (_offset.dx.abs() <= 0.01) {
+        _hit.hitType = _HitType.left;
+      } else if (rightDistance < 0.01) {
+        _hit.hitType = _HitType.right;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_imageProviderInfo.status == _ImageLoadStatus.failed &&
@@ -313,6 +332,28 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             _thumImageProvideInfo?.status == _ImageLoadStatus.failed)) {
       return _buildLoadFailed();
     }
+
+    final Map<Type, GestureRecognizerFactory> gestures =
+        <Type, GestureRecognizerFactory>{};
+
+    gestures[_ScaleGestureRecognizer] =
+        GestureRecognizerFactoryWithHandlers<_ScaleGestureRecognizer>(
+      () => _ScaleGestureRecognizer(this, _hit),
+      (_ScaleGestureRecognizer instance) {
+        instance
+          ..onStart = _onScaleStart
+          ..onUpdate = _onScaleUpdate
+          ..onEnd = _onScaleEnd;
+      },
+    );
+
+    gestures[DoubleTapGestureRecognizer] =
+        GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+      () => DoubleTapGestureRecognizer(debugOwner: this),
+      (DoubleTapGestureRecognizer instance) {
+        instance..onDoubleTap = _onDoubleTap;
+      },
+    );
 
     return LayoutBuilder(
       builder: (
@@ -328,16 +369,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         } else {
           content = _buildContent(context, constraints, _thumImageProvideInfo);
         }
-        return GestureDetector(
-          onDoubleTap: _onDoubleTap,
-          onScaleStart: _onScaleStart,
-          onScaleUpdate: _onScaleUpdate,
-          onScaleEnd: _onScaleEnd,
+        return RawGestureDetector(
+          gestures: gestures,
           child: Container(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
             color: widget.backcolor ?? Colors.black,
-            child: content,
+            child: ClipRect(
+              child: content,
+            ),
           ),
         );
       },
@@ -470,4 +510,88 @@ class _SingleChildLayoutDelegate extends SingleChildLayoutDelegate {
 
   @override
   int get hashCode => subjectSize.hashCode ^ offset.hashCode;
+}
+
+class _ScaleGestureRecognizer extends ScaleGestureRecognizer {
+  _ScaleGestureRecognizer(
+    Object debugOwner,
+    this.hitJugde,
+  ) : super(debugOwner: debugOwner);
+
+  Map<int, Offset> _pointerLocations = <int, Offset>{};
+
+  final _Hit hitJugde;
+  Offset _initialFocalPoint;
+  Offset _currentFocalPoint;
+
+  bool ready = true;
+
+  @override
+  void addAllowedPointer(PointerEvent event) {
+    if (ready) {
+      ready = false;
+      _pointerLocations = <int, Offset>{};
+    }
+    super.addAllowedPointer(event);
+  }
+
+  @override
+  void didStopTrackingLastPointer(int pointer) {
+    ready = true;
+    super.didStopTrackingLastPointer(pointer);
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    _computeEvent(event);
+    _updateDistances();
+    _decideIfWeAcceptEvent(event);
+    super.handleEvent(event);
+  }
+
+  void _computeEvent(PointerEvent event) {
+    if (event is PointerMoveEvent) {
+      if (!event.synthesized) {
+        _pointerLocations[event.pointer] = event.position;
+      }
+    } else if (event is PointerDownEvent) {
+      _pointerLocations[event.pointer] = event.position;
+    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _pointerLocations.remove(event.pointer);
+    }
+
+    _initialFocalPoint = _currentFocalPoint;
+  }
+
+  void _updateDistances() {
+    final int count = _pointerLocations.keys.length;
+    Offset focalPoint = Offset.zero;
+    for (int pointer in _pointerLocations.keys)
+      focalPoint += _pointerLocations[pointer];
+    _currentFocalPoint =
+        count > 0 ? focalPoint / count.toDouble() : Offset.zero;
+  }
+
+  void _decideIfWeAcceptEvent(PointerEvent event) {
+    if (!(event is PointerMoveEvent)) {
+      return;
+    }
+    final move = _initialFocalPoint - _currentFocalPoint;
+    if (hitJugde.hitType == _HitType.none ||
+        (hitJugde.hitType == _HitType.left && move.dx > 0) ||
+        (hitJugde.hitType == _HitType.right && move.dx < 0)) {
+      resolve(GestureDisposition.accepted);
+    }
+  }
+}
+
+enum _HitType {
+  all,
+  left,
+  right,
+  none,
+}
+
+class _Hit {
+  _HitType hitType = _HitType.all;
 }
