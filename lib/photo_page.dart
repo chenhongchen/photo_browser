@@ -528,7 +528,7 @@ class _ScaleGestureRecognizer extends ScaleGestureRecognizer {
   bool ready = true;
 
   @override
-  void addAllowedPointer(PointerEvent event) {
+  void addAllowedPointer(event) {
     if (ready) {
       ready = false;
       _pointerLocations = <int, Offset>{};
