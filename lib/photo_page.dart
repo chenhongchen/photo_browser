@@ -317,7 +317,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       _hit.hitType = _HitType.none;
       double rightDistance =
           (_offset.dx - (_imageDefW - _constraints.maxWidth * _scale)).abs();
-      if (_offset.dx.abs() <= 0.01) {
+      if (_offset.dx.abs() < 0.01) {
         _hit.hitType = _HitType.left;
       } else if (rightDistance < 0.01) {
         _hit.hitType = _HitType.right;
@@ -515,12 +515,12 @@ class _SingleChildLayoutDelegate extends SingleChildLayoutDelegate {
 class _ScaleGestureRecognizer extends ScaleGestureRecognizer {
   _ScaleGestureRecognizer(
     Object debugOwner,
-    this.hitJugde,
+    this.hit,
   ) : super(debugOwner: debugOwner);
 
-  Map<int, Offset> _pointerLocations = <int, Offset>{};
+  final _Hit hit;
 
-  final _Hit hitJugde;
+  Map<int, Offset> _pointerLocations = <int, Offset>{};
   Offset _initialFocalPoint;
   Offset _currentFocalPoint;
 
@@ -577,9 +577,9 @@ class _ScaleGestureRecognizer extends ScaleGestureRecognizer {
       return;
     }
     final move = _initialFocalPoint - _currentFocalPoint;
-    if (hitJugde.hitType == _HitType.none ||
-        (hitJugde.hitType == _HitType.left && move.dx > 0) ||
-        (hitJugde.hitType == _HitType.right && move.dx < 0)) {
+    if (hit.hitType == _HitType.none ||
+        (hit.hitType == _HitType.left && move.dx > 0) ||
+        (hit.hitType == _HitType.right && move.dx < 0)) {
       resolve(GestureDisposition.accepted);
     }
   }

@@ -1,3 +1,7 @@
+## 1.0.9
+
+* TODO: Enlarged pictures can also switch pages with gestures.
+
 ## 1.0.8
 
 * TODO: Can monitor pod completion.
