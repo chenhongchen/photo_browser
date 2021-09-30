@@ -1,3 +1,7 @@
+## 2.0.6
+
+* TODO: Migrate from 1.0.9
+
 ## 2.0.5
 
 * TODO: Migrate from 1.0.8
@@ -21,6 +25,10 @@
 ## 2.0.0
 
 * TODO: Migrate to Null Safety
+
+## 1.0.9
+
+* TODO: Enlarged pictures can also switch pages with gestures.
 
 ## 1.0.8
 
