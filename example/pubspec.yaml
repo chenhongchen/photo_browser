@@ -12,8 +12,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  image_gallery_saver: 1.6.9
-  permission_handler: 8.1.4+2
+  image_gallery_saver: 1.7.0
+  permission_handler: 8.2.2
 
   flt_hc_hud:
     git:
