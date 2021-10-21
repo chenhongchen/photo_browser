@@ -796,7 +796,7 @@ class DragDownPopConfig {
       : this.triggerScale =
             (triggerScale != null && triggerScale < 1 && triggerScale > 0)
                 ? triggerScale
-                : 0.25,
+                : 0.2,
         this.bgColorMinOpacity = (bgColorMinOpacity != null &&
                 bgColorMinOpacity <= 1 &&
                 bgColorMinOpacity >= 0)

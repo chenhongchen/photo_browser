@@ -103,7 +103,6 @@ class _MyAppState extends State<MyApp> {
           loadFailedChild: _failedChild(), // 加载失败
           onPageChanged: (int index) {
             _curIndex = index;
-            setState(() {});
           },
         );
 
@@ -114,7 +113,8 @@ class _MyAppState extends State<MyApp> {
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          Future.delayed(Duration(milliseconds: 500), () {
+          setState(() {});
+          Future.delayed(Duration(milliseconds: 600), () {
             _initIndex = null;
             _curIndex = null;
             setState(() {});
