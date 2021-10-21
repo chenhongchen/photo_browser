@@ -226,6 +226,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   double? _lastDownY;
   bool _willPop = false;
   BoxConstraints? _constraints;
+  DragDownPopStatus _dragDownPopStatus = DragDownPopStatus.none;
+  double _dragDownPopScale = 1.0;
 
   @override
   void initState() {
@@ -273,7 +275,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
           widget.positionsBuilder!(context, _curPage, widget.itemCount));
     }
     return Container(
-      color: widget.backcolor ?? Colors.black,
+      color: (widget.backcolor ?? Colors.black).withOpacity(_dragDownPopScale),
       child: Stack(
         children: children,
       ),
@@ -283,10 +285,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildPageView() {
     return GestureDetector(
       onTap: widget.allowTapToPop ? _onTap : null,
-      onVerticalDragDown:
-          !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
-      onVerticalDragUpdate:
-          !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
+      // onVerticalDragDown:
+      //     !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
+      // onVerticalDragUpdate:
+      //     !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
       child: PageView.builder(
         reverse: widget.reverse,
         controller: _pageController,
@@ -300,7 +302,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         itemCount: widget.itemCount,
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
-        physics: widget.scrollPhysics,
+        physics: _dragDownPopStatus == DragDownPopStatus.dragging
+            ? NeverScrollableScrollPhysics()
+            : widget.scrollPhysics,
       ),
     );
   }
@@ -327,6 +331,14 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         widget.controller?.thumImageInfos[index] = imageInfo;
       },
       onPhotoScaleChanged: (double scale) {},
+      dragDownPopChanged: (DragDownPopStatus status, double dragScale) {
+        _dragDownPopStatus = status;
+        _dragDownPopScale = dragScale;
+        if (status == DragDownPopStatus.canPop) {
+          _pop();
+        }
+        setState(() {});
+      },
     );
   }
 

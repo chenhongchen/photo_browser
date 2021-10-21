@@ -1,7 +1,14 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/photo_browser.dart';
+
+enum DragDownPopStatus {
+  none,
+  dragging,
+  canPop,
+}
 
 typedef LoadingBuilder = Widget Function(
   BuildContext context,
@@ -11,6 +18,9 @@ typedef LoadingBuilder = Widget Function(
 typedef OnPhotoScaleChanged = void Function(double scale);
 
 typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
+
+typedef DragDownPopChanged = void Function(
+    DragDownPopStatus status, double dragScale);
 
 enum _ImageLoadStatus {
   loading,
@@ -45,6 +55,7 @@ class PhotoPage extends StatefulWidget {
     this.imageLoadSuccess,
     this.thumImageLoadSuccess,
     this.onPhotoScaleChanged,
+    this.dragDownPopChanged,
   }) : super(key: key);
 
   final ImageProvider imageProvider;
@@ -61,6 +72,7 @@ class PhotoPage extends StatefulWidget {
   final ImageLoadSuccess? imageLoadSuccess;
   final ImageLoadSuccess? thumImageLoadSuccess;
   final OnPhotoScaleChanged? onPhotoScaleChanged;
+  final DragDownPopChanged? dragDownPopChanged;
 
   @override
   State<StatefulWidget> createState() {
@@ -92,6 +104,11 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Animation<Offset>? _positionAnimation;
 
   _Hit _hit = _Hit();
+  //
+  Offset _oldLocalFocalPoint = Offset.zero;
+  Offset _contentOffset = Offset.zero;
+  DragDownPopStatus _dragDownPopStatus = DragDownPopStatus.none;
+  double _dragDownPopScale = 1.0;
 
   @override
   void initState() {
@@ -278,6 +295,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   void _onScaleStart(ScaleStartDetails details) {
     _oldScale = _scale;
     _normalizedOffset = (details.focalPoint - _offset) / _scale;
+    _oldLocalFocalPoint = details.localFocalPoint;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
@@ -299,10 +317,48 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       widget.onPhotoScaleChanged!(_scale);
     }
     _setHit();
+
+    ///
+    if (details.pointerCount == 1 && _scale <= 1) {
+      double dy = details.localFocalPoint.dy - _oldLocalFocalPoint.dy;
+      double dx = details.localFocalPoint.dx - _oldLocalFocalPoint.dx;
+      if (_dragDownPopStatus == DragDownPopStatus.dragging ||
+          (dy > 0 && dy.abs() > dx.abs())) {
+        _dragDownPopStatus = DragDownPopStatus.dragging;
+        _contentOffset =
+            Offset(_contentOffset.dx + dx, max(_contentOffset.dy + dy, 0));
+        _dragDownPopScale = 1.0;
+        if (_constraints?.maxHeight != null) {
+          _dragDownPopScale = max(
+              (_constraints!.maxHeight * 0.25 - _contentOffset.dy) /
+                  (_constraints!.maxHeight * 0.25),
+              0.40);
+          if (widget.dragDownPopChanged != null) {
+            widget.dragDownPopChanged!(_dragDownPopStatus, _dragDownPopScale);
+          }
+        }
+      }
+      _oldLocalFocalPoint = details.localFocalPoint;
+    }
     setState(() {});
   }
 
-  void _onScaleEnd(ScaleEndDetails details) {}
+  void _onScaleEnd(ScaleEndDetails details) {
+    double height = (_constraints?.maxHeight ?? 0) * _dragDownPopScale;
+    double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5;
+    final triggerD = (_constraints?.maxHeight ?? 0) * 0.2;
+    if (_contentOffset.dy + dy > triggerD) {
+      _dragDownPopStatus = DragDownPopStatus.canPop;
+    } else {
+      _dragDownPopStatus = DragDownPopStatus.none;
+      _contentOffset = Offset.zero;
+      _dragDownPopScale = 1.0;
+    }
+    if (widget.dragDownPopChanged != null) {
+      widget.dragDownPopChanged!(_dragDownPopStatus, _dragDownPopScale);
+    }
+    setState(() {});
+  }
 
   Offset _clampOffset(Offset offset) {
     final Size size = context.size ?? Size.zero; //容器的大小
@@ -370,14 +426,31 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         } else {
           content = _buildContent(context, constraints, _thumImageProvideInfo!);
         }
+
+        double width = (_constraints?.maxWidth ?? 0) * _dragDownPopScale;
+        double height = (_constraints?.maxHeight ?? 0) * _dragDownPopScale;
+        double dx = ((_constraints?.maxWidth ?? 0) - width) * 0.5 * _scale;
+        double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5 * _scale;
+
         return RawGestureDetector(
           gestures: gestures,
           child: Container(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
-            color: widget.backcolor ?? Colors.black,
+            color: (widget.backcolor ?? Colors.black)
+                .withOpacity(_dragDownPopScale),
             child: ClipRect(
-              child: content,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: _contentOffset.dx + dx,
+                    top: _contentOffset.dy + dy,
+                    width: (_constraints?.maxWidth ?? 0) * _dragDownPopScale,
+                    height: (_constraints?.maxHeight ?? 0) * _dragDownPopScale,
+                    child: content,
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -407,7 +480,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    if (widget.willPop) {
+    if (widget.willPop && _dragDownPopScale == 1) {
       double x =
           (_constraints!.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
       double y =
