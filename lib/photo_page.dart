@@ -51,6 +51,8 @@ class PhotoPage extends StatefulWidget {
     this.allowShrinkPhoto = true,
     this.willPop = false,
     this.gaplessPlayback,
+    this.allowDragDownToPop = false,
+    this.dragDownPopConfig = const DragDownPopConfig(),
     this.filterQuality,
     this.imageLoadSuccess,
     this.thumImageLoadSuccess,
@@ -67,6 +69,8 @@ class PhotoPage extends StatefulWidget {
   final RouteType routeType;
   final bool allowShrinkPhoto;
   final bool willPop;
+  final bool allowDragDownToPop;
+  final DragDownPopConfig dragDownPopConfig;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
   final ImageLoadSuccess? imageLoadSuccess;
@@ -392,53 +396,12 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       widget.onPhotoScaleChanged!(_scale);
     }
     _setHit();
-
-    ///
-    if (details.pointerCount == 1 && _scale <= 1) {
-      double dy = details.localFocalPoint.dy - _oldLocalFocalPoint.dy;
-      double dx = details.localFocalPoint.dx - _oldLocalFocalPoint.dx;
-      if (_dragDownPopStatus == DragDownPopStatus.dragging ||
-          (dy > 0 && dy.abs() > dx.abs())) {
-        _dragDownPopStatus = DragDownPopStatus.dragging;
-        _dragDownContentOffset = Offset(_dragDownContentOffset.dx + dx,
-            max(_dragDownContentOffset.dy + dy, 0));
-        _dragDownContentScale = 1.0;
-        _dragDownBgColorScale = 1.0;
-        if (_constraints?.maxHeight != null) {
-          _dragDownContentScale = max(
-              (_constraints!.maxHeight * 0.25 - _dragDownContentOffset.dy) /
-                  (_constraints!.maxHeight * 0.25),
-              0.50);
-          _dragDownBgColorScale = max(
-              (_constraints!.maxHeight * 0.25 - _dragDownContentOffset.dy) /
-                  (_constraints!.maxHeight * 0.25),
-              0.1);
-          if (widget.dragDownPopChanged != null) {
-            widget.dragDownPopChanged!(
-                _dragDownPopStatus, _dragDownBgColorScale);
-          }
-        }
-      }
-      _oldLocalFocalPoint = details.localFocalPoint;
-    }
+    _updateDragDownPop(details);
     setState(() {});
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
-    double height = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
-    double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5;
-    final triggerD = (_constraints?.maxHeight ?? 0) * 0.25;
-    if (_dragDownContentOffset.dy + dy > triggerD) {
-      _dragDownPopStatus = DragDownPopStatus.canPop;
-    } else {
-      _dragDownPopStatus = DragDownPopStatus.none;
-      _animateDragDownScale(_dragDownContentScale, 1.0);
-      _animateDragDownPosition(_dragDownContentOffset, Offset.zero);
-      _animateDragDownBgColorScale(_dragDownBgColorScale, 1.0);
-    }
-    if (widget.dragDownPopChanged != null) {
-      widget.dragDownPopChanged!(_dragDownPopStatus, _dragDownBgColorScale);
-    }
+    _endDragDownPop(details);
     setState(() {});
   }
 
@@ -461,6 +424,59 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       } else if (rightDistance < 0.01) {
         _hit.hitType = _HitType.right;
       }
+    }
+  }
+
+  void _updateDragDownPop(ScaleUpdateDetails details) {
+    if (widget.allowDragDownToPop && details.pointerCount == 1 && _scale <= 1) {
+      double dy = details.localFocalPoint.dy - _oldLocalFocalPoint.dy;
+      double dx = details.localFocalPoint.dx - _oldLocalFocalPoint.dx;
+
+      double rate = widget.dragDownPopConfig.changeRate;
+      double contentMinScale = widget.dragDownPopConfig.contentMinScale;
+      double bgColorMinOpacity = widget.dragDownPopConfig.bgColorMinOpacity;
+
+      if (_dragDownPopStatus == DragDownPopStatus.dragging ||
+          (dy > 0 && dy.abs() > dx.abs())) {
+        _dragDownPopStatus = DragDownPopStatus.dragging;
+        _dragDownContentOffset = Offset(_dragDownContentOffset.dx + dx,
+            max(_dragDownContentOffset.dy + dy, 0));
+        _dragDownContentScale = 1.0;
+        _dragDownBgColorScale = 1.0;
+        if (_constraints?.maxHeight != null) {
+          _dragDownContentScale = max(
+              (_constraints!.maxHeight * rate - _dragDownContentOffset.dy) /
+                  (_constraints!.maxHeight * rate),
+              contentMinScale);
+          _dragDownBgColorScale = max(
+              (_constraints!.maxHeight * rate - _dragDownContentOffset.dy) /
+                  (_constraints!.maxHeight * rate),
+              bgColorMinOpacity);
+          if (widget.dragDownPopChanged != null) {
+            widget.dragDownPopChanged!(
+                _dragDownPopStatus, _dragDownBgColorScale);
+          }
+        }
+      }
+      _oldLocalFocalPoint = details.localFocalPoint;
+    }
+  }
+
+  void _endDragDownPop(ScaleEndDetails details) {
+    double height = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
+    double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5;
+    final triggerD =
+        (_constraints?.maxHeight ?? 0) * widget.dragDownPopConfig.triggerScale;
+    if (_dragDownContentOffset.dy + dy > triggerD) {
+      _dragDownPopStatus = DragDownPopStatus.canPop;
+    } else {
+      _dragDownPopStatus = DragDownPopStatus.none;
+      _animateDragDownScale(_dragDownContentScale, 1.0);
+      _animateDragDownPosition(_dragDownContentOffset, Offset.zero);
+      _animateDragDownBgColorScale(_dragDownBgColorScale, 1.0);
+    }
+    if (widget.dragDownPopChanged != null) {
+      widget.dragDownPopChanged!(_dragDownPopStatus, _dragDownBgColorScale);
     }
   }
 
@@ -754,4 +770,45 @@ enum _HitType {
 
 class _Hit {
   _HitType hitType = _HitType.all;
+}
+
+class DragDownPopConfig {
+  /// 触发pop的下拉距离占全屏的比例
+  /// 取值范围：(0.0, 1.0)
+  final double triggerScale;
+
+  /// 背景色最小透明度
+  /// 取值范围：[0.0, 1.0]
+  final double bgColorMinOpacity;
+
+  /// 下拉时内容缩小的最小比例
+  /// 取值范围：(0.0~1.0]
+  final double contentMinScale;
+
+  /// 下拉时图片大小、背景色透明度变化的快慢
+  /// 取值范围：(0.0~1.0]，值越小变化越快
+  final double changeRate;
+  const DragDownPopConfig(
+      {double? triggerScale,
+      double? bgColorMinOpacity,
+      double? contentMinScale,
+      double? changeRate})
+      : this.triggerScale =
+            (triggerScale != null && triggerScale < 1 && triggerScale > 0)
+                ? triggerScale
+                : 0.25,
+        this.bgColorMinOpacity = (bgColorMinOpacity != null &&
+                bgColorMinOpacity <= 1 &&
+                bgColorMinOpacity >= 0)
+            ? bgColorMinOpacity
+            : 0.0,
+        this.contentMinScale = (contentMinScale != null &&
+                contentMinScale <= 1 &&
+                contentMinScale > 0)
+            ? contentMinScale
+            : 0.4,
+        this.changeRate =
+            (changeRate != null && changeRate <= 1 && changeRate > 0)
+                ? changeRate
+                : 0.25;
 }

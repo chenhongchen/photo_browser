@@ -141,11 +141,18 @@ class PhotoBrowser extends StatefulWidget {
   /// 单击关闭功能开关
   final bool allowTapToPop;
 
-  /// 向下轻扫关闭功能开关
+  /// 向下轻扫关闭功能开关（allowDragDownToPop 为）
+  /// allowDragDownToPop 等于 true 则allowSwipeDownToPop设置无效
   final bool allowSwipeDownToPop;
+
+  /// 下拉关闭功能开关
+  final bool allowDragDownToPop;
 
   /// 滚动状态可否关闭
   final bool canPopWhenScrolling;
+
+  /// 下拉关闭功能配置
+  final DragDownPopConfig dragDownPopConfig;
 
   final bool reverse;
   final bool? gaplessPlayback;
@@ -179,14 +186,18 @@ class PhotoBrowser extends StatefulWidget {
     this.filterQuality,
     this.backcolor,
     this.allowTapToPop = true,
-    this.allowSwipeDownToPop = true,
+    bool allowSwipeDownToPop = true,
+    this.allowDragDownToPop = false,
     this.canPopWhenScrolling = true,
+    this.dragDownPopConfig = const DragDownPopConfig(),
     this.reverse = false,
     this.pageController,
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
-  })  : assert(imageProviderBuilder != null || imageUrlBuilder != null,
+  })  : this.allowSwipeDownToPop =
+            (allowDragDownToPop == true) ? false : allowSwipeDownToPop,
+        assert(imageProviderBuilder != null || imageUrlBuilder != null,
             'imageProviderBuilder,imageUrlBuilder can not all null'),
         super(key: key) {
     _initImageProvider = _getImageProvider(initIndex);
@@ -285,10 +296,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildPageView() {
     return GestureDetector(
       onTap: widget.allowTapToPop ? _onTap : null,
-      // onVerticalDragDown:
-      //     !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
-      // onVerticalDragUpdate:
-      //     !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
+      onVerticalDragDown:
+          !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
+      onVerticalDragUpdate:
+          !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
       child: PageView.builder(
         reverse: widget.reverse,
         controller: _pageController,
@@ -322,6 +333,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
           : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
+      allowDragDownToPop: widget.allowDragDownToPop,
+      dragDownPopConfig: widget.dragDownPopConfig,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
       imageLoadSuccess: (ImageInfo imageInfo) {
