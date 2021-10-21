@@ -25,6 +25,8 @@ class _MyAppState extends State<MyApp> {
   List<String> _heroTags = <String>[];
   PhotoBrowerController _browerController = PhotoBrowerController();
   bool _showTip = true;
+  int? _initIndex;
+  int? _curIndex;
 
   @override
   void initState() {
@@ -87,6 +89,7 @@ class _MyAppState extends State<MyApp> {
           controller: _browerController,
           allowTapToPop: true,
           allowSwipeDownToPop: true,
+          allowDragDownToPop: true,
           heroTagBuilder: (int index) {
             return _heroTags[index];
           }, // 飞行动画tag设置，为null则弹出动画为一般的push动画
@@ -98,7 +101,10 @@ class _MyAppState extends State<MyApp> {
           }, // 缩略图设置，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带本地缓存功能的imageProvider
           positionsBuilder: _positionsBuilder, // 可自定义Widget，如关闭按钮、保存按钮
           loadFailedChild: _failedChild(), // 加载失败
-          onPageChanged: (int index) {},
+          onPageChanged: (int index) {
+            _curIndex = index;
+            setState(() {});
+          },
         );
 
         // 可以直接push
@@ -108,16 +114,52 @@ class _MyAppState extends State<MyApp> {
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
+          Future.delayed(Duration(milliseconds: 500), () {
+            _initIndex = null;
+            _curIndex = null;
+            setState(() {});
+          });
           print('PhotoBrowser poped');
         });
+
+        setState(() {
+          _initIndex = cellIndex;
+        });
       },
-      child: Hero(
-        tag: _heroTags[cellIndex],
-        child: Image.network(
-          _thumPhotos[cellIndex],
-          fit: BoxFit.cover,
-        ),
-      ),
+      child: _initIndex == cellIndex || _curIndex == cellIndex
+          ? Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  top: 0,
+                  child: Image.network(
+                    _thumPhotos[cellIndex],
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    top: 0,
+                    child: Hero(
+                      tag: _heroTags[cellIndex],
+                      child: Image.network(
+                        _thumPhotos[cellIndex],
+                        fit: BoxFit.cover,
+                      ),
+                    )),
+              ],
+            )
+          : Hero(
+              tag: _heroTags[cellIndex],
+              child: Image.network(
+                _thumPhotos[cellIndex],
+                fit: BoxFit.cover,
+              ),
+            ),
     );
   }
 
