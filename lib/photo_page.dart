@@ -346,7 +346,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   void _onScaleEnd(ScaleEndDetails details) {
     double height = (_constraints?.maxHeight ?? 0) * _dragDownPopScale;
     double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5;
-    final triggerD = (_constraints?.maxHeight ?? 0) * 0.2;
+    final triggerD = (_constraints?.maxHeight ?? 0) * 0.25;
     if (_contentOffset.dy + dy > triggerD) {
       _dragDownPopStatus = DragDownPopStatus.canPop;
     } else {
@@ -480,14 +480,16 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
-    if (widget.willPop && _dragDownPopScale == 1) {
+    if (widget.willPop) {
       double x =
           (_constraints!.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
       double y =
           (_constraints!.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
+      double width = _imageDefW * _scale * _dragDownPopScale;
+      double height = _imageDefH * _scale * _dragDownPopScale;
       return CustomSingleChildLayout(
         delegate: _SingleChildLayoutDelegate(
-          Size(_imageDefW * _scale, _imageDefH * _scale),
+          Size(width, height),
           Offset(x, y),
         ),
         child: Hero(
