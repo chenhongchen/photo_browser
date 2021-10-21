@@ -227,7 +227,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   bool _willPop = false;
   BoxConstraints? _constraints;
   DragDownPopStatus _dragDownPopStatus = DragDownPopStatus.none;
-  double _dragDownPopScale = 1.0;
+  double _dragDownScale = 1.0;
 
   @override
   void initState() {
@@ -275,7 +275,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
           widget.positionsBuilder!(context, _curPage, widget.itemCount));
     }
     return Container(
-      color: (widget.backcolor ?? Colors.black).withOpacity(_dragDownPopScale),
+      color: (widget.backcolor ?? Colors.black).withOpacity(_dragDownScale),
       child: Stack(
         children: children,
       ),
@@ -333,7 +333,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       onPhotoScaleChanged: (double scale) {},
       dragDownPopChanged: (DragDownPopStatus status, double dragScale) {
         _dragDownPopStatus = status;
-        _dragDownPopScale = dragScale;
+        _dragDownScale = dragScale;
         if (status == DragDownPopStatus.canPop) {
           _pop();
         }
