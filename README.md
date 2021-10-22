@@ -6,11 +6,15 @@ PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and 
 
 <img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_0.gif" width="360" height="640" alt="demo"/>
 
+### Pull down to pop
+
+<img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_1.gif" width="360" height="640" alt="demo"/>
+
 ## Use it
 
 ```yaml
 dependencies:
-  photo_browser: 2.0.6
+  photo_browser: 2.0.7
 ```
 
 ```dart
@@ -23,44 +27,97 @@ import 'package:photo_browser/photo_browser.dart';
 Widget _buildCell(BuildContext context, int cellIndex) {
   return GestureDetector(
     onTap: () {
-      // 弹出图片浏览器(默认单击或下划手势可关闭)
       PhotoBrowser photoBrowser = PhotoBrowser(
         itemCount: _bigPhotos.length,
         initIndex: cellIndex,
         controller: _browerController,
         allowTapToPop: true,
         allowSwipeDownToPop: true,
+        // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
+        allowPullDownToPop: true,
+        // If heroTagBuilder is null, the pop animation is a general push animation.
         heroTagBuilder: (int index) {
           return _heroTags[index];
-        }, // 飞行动画tag设置，为null则弹出动画为一般的push动画
+        },
+        // Images setting.
+        // If you want the displayed image to be cached to disk at the same time,
+        // you can set the imageProviderBuilder property instead imageUrlBuilder,
+        // then set it with imageProvider with disk caching function.
         imageUrlBuilder: (int index) {
           return _bigPhotos[index];
-        }, // 大图设置，如果想本地缓存图片可换imageProviderBuilder属性设置，然后传入带本地缓存功能的imageProvider
+        },
+        // Thumbnails setting.
+        // If you want the displayed thumbnail to be cached to disk at the same time,
+        // you can set the thumImageProviderBuilder property instead thumImageUrlBuilder,
+        // then set it with imageProvider with disk caching function.
         thumImageUrlBuilder: (int index) {
           return _thumPhotos[index];
-        }, // 缩略图设置，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带本地缓存功能的imageProvider
-        positionsBuilder: _positionsBuilder, // 可自定义Widget，如关闭按钮、保存按钮
-        loadFailedChild: _failedChild(), // 加载失败
-        onPageChanged: (int index) {},
+        },
+        // Through the positionsBuilder property，
+        // you can create widgets on the photo browser,
+        // such as close button and save button.
+        positionsBuilder: _positionsBuilder,
+        loadFailedChild: _failedChild(),
+        onPageChanged: (int index) {
+          _curIndex = index;
+        },
       );
 
-      // 可以直接push
+      // You can push directly.
       // photoBrowser.push(context);
 
-      // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
+      // If necessary, it can also be wrapped in a widget
+      // Here it is wrapped with HCHud (a toast plugin)
       photoBrowser
           .push(context, page: HCHud(child: photoBrowser))
           .then((value) {
+        setState(() {});
+        Future.delayed(Duration(milliseconds: 600), () {
+          _initIndex = null;
+          _curIndex = null;
+          setState(() {});
+        });
         print('PhotoBrowser poped');
       });
+
+      setState(() {
+        _initIndex = cellIndex;
+      });
     },
-    child: Hero(
-      tag: _heroTags[cellIndex],
-      child: Image.network(
-        _thumPhotos[cellIndex],
-        fit: BoxFit.cover,
-      ),
-    ),
+    child: _initIndex == cellIndex || _curIndex == cellIndex
+        ? Stack(
+            children: [
+              Positioned(
+                left: 0,
+                bottom: 0,
+                right: 0,
+                top: 0,
+                child: Image.network(
+                  _thumPhotos[cellIndex],
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  top: 0,
+                  child: Hero(
+                    tag: _heroTags[cellIndex],
+                    child: Image.network(
+                      _thumPhotos[cellIndex],
+                      fit: BoxFit.cover,
+                    ),
+                  )),
+            ],
+          )
+        : Hero(
+            tag: _heroTags[cellIndex],
+            child: Image.network(
+              _thumPhotos[cellIndex],
+              fit: BoxFit.cover,
+            ),
+          ),
   );
 }
 ```
@@ -69,13 +126,15 @@ Widget _buildCell(BuildContext context, int cellIndex) {
 
 ```dart
 onTap: () {
-  // 通过控制器pop退出，显示效果和默认单击退出效果一样
+  // Pop through controller
   _browerController.pop();
 },
 ```
 
 ```dart
-// 通过控制器，获取图片数据，转换为Uint8List，可以用于保存图片
+// Through the controller,
+// the picture data is obtained and converted into uint8list,
+// which can be used to save to the album
 ImageInfo? imageInfo;
 if (_browerController.imageInfos[curIndex] != null) {
   imageInfo = _browerController.imageInfos[curIndex];
@@ -94,7 +153,7 @@ if (byteData != null) {
 
 ```dart
 onTap: () {
-  // 通过控制器，刷新PhotoBrowser
+  // Refresh the photoBrowser through the controller
   _browerController.setState(() {});
 },
 ```

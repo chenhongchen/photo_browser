@@ -4,9 +4,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/photo_browser.dart';
 
-enum DragDownPopStatus {
+enum PullDownPopStatus {
   none,
-  dragging,
+  pulling,
   canPop,
 }
 
@@ -19,8 +19,8 @@ typedef OnPhotoScaleChanged = void Function(double scale);
 
 typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
 
-typedef DragDownPopChanged = void Function(
-    DragDownPopStatus status, double dragScale);
+typedef PullDownPopChanged = void Function(
+    PullDownPopStatus status, double pullScale);
 
 enum _ImageLoadStatus {
   loading,
@@ -51,13 +51,13 @@ class PhotoPage extends StatefulWidget {
     this.allowShrinkPhoto = true,
     this.willPop = false,
     this.gaplessPlayback,
-    this.allowDragDownToPop = false,
-    this.dragDownPopConfig = const DragDownPopConfig(),
+    this.allowPullDownToPop = false,
+    this.pullDownPopConfig = const PullDownPopConfig(),
     this.filterQuality,
     this.imageLoadSuccess,
     this.thumImageLoadSuccess,
     this.onPhotoScaleChanged,
-    this.dragDownPopChanged,
+    this.pullDownPopChanged,
   }) : super(key: key);
 
   final ImageProvider imageProvider;
@@ -69,14 +69,14 @@ class PhotoPage extends StatefulWidget {
   final RouteType routeType;
   final bool allowShrinkPhoto;
   final bool willPop;
-  final bool allowDragDownToPop;
-  final DragDownPopConfig dragDownPopConfig;
+  final bool allowPullDownToPop;
+  final PullDownPopConfig pullDownPopConfig;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
   final ImageLoadSuccess? imageLoadSuccess;
   final ImageLoadSuccess? thumImageLoadSuccess;
   final OnPhotoScaleChanged? onPhotoScaleChanged;
-  final DragDownPopChanged? dragDownPopChanged;
+  final PullDownPopChanged? pullDownPopChanged;
 
   @override
   State<StatefulWidget> createState() {
@@ -107,23 +107,23 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   late AnimationController _positionAnimationController;
   Animation<Offset>? _positionAnimation;
 
-  late AnimationController _dragDownScaleAnimationController;
-  Animation<double>? _dragDownScaleAnimation;
+  late AnimationController _pullDownScaleAnimationController;
+  Animation<double>? _pullDownScaleAnimation;
 
-  late AnimationController _dragDownPositionAnimationController;
-  Animation<Offset>? _dragDownPositionAnimation;
+  late AnimationController _pullDownPositionAnimationController;
+  Animation<Offset>? _pullDownPositionAnimation;
 
-  late AnimationController _dragDownBgColorScaleAnimationController;
-  Animation<double>? _dragDownBgColorScaleAnimation;
+  late AnimationController _pullDownBgColorScaleAnimationController;
+  Animation<double>? _pullDownBgColorScaleAnimation;
 
   _Hit _hit = _Hit();
 
-  // 下拖关闭用到的相关属性
+  // 下拉pop用到的相关属性
   Offset _oldLocalFocalPoint = Offset.zero;
-  Offset _dragDownContentOffset = Offset.zero;
-  DragDownPopStatus _dragDownPopStatus = DragDownPopStatus.none;
-  double _dragDownContentScale = 1.0;
-  double _dragDownBgColorScale = 1.0;
+  Offset _pullDownContentOffset = Offset.zero;
+  PullDownPopStatus _pullDownPopStatus = PullDownPopStatus.none;
+  double _pullDownContentScale = 1.0;
+  double _pullDownBgColorScale = 1.0;
 
   @override
   void initState() {
@@ -135,15 +135,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     _positionAnimationController =
         AnimationController(duration: Duration(milliseconds: 120), vsync: this)
           ..addListener(_handlePositionAnimate);
-    _dragDownScaleAnimationController =
+    _pullDownScaleAnimationController =
         AnimationController(duration: Duration(milliseconds: 120), vsync: this)
-          ..addListener(_handleDragDownScaleAnimation);
-    _dragDownPositionAnimationController =
+          ..addListener(_handlePullDownScaleAnimation);
+    _pullDownPositionAnimationController =
         AnimationController(duration: Duration(milliseconds: 120), vsync: this)
-          ..addListener(_handleDragDownPositionAnimate);
-    _dragDownBgColorScaleAnimationController =
+          ..addListener(_handlePullDownPositionAnimate);
+    _pullDownBgColorScaleAnimationController =
         AnimationController(duration: Duration(milliseconds: 120), vsync: this)
-          ..addListener(_handleDragDownBgColorScaleAnimation);
+          ..addListener(_handlePullDownBgColorScaleAnimation);
 
     _getImageInfo();
     _getThumImageInfo();
@@ -155,15 +155,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     _scaleAnimationController.dispose();
     _positionAnimationController.removeListener(_handlePositionAnimate);
     _positionAnimationController.dispose();
-    _dragDownScaleAnimationController
-        .removeListener(_handleDragDownScaleAnimation);
-    _dragDownScaleAnimationController.dispose();
-    _dragDownPositionAnimationController
-        .removeListener(_handleDragDownPositionAnimate);
-    _dragDownPositionAnimationController.dispose();
-    _dragDownBgColorScaleAnimationController
-        .removeListener(_handleDragDownBgColorScaleAnimation);
-    _dragDownBgColorScaleAnimationController.dispose();
+    _pullDownScaleAnimationController
+        .removeListener(_handlePullDownScaleAnimation);
+    _pullDownScaleAnimationController.dispose();
+    _pullDownPositionAnimationController
+        .removeListener(_handlePullDownPositionAnimate);
+    _pullDownPositionAnimationController.dispose();
+    _pullDownBgColorScaleAnimationController
+        .removeListener(_handlePullDownBgColorScaleAnimation);
+    _pullDownBgColorScaleAnimationController.dispose();
     super.dispose();
   }
 
@@ -255,30 +255,30 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       ..fling(velocity: 0.4);
   }
 
-  void _animateDragDownScale(double from, double to) {
-    _dragDownScaleAnimation = Tween<double>(
+  void _animatePullDownScale(double from, double to) {
+    _pullDownScaleAnimation = Tween<double>(
       begin: from,
       end: to,
-    ).animate(_dragDownScaleAnimationController);
-    _dragDownScaleAnimationController
+    ).animate(_pullDownScaleAnimationController);
+    _pullDownScaleAnimationController
       ..value = 0.0
       ..fling(velocity: 0.4);
   }
 
-  void _animateDragDownPosition(Offset from, Offset to) {
-    _dragDownPositionAnimation = Tween<Offset>(begin: from, end: to)
-        .animate(_dragDownPositionAnimationController);
-    _dragDownPositionAnimationController
+  void _animatePullDownPosition(Offset from, Offset to) {
+    _pullDownPositionAnimation = Tween<Offset>(begin: from, end: to)
+        .animate(_pullDownPositionAnimationController);
+    _pullDownPositionAnimationController
       ..value = 0.0
       ..fling(velocity: 0.4);
   }
 
-  void _animateDragDownBgColorScale(double from, double to) {
-    _dragDownBgColorScaleAnimation = Tween<double>(
+  void _animatePullDownBgColorScale(double from, double to) {
+    _pullDownBgColorScaleAnimation = Tween<double>(
       begin: from,
       end: to,
-    ).animate(_dragDownBgColorScaleAnimationController);
-    _dragDownBgColorScaleAnimationController
+    ).animate(_pullDownBgColorScaleAnimationController);
+    _pullDownBgColorScaleAnimationController
       ..value = 0.0
       ..fling(velocity: 0.4);
   }
@@ -294,20 +294,20 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  void _handleDragDownScaleAnimation() {
-    _dragDownContentScale = _dragDownScaleAnimation!.value;
+  void _handlePullDownScaleAnimation() {
+    _pullDownContentScale = _pullDownScaleAnimation!.value;
     setState(() {});
   }
 
-  void _handleDragDownPositionAnimate() {
-    _dragDownContentOffset = _dragDownPositionAnimation!.value;
+  void _handlePullDownPositionAnimate() {
+    _pullDownContentOffset = _pullDownPositionAnimation!.value;
     setState(() {});
   }
 
-  void _handleDragDownBgColorScaleAnimation() {
-    _dragDownBgColorScale = _dragDownBgColorScaleAnimation!.value;
-    if (widget.dragDownPopChanged != null) {
-      widget.dragDownPopChanged!(_dragDownPopStatus, _dragDownBgColorScale);
+  void _handlePullDownBgColorScaleAnimation() {
+    _pullDownBgColorScale = _pullDownBgColorScaleAnimation!.value;
+    if (widget.pullDownPopChanged != null) {
+      widget.pullDownPopChanged!(_pullDownPopStatus, _pullDownBgColorScale);
     }
     setState(() {});
   }
@@ -396,12 +396,12 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       widget.onPhotoScaleChanged!(_scale);
     }
     _setHit();
-    _updateDragDownPop(details);
+    _updatePullDownPop(details);
     setState(() {});
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
-    _endDragDownPop(details);
+    _endPullDownPop(details);
     setState(() {});
   }
 
@@ -427,34 +427,34 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     }
   }
 
-  void _updateDragDownPop(ScaleUpdateDetails details) {
-    if (widget.allowDragDownToPop && details.pointerCount == 1 && _scale <= 1) {
+  void _updatePullDownPop(ScaleUpdateDetails details) {
+    if (widget.allowPullDownToPop && details.pointerCount == 1 && _scale <= 1) {
       double dy = details.localFocalPoint.dy - _oldLocalFocalPoint.dy;
       double dx = details.localFocalPoint.dx - _oldLocalFocalPoint.dx;
 
-      double rate = widget.dragDownPopConfig.changeRate;
-      double contentMinScale = widget.dragDownPopConfig.contentMinScale;
-      double bgColorMinOpacity = widget.dragDownPopConfig.bgColorMinOpacity;
+      double rate = widget.pullDownPopConfig.changeRate;
+      double contentMinScale = widget.pullDownPopConfig.contentMinScale;
+      double bgColorMinOpacity = widget.pullDownPopConfig.bgColorMinOpacity;
 
-      if (_dragDownPopStatus == DragDownPopStatus.dragging ||
+      if (_pullDownPopStatus == PullDownPopStatus.pulling ||
           (dy > 0 && dy.abs() > dx.abs())) {
-        _dragDownPopStatus = DragDownPopStatus.dragging;
-        _dragDownContentOffset = Offset(_dragDownContentOffset.dx + dx,
-            max(_dragDownContentOffset.dy + dy, 0));
-        _dragDownContentScale = 1.0;
-        _dragDownBgColorScale = 1.0;
+        _pullDownPopStatus = PullDownPopStatus.pulling;
+        _pullDownContentOffset = Offset(_pullDownContentOffset.dx + dx,
+            max(_pullDownContentOffset.dy + dy, 0));
+        _pullDownContentScale = 1.0;
+        _pullDownBgColorScale = 1.0;
         if (_constraints?.maxHeight != null) {
-          _dragDownContentScale = max(
-              (_constraints!.maxHeight * rate - _dragDownContentOffset.dy) /
+          _pullDownContentScale = max(
+              (_constraints!.maxHeight * rate - _pullDownContentOffset.dy) /
                   (_constraints!.maxHeight * rate),
               contentMinScale);
-          _dragDownBgColorScale = max(
-              (_constraints!.maxHeight * rate - _dragDownContentOffset.dy) /
+          _pullDownBgColorScale = max(
+              (_constraints!.maxHeight * rate - _pullDownContentOffset.dy) /
                   (_constraints!.maxHeight * rate),
               bgColorMinOpacity);
-          if (widget.dragDownPopChanged != null) {
-            widget.dragDownPopChanged!(
-                _dragDownPopStatus, _dragDownBgColorScale);
+          if (widget.pullDownPopChanged != null) {
+            widget.pullDownPopChanged!(
+                _pullDownPopStatus, _pullDownBgColorScale);
           }
         }
       }
@@ -462,21 +462,21 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     }
   }
 
-  void _endDragDownPop(ScaleEndDetails details) {
-    double height = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
+  void _endPullDownPop(ScaleEndDetails details) {
+    double height = (_constraints?.maxHeight ?? 0) * _pullDownContentScale;
     double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5;
     final triggerD =
-        (_constraints?.maxHeight ?? 0) * widget.dragDownPopConfig.triggerScale;
-    if (_dragDownContentOffset.dy + dy > triggerD) {
-      _dragDownPopStatus = DragDownPopStatus.canPop;
+        (_constraints?.maxHeight ?? 0) * widget.pullDownPopConfig.triggerScale;
+    if (_pullDownContentOffset.dy + dy > triggerD) {
+      _pullDownPopStatus = PullDownPopStatus.canPop;
     } else {
-      _dragDownPopStatus = DragDownPopStatus.none;
-      _animateDragDownScale(_dragDownContentScale, 1.0);
-      _animateDragDownPosition(_dragDownContentOffset, Offset.zero);
-      _animateDragDownBgColorScale(_dragDownBgColorScale, 1.0);
+      _pullDownPopStatus = PullDownPopStatus.none;
+      _animatePullDownScale(_pullDownContentScale, 1.0);
+      _animatePullDownPosition(_pullDownContentOffset, Offset.zero);
+      _animatePullDownBgColorScale(_pullDownBgColorScale, 1.0);
     }
-    if (widget.dragDownPopChanged != null) {
-      widget.dragDownPopChanged!(_dragDownPopStatus, _dragDownBgColorScale);
+    if (widget.pullDownPopChanged != null) {
+      widget.pullDownPopChanged!(_pullDownPopStatus, _pullDownBgColorScale);
     }
   }
 
@@ -525,12 +525,12 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
           content = _buildContent(context, constraints, _thumImageProvideInfo!);
         }
 
-        double width = (_constraints?.maxWidth ?? 0) * _dragDownContentScale;
-        double height = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
+        double width = (_constraints?.maxWidth ?? 0) * _pullDownContentScale;
+        double height = (_constraints?.maxHeight ?? 0) * _pullDownContentScale;
         double dx = ((_constraints?.maxWidth ?? 0) - width) * 0.5 * _scale;
         double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5 * _scale;
-        double x = _dragDownContentOffset.dx + dx;
-        double y = _dragDownContentOffset.dy + dy;
+        double x = _pullDownContentOffset.dx + dx;
+        double y = _pullDownContentOffset.dy + dy;
 
         return RawGestureDetector(
           gestures: gestures,
@@ -538,7 +538,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             width: constraints.maxWidth,
             height: constraints.maxHeight,
             color: (widget.backcolor ?? Colors.black)
-                .withOpacity(_dragDownBgColorScale),
+                .withOpacity(_pullDownBgColorScale),
             child: ClipRect(
               child: widget.willPop
                   ? content
@@ -583,15 +583,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
     if (widget.willPop) {
-      if (_dragDownBgColorScale < 1) {
-        double posW = (_constraints?.maxWidth ?? 0) * _dragDownContentScale;
-        double posH = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
+      if (_pullDownBgColorScale < 1) {
+        double posW = (_constraints?.maxWidth ?? 0) * _pullDownContentScale;
+        double posH = (_constraints?.maxHeight ?? 0) * _pullDownContentScale;
         double dx = ((_constraints?.maxWidth ?? 0) - posW) * 0.5;
         double dy = ((_constraints?.maxHeight ?? 0) - posH) * 0.5;
-        double posX = _dragDownContentOffset.dx + dx;
-        double posY = _dragDownContentOffset.dy + dy;
-        double imageW = _imageDefW * _scale * _dragDownContentScale;
-        double imageH = _imageDefH * _scale * _dragDownContentScale;
+        double posX = _pullDownContentOffset.dx + dx;
+        double posY = _pullDownContentOffset.dy + dy;
+        double imageW = _imageDefW * _scale * _pullDownContentScale;
+        double imageH = _imageDefH * _scale * _pullDownContentScale;
         return CustomSingleChildLayout(
           delegate: _SingleChildLayoutDelegate(
             Size(posW, posH),
@@ -619,8 +619,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
           (_constraints!.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
       double y =
           (_constraints!.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
-      double width = _imageDefW * _scale * _dragDownContentScale;
-      double height = _imageDefH * _scale * _dragDownContentScale;
+      double width = _imageDefW * _scale * _pullDownContentScale;
+      double height = _imageDefH * _scale * _pullDownContentScale;
       return CustomSingleChildLayout(
         delegate: _SingleChildLayoutDelegate(
           Size(width, height),
@@ -806,7 +806,7 @@ class _Hit {
   _HitType hitType = _HitType.all;
 }
 
-class DragDownPopConfig {
+class PullDownPopConfig {
   /// 触发pop的下拉距离占全屏的比例
   /// 取值范围：(0.0, 1.0)
   final double triggerScale;
@@ -822,7 +822,7 @@ class DragDownPopConfig {
   /// 下拉时图片大小、背景色透明度变化的快慢
   /// 取值范围：(0.0~1.0]，值越小变化越快
   final double changeRate;
-  const DragDownPopConfig(
+  const PullDownPopConfig(
       {double? triggerScale,
       double? bgColorMinOpacity,
       double? contentMinScale,

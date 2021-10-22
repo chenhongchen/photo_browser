@@ -82,34 +82,47 @@ class _MyAppState extends State<MyApp> {
   Widget _buildCell(BuildContext context, int cellIndex) {
     return GestureDetector(
       onTap: () {
-        // 弹出图片浏览器(默认单击或下划手势可关闭)
         PhotoBrowser photoBrowser = PhotoBrowser(
           itemCount: _bigPhotos.length,
           initIndex: cellIndex,
           controller: _browerController,
           allowTapToPop: true,
           allowSwipeDownToPop: true,
-          allowDragDownToPop: true,
+          // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
+          allowPullDownToPop: true,
+          // If heroTagBuilder is null, the pop animation is a general push animation.
           heroTagBuilder: (int index) {
             return _heroTags[index];
-          }, // 飞行动画tag设置，为null则弹出动画为一般的push动画
+          },
+          // Images setting.
+          // If you want the displayed image to be cached to disk at the same time,
+          // you can set the imageProviderBuilder property instead imageUrlBuilder,
+          // then set it with imageProvider with disk caching function.
           imageUrlBuilder: (int index) {
             return _bigPhotos[index];
-          }, // 大图设置，如果想本地缓存图片可换imageProviderBuilder属性设置，然后传入带本地缓存功能的imageProvider
+          },
+          // Thumbnails setting.
+          // If you want the displayed thumbnail to be cached to disk at the same time,
+          // you can set the thumImageProviderBuilder property instead thumImageUrlBuilder,
+          // then set it with imageProvider with disk caching function.
           thumImageUrlBuilder: (int index) {
             return _thumPhotos[index];
-          }, // 缩略图设置，如果想本地缓存图片可换thumImageProviderBuilder属性设置，然后传入带本地缓存功能的imageProvider
-          positionsBuilder: _positionsBuilder, // 可自定义Widget，如关闭按钮、保存按钮
-          loadFailedChild: _failedChild(), // 加载失败
+          },
+          // Through the positionsBuilder property，
+          // you can create widgets on the photo browser,
+          // such as close button and save button.
+          positionsBuilder: _positionsBuilder,
+          loadFailedChild: _failedChild(),
           onPageChanged: (int index) {
             _curIndex = index;
           },
         );
 
-        // 可以直接push
+        // You can push directly.
         // photoBrowser.push(context);
 
-        // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
+        // If necessary, it can also be wrapped in a widget
+        // Here it is wrapped with HCHud (a toast plugin)
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
@@ -172,14 +185,14 @@ class _MyAppState extends State<MyApp> {
     ];
   }
 
-  // 关闭按钮
+  // close button
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
       right: 20,
       top: MediaQuery.of(context).padding.top,
       child: GestureDetector(
         onTap: () {
-          // 通过控制器pop
+          // Pop through controller
           _browerController.pop();
         },
         child: Container(
@@ -213,7 +226,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  // 保存图片按钮
+  // save image button
   Positioned _buildSaveImageBtn(
       BuildContext context, int curIndex, int totalNum) {
     return Positioned(
@@ -221,12 +234,11 @@ class _MyAppState extends State<MyApp> {
       bottom: 20,
       child: GestureDetector(
         onTap: () async {
-          // 使用相册授权
           var status = await Permission.photos.request();
           if (status.isDenied) {
             showDialog(
               context: context,
-              barrierDismissible: false, //// user must tap button!
+              barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: Text('提示'),
@@ -252,7 +264,7 @@ class _MyAppState extends State<MyApp> {
             return;
           }
 
-          // 通过控制器，获取图片数据
+          // Obtain image data through the controller
           ImageInfo? imageInfo;
           if (_browerController.imageInfos[curIndex] != null) {
             imageInfo = _browerController.imageInfos[curIndex];
@@ -266,7 +278,7 @@ class _MyAppState extends State<MyApp> {
 
           HCHud.of(context)?.showLoading(text: '正在保存...');
 
-          // 转换数据及保存为图片
+          // Save image to album
           var byteData =
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           if (byteData != null) {
@@ -306,7 +318,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  // 手势引导界面
+  // Gesture guidance interface
   Positioned _buildGuide(BuildContext context, int curIndex, int totalNum) {
     return _showTip
         ? Positioned(
@@ -317,7 +329,7 @@ class _MyAppState extends State<MyApp> {
             child: GestureDetector(
               onTap: () {
                 _showTip = false;
-                // 通过控制器，刷新PhotoBrowser
+                // Refresh the photoBrowser through the controller
                 _browerController.setState(() {});
               },
               child: Container(

@@ -1,3 +1,7 @@
+## 2.0.7
+
+* TODO: Add pull down to pop function
+
 ## 2.0.6
 
 * TODO: Migrate from 1.0.9

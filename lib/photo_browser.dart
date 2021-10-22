@@ -141,18 +141,18 @@ class PhotoBrowser extends StatefulWidget {
   /// 单击关闭功能开关
   final bool allowTapToPop;
 
-  /// 向下轻扫关闭功能开关（allowDragDownToPop 为）
-  /// allowDragDownToPop 等于 true 则allowSwipeDownToPop设置无效
+  /// 向下轻扫关闭功能开关（allowPullDownToPop 为）
+  /// allowPullDownToPop 等于 true 则allowSwipeDownToPop设置无效
   final bool allowSwipeDownToPop;
 
   /// 下拉关闭功能开关
-  final bool allowDragDownToPop;
+  final bool allowPullDownToPop;
 
   /// 滚动状态可否关闭
   final bool canPopWhenScrolling;
 
   /// 下拉关闭功能配置
-  final DragDownPopConfig dragDownPopConfig;
+  final PullDownPopConfig pullDownPopConfig;
 
   final bool reverse;
   final bool? gaplessPlayback;
@@ -187,16 +187,16 @@ class PhotoBrowser extends StatefulWidget {
     this.backcolor,
     this.allowTapToPop = true,
     bool allowSwipeDownToPop = true,
-    this.allowDragDownToPop = false,
+    this.allowPullDownToPop = false,
     this.canPopWhenScrolling = true,
-    this.dragDownPopConfig = const DragDownPopConfig(),
+    this.pullDownPopConfig = const PullDownPopConfig(),
     this.reverse = false,
     this.pageController,
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
   })  : this.allowSwipeDownToPop =
-            (allowDragDownToPop == true) ? false : allowSwipeDownToPop,
+            (allowPullDownToPop == true) ? false : allowSwipeDownToPop,
         assert(imageProviderBuilder != null || imageUrlBuilder != null,
             'imageProviderBuilder,imageUrlBuilder can not all null'),
         super(key: key) {
@@ -237,8 +237,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   double? _lastDownY;
   bool _willPop = false;
   BoxConstraints? _constraints;
-  DragDownPopStatus _dragDownPopStatus = DragDownPopStatus.none;
-  double _dragDownScale = 1.0;
+  PullDownPopStatus _pullDownPopStatus = PullDownPopStatus.none;
+  double _pullDownScale = 1.0;
 
   @override
   void initState() {
@@ -286,7 +286,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
           widget.positionsBuilder!(context, _curPage, widget.itemCount));
     }
     return Container(
-      color: (widget.backcolor ?? Colors.black).withOpacity(_dragDownScale),
+      color: (widget.backcolor ?? Colors.black).withOpacity(_pullDownScale),
       child: Stack(
         children: children,
       ),
@@ -313,7 +313,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         itemCount: widget.itemCount,
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
-        physics: _dragDownPopStatus == DragDownPopStatus.dragging
+        physics: _pullDownPopStatus == PullDownPopStatus.pulling
             ? NeverScrollableScrollPhysics()
             : widget.scrollPhysics,
       ),
@@ -333,8 +333,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
           : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
-      allowDragDownToPop: widget.allowDragDownToPop,
-      dragDownPopConfig: widget.dragDownPopConfig,
+      allowPullDownToPop: widget.allowPullDownToPop,
+      pullDownPopConfig: widget.pullDownPopConfig,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
       imageLoadSuccess: (ImageInfo imageInfo) {
@@ -344,10 +344,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         widget.controller?.thumImageInfos[index] = imageInfo;
       },
       onPhotoScaleChanged: (double scale) {},
-      dragDownPopChanged: (DragDownPopStatus status, double dragScale) {
-        _dragDownPopStatus = status;
-        _dragDownScale = dragScale;
-        if (status == DragDownPopStatus.canPop) {
+      pullDownPopChanged: (PullDownPopStatus status, double pullScale) {
+        _pullDownPopStatus = status;
+        _pullDownScale = pullScale;
+        if (status == PullDownPopStatus.canPop) {
           _pop();
         }
         setState(() {});
