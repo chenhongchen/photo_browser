@@ -155,6 +155,8 @@ class PhotoBrowser extends StatefulWidget {
   final PullDownPopConfig pullDownPopConfig;
 
   final bool reverse;
+  final Color? imageColor;
+  final BlendMode? imageColorBlendMode;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
   final PageController? pageController;
@@ -182,6 +184,8 @@ class PhotoBrowser extends StatefulWidget {
     this.loadFailedChild,
     this.pageCodeBuild,
     this.positionsBuilder,
+    this.imageColor,
+    this.imageColorBlendMode,
     this.gaplessPlayback,
     this.filterQuality,
     this.backcolor,
@@ -335,6 +339,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       willPop: _willPop,
       allowPullDownToPop: widget.allowPullDownToPop,
       pullDownPopConfig: widget.pullDownPopConfig,
+      imageColor: widget.imageColor,
+      imageColorBlendMode: widget.imageColorBlendMode,
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
       imageLoadSuccess: (ImageInfo imageInfo) {

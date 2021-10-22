@@ -53,6 +53,8 @@ class PhotoPage extends StatefulWidget {
     this.gaplessPlayback,
     this.allowPullDownToPop = false,
     this.pullDownPopConfig = const PullDownPopConfig(),
+    this.imageColor,
+    this.imageColorBlendMode,
     this.filterQuality,
     this.imageLoadSuccess,
     this.thumImageLoadSuccess,
@@ -71,6 +73,8 @@ class PhotoPage extends StatefulWidget {
   final bool willPop;
   final bool allowPullDownToPop;
   final PullDownPopConfig pullDownPopConfig;
+  final Color? imageColor;
+  final BlendMode? imageColorBlendMode;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
   final ImageLoadSuccess? imageLoadSuccess;
@@ -603,11 +607,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             alignment: Alignment.center,
             child: Hero(
               tag: widget.heroTag!,
-              child: Image(
+              child: _Image(
                 image: imageProvider,
-                gaplessPlayback: widget.gaplessPlayback ?? false,
-                filterQuality: widget.filterQuality ?? FilterQuality.high,
-                fit: BoxFit.contain,
                 width: imageW,
                 height: imageH,
               ),
@@ -628,11 +629,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         ),
         child: Hero(
           tag: widget.heroTag!,
-          child: Image(
+          child: _Image(
             image: imageProvider,
-            gaplessPlayback: widget.gaplessPlayback ?? false,
-            filterQuality: widget.filterQuality ?? FilterQuality.high,
-            fit: BoxFit.contain,
           ),
         ),
       );
@@ -648,12 +646,22 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       transform: new Matrix4.identity()
         ..translate(_offset.dx, _offset.dy)
         ..scale(_scale, _scale, 1.0),
-      child: Image(
+      child: _Image(
         image: imageProvider,
-        gaplessPlayback: widget.gaplessPlayback ?? false,
-        filterQuality: widget.filterQuality ?? FilterQuality.high,
-        fit: BoxFit.contain,
       ),
+    );
+  }
+
+  Image _Image({required ImageProvider image, double? width, double? height}) {
+    return Image(
+      image: image,
+      gaplessPlayback: widget.gaplessPlayback ?? false,
+      filterQuality: widget.filterQuality ?? FilterQuality.high,
+      fit: BoxFit.contain,
+      color: widget.imageColor,
+      colorBlendMode: widget.imageColorBlendMode,
+      width: width,
+      height: height,
     );
   }
 

@@ -1,6 +1,6 @@
 ## 2.0.7
 
-* TODO: Add pull down to pop function
+* TODO: Add pull down to pop function and some attribute.
 
 ## 2.0.6
 
