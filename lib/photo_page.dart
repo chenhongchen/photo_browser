@@ -529,6 +529,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         double height = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
         double dx = ((_constraints?.maxWidth ?? 0) - width) * 0.5 * _scale;
         double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5 * _scale;
+        double x = _dragDownContentOffset.dx + dx;
+        double y = _dragDownContentOffset.dy + dy;
 
         return RawGestureDetector(
           gestures: gestures,
@@ -538,19 +540,19 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             color: (widget.backcolor ?? Colors.black)
                 .withOpacity(_dragDownBgColorScale),
             child: ClipRect(
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: _dragDownContentOffset.dx + dx,
-                    top: _dragDownContentOffset.dy + dy,
-                    width:
-                        (_constraints?.maxWidth ?? 0) * _dragDownContentScale,
-                    height:
-                        (_constraints?.maxHeight ?? 0) * _dragDownContentScale,
-                    child: content,
-                  ),
-                ],
-              ),
+              child: widget.willPop
+                  ? content
+                  : Stack(
+                      children: [
+                        Positioned(
+                          left: x,
+                          top: y,
+                          width: width,
+                          height: height,
+                          child: content,
+                        ),
+                      ],
+                    ),
             ),
           ),
         );
@@ -581,6 +583,38 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
 
   Widget _buildHeroImage(ImageProvider imageProvider) {
     if (widget.willPop) {
+      if (_dragDownBgColorScale < 1) {
+        double posW = (_constraints?.maxWidth ?? 0) * _dragDownContentScale;
+        double posH = (_constraints?.maxHeight ?? 0) * _dragDownContentScale;
+        double dx = ((_constraints?.maxWidth ?? 0) - posW) * 0.5;
+        double dy = ((_constraints?.maxHeight ?? 0) - posH) * 0.5;
+        double posX = _dragDownContentOffset.dx + dx;
+        double posY = _dragDownContentOffset.dy + dy;
+        double imageW = _imageDefW * _scale * _dragDownContentScale;
+        double imageH = _imageDefH * _scale * _dragDownContentScale;
+        return CustomSingleChildLayout(
+          delegate: _SingleChildLayoutDelegate(
+            Size(posW, posH),
+            Offset(posX, posY),
+          ),
+          child: Container(
+            width: posW,
+            height: posH,
+            alignment: Alignment.center,
+            child: Hero(
+              tag: widget.heroTag!,
+              child: Image(
+                image: imageProvider,
+                gaplessPlayback: widget.gaplessPlayback ?? false,
+                filterQuality: widget.filterQuality ?? FilterQuality.high,
+                fit: BoxFit.contain,
+                width: imageW,
+                height: imageH,
+              ),
+            ),
+          ),
+        );
+      }
       double x =
           (_constraints!.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
       double y =
