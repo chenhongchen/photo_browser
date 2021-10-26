@@ -87,21 +87,13 @@ Widget _buildCell(BuildContext context, int cellIndex) {
     child: _initIndex == cellIndex || _curIndex == cellIndex
         ? Stack(
             children: [
-              Positioned(
-                left: 0,
-                bottom: 0,
-                right: 0,
-                top: 0,
+              Positioned.fill(
                 child: Image.network(
                   _thumPhotos[cellIndex],
                   fit: BoxFit.cover,
                 ),
               ),
-              Positioned(
-                  left: 0,
-                  bottom: 0,
-                  right: 0,
-                  top: 0,
+              Positioned.fill(
                   child: Hero(
                     tag: _heroTags[cellIndex],
                     child: Image.network(
