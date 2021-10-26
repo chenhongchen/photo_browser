@@ -838,7 +838,7 @@ class PullDownPopConfig {
       : this.triggerScale =
             (triggerScale != null && triggerScale < 1 && triggerScale > 0)
                 ? triggerScale
-                : 0.2,
+                : 0.1,
         this.bgColorMinOpacity = (bgColorMinOpacity != null &&
                 bgColorMinOpacity <= 1 &&
                 bgColorMinOpacity >= 0)
