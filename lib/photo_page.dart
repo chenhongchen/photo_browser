@@ -579,7 +579,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         minWidth: double.maxFinite,
         minHeight: double.infinity,
       ),
-      child: widget.heroTag != null && widget.routeType != RouteType.scale
+      child: widget.heroTag != null
           ? _buildHeroImage(imageProvider)
           : _buildTransformImage(imageProvider),
     );

@@ -17,7 +17,6 @@ typedef PositionsBuilder = List<Positioned> Function(
 
 enum RouteType {
   fade, // 淡入淡出
-  scale, // 比例放大
   normal, // 从右到左，或下到上
 }
 
@@ -268,15 +267,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       BoxConstraints constraints,
     ) {
       _constraints = constraints;
-      if (widget.heroTagBuilder == null ||
-          widget.routeType != RouteType.scale) {
-        return _buildContent();
-      } else {
-        return Hero(
-          tag: '${widget.heroTagBuilder!(_curPage)}',
-          child: _buildContent(),
-        );
-      }
+      return _buildContent();
     });
   }
 
