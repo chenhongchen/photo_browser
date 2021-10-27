@@ -1,3 +1,7 @@
+## 2.0.8
+
+* TODO: Set the triggerScale default value to 0.1, and delete scale for RouteType.
+
 ## 2.0.7
 
 * TODO: Add pull down to pop function and some attribute.
