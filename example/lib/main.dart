@@ -17,7 +17,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/big_1.jpg
   String domain =
       'https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
   List<String> _bigPhotos = <String>[];
@@ -89,28 +88,25 @@ class _MyAppState extends State<MyApp> {
           allowTapToPop: true,
           allowSwipeDownToPop: true,
           // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
+          // 如果allowPullDownToPop为true，则allowTapToPop设置无效
           allowPullDownToPop: true,
-          // If heroTagBuilder is null, the pop animation is a general push animation.
           heroTagBuilder: (int index) {
             return _heroTags[index];
           },
-          // Images setting.
+          // Large images setting.
           // If you want the displayed image to be cached to disk at the same time,
           // you can set the imageProviderBuilder property instead imageUrlBuilder,
           // then set it with imageProvider with disk caching function.
+          // 大图设置，如果希望图片显示的同时进行磁盘缓存可换imageProviderBuilder属性设置，
+          // 然后传入带磁盘缓存功能的imageProvider
           imageUrlBuilder: (int index) {
             return _bigPhotos[index];
           },
           // Thumbnails setting.
-          // If you want the displayed thumbnail to be cached to disk at the same time,
-          // you can set the thumImageProviderBuilder property instead thumImageUrlBuilder,
-          // then set it with imageProvider with disk caching function.
+          // 缩略图设置
           thumImageUrlBuilder: (int index) {
             return _thumPhotos[index];
           },
-          // Through the positionsBuilder property，
-          // you can create widgets on the photo browser,
-          // such as close button and save button.
           positionsBuilder: _positionsBuilder,
           loadFailedChild: _failedChild(),
           onPageChanged: (int index) {
@@ -119,10 +115,12 @@ class _MyAppState extends State<MyApp> {
         );
 
         // You can push directly.
+        // 可以直接push
         // photoBrowser.push(context);
 
         // If necessary, it can also be wrapped in a widget
         // Here it is wrapped with HCHud (a toast plugin)
+        // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
@@ -177,7 +175,6 @@ class _MyAppState extends State<MyApp> {
     ];
   }
 
-  // close button
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
       right: 20,
@@ -185,6 +182,7 @@ class _MyAppState extends State<MyApp> {
       child: GestureDetector(
         onTap: () {
           // Pop through controller
+          // 通过控制器pop退出
           _browerController.pop();
         },
         child: Container(
@@ -218,7 +216,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  // save image button
   Positioned _buildSaveImageBtn(
       BuildContext context, int curIndex, int totalNum) {
     return Positioned(
@@ -257,6 +254,7 @@ class _MyAppState extends State<MyApp> {
           }
 
           // Obtain image data through the controller
+          // 通过控制器获取图片数据
           ImageInfo? imageInfo;
           if (_browerController.imageInfos[curIndex] != null) {
             imageInfo = _browerController.imageInfos[curIndex];
@@ -271,6 +269,7 @@ class _MyAppState extends State<MyApp> {
           HCHud.of(context)?.showLoading(text: '正在保存...');
 
           // Save image to album
+          // 将图片保存到相册
           var byteData =
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           if (byteData != null) {
@@ -310,7 +309,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  // Gesture guidance interface
   Positioned _buildGuide(BuildContext context, int curIndex, int totalNum) {
     return _showTip
         ? Positioned.fill(
@@ -318,13 +316,14 @@ class _MyAppState extends State<MyApp> {
               onTap: () {
                 _showTip = false;
                 // Refresh the photoBrowser through the controller
+                // 通过控制器，刷新PhotoBrowser
                 _browerController.setState(() {});
               },
               child: Container(
                 color: Colors.black.withOpacity(0.3),
                 alignment: Alignment.center,
                 child: Text(
-                  '温馨提示😊：\n单击或向下轻扫关闭图片浏览器',
+                  '温馨提示😊：\n可单击或下拉退出浏览',
                   textAlign: TextAlign.left,
                   style: TextStyle(
                     fontSize: 18,

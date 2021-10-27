@@ -28,7 +28,7 @@ class PhotoBrowser extends StatefulWidget {
     Duration? transitionDuration,
     Widget? page,
   }) async {
-    if (heroTagBuilder == null || routeType == RouteType.normal) {
+    if (routeType == RouteType.normal) {
       return await Navigator.of(context, rootNavigator: rootNavigator)
           .push(CupertinoPageRoute(
               fullscreenDialog: fullscreenDialog,
