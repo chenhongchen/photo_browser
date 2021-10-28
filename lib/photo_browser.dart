@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/photo_page.dart';
+import 'package:photo_browser/pull_down_pop.dart';
 
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
@@ -340,7 +341,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       thumImageLoadSuccess: (ImageInfo imageInfo) {
         widget.controller?.thumImageInfos[index] = imageInfo;
       },
-      onPhotoScaleChanged: (double scale) {},
+      onScaleChanged: (double scale) {},
       pullDownPopChanged: (PullDownPopStatus status, double pullScale) {
         _pullDownPopStatus = status;
         _pullDownScale = pullScale;

@@ -2,25 +2,18 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_browser/define.dart';
 import 'package:photo_browser/photo_browser.dart';
-
-enum PullDownPopStatus {
-  none,
-  pulling,
-  canPop,
-}
+import 'package:photo_browser/pull_down_pop.dart';
 
 typedef LoadingBuilder = Widget Function(
   BuildContext context,
   double progress,
 );
 
-typedef OnPhotoScaleChanged = void Function(double scale);
+typedef OnScaleChanged = void Function(double scale);
 
 typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
-
-typedef PullDownPopChanged = void Function(
-    PullDownPopStatus status, double pullScale);
 
 enum _ImageLoadStatus {
   loading,
@@ -58,7 +51,7 @@ class PhotoPage extends StatefulWidget {
     this.filterQuality,
     this.imageLoadSuccess,
     this.thumImageLoadSuccess,
-    this.onPhotoScaleChanged,
+    this.onScaleChanged,
     this.pullDownPopChanged,
   }) : super(key: key);
 
@@ -79,7 +72,7 @@ class PhotoPage extends StatefulWidget {
   final FilterQuality? filterQuality;
   final ImageLoadSuccess? imageLoadSuccess;
   final ImageLoadSuccess? thumImageLoadSuccess;
-  final OnPhotoScaleChanged? onPhotoScaleChanged;
+  final OnScaleChanged? onScaleChanged;
   final PullDownPopChanged? pullDownPopChanged;
 
   @override
@@ -120,7 +113,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   late AnimationController _pullDownBgColorScaleAnimationController;
   Animation<double>? _pullDownBgColorScaleAnimation;
 
-  _Hit _hit = _Hit();
+  Hit _hit = Hit();
 
   // 下拉pop用到的相关属性
   Offset _oldLocalFocalPoint = Offset.zero;
@@ -366,8 +359,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             (_constraints!.maxHeight - _imageMaxFitH) * 0.5);
       }
     }
-    if (widget.onPhotoScaleChanged != null) {
-      widget.onPhotoScaleChanged!(newScale);
+    if (widget.onScaleChanged != null) {
+      widget.onScaleChanged!(newScale);
     }
     _animateScale(oldScale, newScale);
     _animatePosition(oldOffset, newOffset);
@@ -396,8 +389,8 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         _normalizedOffset = (details.focalPoint - _offset) / _scale;
       }
     }
-    if (widget.onPhotoScaleChanged != null && _scale != _oldScale) {
-      widget.onPhotoScaleChanged!(_scale);
+    if (widget.onScaleChanged != null && _scale != _oldScale) {
+      widget.onScaleChanged!(_scale);
     }
     _setHit();
     _updatePullDownPop(details);
@@ -418,15 +411,15 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   void _setHit() {
-    _hit.hitType = _HitType.all;
+    _hit.hitType = HitType.all;
     if (_scale > 1) {
-      _hit.hitType = _HitType.none;
+      _hit.hitType = HitType.none;
       double rightDistance =
           (_offset.dx - (_imageDefW - _constraints!.maxWidth * _scale)).abs();
       if (_offset.dx.abs() < 0.01) {
-        _hit.hitType = _HitType.left;
+        _hit.hitType = HitType.left;
       } else if (rightDistance < 0.01) {
-        _hit.hitType = _HitType.right;
+        _hit.hitType = HitType.right;
       }
     }
   }
@@ -495,10 +488,10 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
     final Map<Type, GestureRecognizerFactory> gestures =
         <Type, GestureRecognizerFactory>{};
 
-    gestures[_ScaleGestureRecognizer] =
-        GestureRecognizerFactoryWithHandlers<_ScaleGestureRecognizer>(
-      () => _ScaleGestureRecognizer(this, _hit),
-      (_ScaleGestureRecognizer instance) {
+    gestures[CustomScaleGestureRecognizer] =
+        GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+      () => CustomScaleGestureRecognizer(this, _hit),
+      (CustomScaleGestureRecognizer instance) {
         instance
           ..onStart = _onScaleStart
           ..onUpdate = _onScaleUpdate
@@ -529,13 +522,6 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
           content = _buildContent(context, constraints, _thumImageProvideInfo!);
         }
 
-        double width = (_constraints?.maxWidth ?? 0) * _pullDownContentScale;
-        double height = (_constraints?.maxHeight ?? 0) * _pullDownContentScale;
-        double dx = ((_constraints?.maxWidth ?? 0) - width) * 0.5 * _scale;
-        double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5 * _scale;
-        double x = _pullDownContentOffset.dx + dx;
-        double y = _pullDownContentOffset.dy + dy;
-
         return RawGestureDetector(
           gestures: gestures,
           child: Container(
@@ -543,21 +529,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             height: constraints.maxHeight,
             color: (widget.backcolor ?? Colors.black)
                 .withOpacity(_pullDownBgColorScale),
-            child: ClipRect(
-              child: widget.willPop
-                  ? content
-                  : Stack(
-                      children: [
-                        Positioned(
-                          left: x,
-                          top: y,
-                          width: width,
-                          height: height,
-                          child: content,
-                        ),
-                      ],
-                    ),
-            ),
+            child: ClipRect(child: content),
           ),
         );
       },
@@ -597,7 +569,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         double imageW = _imageDefW * _scale * _pullDownContentScale;
         double imageH = _imageDefH * _scale * _pullDownContentScale;
         return CustomSingleChildLayout(
-          delegate: _SingleChildLayoutDelegate(
+          delegate: CustomSingleChildLayoutDelegate(
             Size(posW, posH),
             Offset(posX, posY),
           ),
@@ -607,7 +579,7 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
             alignment: Alignment.center,
             child: Hero(
               tag: widget.heroTag!,
-              child: _Image(
+              child: _createImage(
                 image: imageProvider,
                 width: imageW,
                 height: imageH,
@@ -623,13 +595,13 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
       double width = _imageDefW * _scale * _pullDownContentScale;
       double height = _imageDefH * _scale * _pullDownContentScale;
       return CustomSingleChildLayout(
-        delegate: _SingleChildLayoutDelegate(
+        delegate: CustomSingleChildLayoutDelegate(
           Size(width, height),
           Offset(x, y),
         ),
         child: Hero(
           tag: widget.heroTag!,
-          child: _Image(
+          child: _createImage(
             image: imageProvider,
           ),
         ),
@@ -642,17 +614,25 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildTransformImage(ImageProvider imageProvider) {
+    double width = (_constraints?.maxWidth ?? 0) * _pullDownContentScale;
+    double height = (_constraints?.maxHeight ?? 0) * _pullDownContentScale;
+    double dx = ((_constraints?.maxWidth ?? 0) - width) * 0.5 * _scale;
+    double dy = ((_constraints?.maxHeight ?? 0) - height) * 0.5 * _scale;
+    double x = _offset.dx + _pullDownContentOffset.dx + dx;
+    double y = _offset.dy + _pullDownContentOffset.dy + dy;
+    double scale = _scale * _pullDownContentScale;
     return Transform(
       transform: new Matrix4.identity()
-        ..translate(_offset.dx, _offset.dy)
-        ..scale(_scale, _scale, 1.0),
-      child: _Image(
+        ..translate(x, y)
+        ..scale(scale, scale, 1.0),
+      child: _createImage(
         image: imageProvider,
       ),
     );
   }
 
-  Image _Image({required ImageProvider image, double? width, double? height}) {
+  Image _createImage(
+      {required ImageProvider image, double? width, double? height}) {
     return Image(
       image: image,
       gaplessPlayback: widget.gaplessPlayback ?? false,
@@ -692,165 +672,4 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
   Widget _buildLoadFailed() {
     return widget.loadFailedChild ?? Container();
   }
-}
-
-class _SingleChildLayoutDelegate extends SingleChildLayoutDelegate {
-  const _SingleChildLayoutDelegate(
-    this.subjectSize,
-    this.offset,
-  );
-
-  final Size subjectSize;
-  final Offset offset;
-
-  @override
-  Offset getPositionForChild(Size size, Size childSize) {
-    return offset;
-  }
-
-  @override
-  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    return BoxConstraints.tight(subjectSize);
-  }
-
-  @override
-  bool shouldRelayout(_SingleChildLayoutDelegate oldDelegate) {
-    return oldDelegate != this;
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _SingleChildLayoutDelegate &&
-          runtimeType == other.runtimeType &&
-          subjectSize == other.subjectSize &&
-          offset == other.offset;
-
-  @override
-  int get hashCode => subjectSize.hashCode ^ offset.hashCode;
-}
-
-class _ScaleGestureRecognizer extends ScaleGestureRecognizer {
-  _ScaleGestureRecognizer(
-    Object debugOwner,
-    this.hit,
-  ) : super(debugOwner: debugOwner);
-
-  final _Hit hit;
-
-  Map<int, Offset> _pointerLocations = <int, Offset>{};
-  Offset? _initialFocalPoint;
-  Offset? _currentFocalPoint;
-
-  bool ready = true;
-
-  @override
-  void addAllowedPointer(event) {
-    if (ready) {
-      ready = false;
-      _pointerLocations = <int, Offset>{};
-    }
-    super.addAllowedPointer(event);
-  }
-
-  @override
-  void didStopTrackingLastPointer(int pointer) {
-    ready = true;
-    super.didStopTrackingLastPointer(pointer);
-  }
-
-  @override
-  void handleEvent(PointerEvent event) {
-    _computeEvent(event);
-    _updateDistances();
-    _decideIfWeAcceptEvent(event);
-    super.handleEvent(event);
-  }
-
-  void _computeEvent(PointerEvent event) {
-    if (event is PointerMoveEvent) {
-      if (!event.synthesized) {
-        _pointerLocations[event.pointer] = event.position;
-      }
-    } else if (event is PointerDownEvent) {
-      _pointerLocations[event.pointer] = event.position;
-    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
-      _pointerLocations.remove(event.pointer);
-    }
-
-    _initialFocalPoint = _currentFocalPoint;
-  }
-
-  void _updateDistances() {
-    final int count = _pointerLocations.keys.length;
-    Offset focalPoint = Offset.zero;
-    for (int pointer in _pointerLocations.keys)
-      focalPoint += _pointerLocations[pointer]!;
-    _currentFocalPoint =
-        count > 0 ? focalPoint / count.toDouble() : Offset.zero;
-  }
-
-  void _decideIfWeAcceptEvent(PointerEvent event) {
-    if (!(event is PointerMoveEvent)) {
-      return;
-    }
-    final move = _initialFocalPoint! - _currentFocalPoint!;
-    if (hit.hitType == _HitType.none ||
-        (hit.hitType == _HitType.left && move.dx > 0) ||
-        (hit.hitType == _HitType.right && move.dx < 0)) {
-      resolve(GestureDisposition.accepted);
-    }
-  }
-}
-
-enum _HitType {
-  all,
-  left,
-  right,
-  none,
-}
-
-class _Hit {
-  _HitType hitType = _HitType.all;
-}
-
-class PullDownPopConfig {
-  /// 触发pop的下拉距离占全屏的比例
-  /// 取值范围：(0.0, 1.0)
-  final double triggerScale;
-
-  /// 背景色最小透明度
-  /// 取值范围：[0.0, 1.0]
-  final double bgColorMinOpacity;
-
-  /// 下拉时内容缩小的最小比例
-  /// 取值范围：(0.0~1.0]
-  final double contentMinScale;
-
-  /// 下拉时图片大小、背景色透明度变化的快慢
-  /// 取值范围：(0.0~1.0]，值越小变化越快
-  final double changeRate;
-  const PullDownPopConfig(
-      {double? triggerScale,
-      double? bgColorMinOpacity,
-      double? contentMinScale,
-      double? changeRate})
-      : this.triggerScale =
-            (triggerScale != null && triggerScale < 1 && triggerScale > 0)
-                ? triggerScale
-                : 0.1,
-        this.bgColorMinOpacity = (bgColorMinOpacity != null &&
-                bgColorMinOpacity <= 1 &&
-                bgColorMinOpacity >= 0)
-            ? bgColorMinOpacity
-            : 0.0,
-        this.contentMinScale = (contentMinScale != null &&
-                contentMinScale <= 1 &&
-                contentMinScale > 0)
-            ? contentMinScale
-            : 0.4,
-        this.changeRate =
-            (changeRate != null && changeRate <= 1 && changeRate > 0)
-                ? changeRate
-                : 0.25;
 }
