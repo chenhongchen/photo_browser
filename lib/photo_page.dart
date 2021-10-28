@@ -589,11 +589,11 @@ class _PhotoPageState extends State<PhotoPage> with TickerProviderStateMixin {
         );
       }
       double x =
-          (_constraints!.maxWidth - _imageDefW) * _scale * 0.5 + _offset.dx;
+          _offset.dx + (_constraints!.maxWidth - _imageDefW) * _scale * 0.5;
       double y =
-          (_constraints!.maxHeight - _imageDefH) * _scale * 0.5 + _offset.dy;
-      double width = _imageDefW * _scale * _pullDownContentScale;
-      double height = _imageDefH * _scale * _pullDownContentScale;
+          _offset.dy + (_constraints!.maxHeight - _imageDefH) * _scale * 0.5;
+      double width = _imageDefW * _scale;
+      double height = _imageDefH * _scale;
       return CustomSingleChildLayout(
         delegate: CustomSingleChildLayoutDelegate(
           Size(width, height),
