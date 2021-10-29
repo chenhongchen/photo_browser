@@ -1,10 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_browser/custom_page.dart';
 import 'package:photo_browser/photo_page.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 
+typedef DisplayTypeBuilder = DisplayType Function(int index);
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef StringBuilder = String Function(int index);
+typedef CustomChildBuilder = CustomChild Function(int index);
 typedef PageCodeBuilder = Positioned Function(
   BuildContext context,
   int curIndex,
@@ -19,6 +22,11 @@ typedef PositionsBuilder = List<Positioned> Function(
 enum RouteType {
   fade, // 淡入淡出
   normal, // 从右到左，或下到上
+}
+
+enum DisplayType {
+  image,
+  custom,
 }
 
 class PhotoBrowser extends StatefulWidget {
@@ -109,6 +117,9 @@ class PhotoBrowser extends StatefulWidget {
   /// 设置每张图片飞行动画的tag
   final StringBuilder? heroTagBuilder;
 
+  /// 设置每页显示的类型
+  final DisplayTypeBuilder? displayTypeBuilder;
+
   /// 设置每张大图的imageProvider
   /// imageProviderBuilder、imageUrlBuilder二选一，必选
   final ImageProviderBuilder? imageProviderBuilder;
@@ -122,6 +133,9 @@ class PhotoBrowser extends StatefulWidget {
 
   /// 设置每张缩略图的url
   final StringBuilder? thumImageUrlBuilder;
+
+  /// 设置widget
+  final CustomChildBuilder? customChildBuilder;
 
   /// 设置自定义图片加载指示器，为null则使用默认的
   final LoadingBuilder? loadingBuilder;
@@ -176,10 +190,12 @@ class PhotoBrowser extends StatefulWidget {
     this.routeType = RouteType.fade,
     this.allowShrinkPhoto = true,
     this.heroTagBuilder,
+    this.displayTypeBuilder,
     this.imageProviderBuilder,
     this.thumImageProviderBuilder,
     this.imageUrlBuilder,
     this.thumImageUrlBuilder,
+    this.customChildBuilder,
     this.loadingBuilder,
     this.loadFailedChild,
     this.pageCodeBuild,
@@ -204,8 +220,11 @@ class PhotoBrowser extends StatefulWidget {
         assert(imageProviderBuilder != null || imageUrlBuilder != null,
             'imageProviderBuilder,imageUrlBuilder can not all null'),
         super(key: key) {
-    _initImageProvider = _getImageProvider(initIndex);
-    _initThumImageProvider = _getThumImageProvider(initIndex);
+    if (displayTypeBuilder == null ||
+        displayTypeBuilder!(initIndex) == DisplayType.image) {
+      _initImageProvider = _getImageProvider(initIndex);
+      _initThumImageProvider = _getThumImageProvider(initIndex);
+    }
   }
 
   ImageProvider _getImageProvider(int index) {
@@ -317,6 +336,15 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   Widget _buildItem(BuildContext context, int index) {
+    if (widget.displayTypeBuilder == null ||
+        widget.displayTypeBuilder!(index) == DisplayType.image) {
+      return _buildPhotoPage(index);
+    } else {
+      return _buildCustomPage(index);
+    }
+  }
+
+  Widget _buildPhotoPage(int index) {
     return PhotoPage(
       imageProvider: widget._getImageProvider(index),
       thumImageProvider: widget._getThumImageProvider(index),
@@ -341,6 +369,30 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       thumImageLoadSuccess: (ImageInfo imageInfo) {
         widget.controller?.thumImageInfos[index] = imageInfo;
       },
+      onScaleChanged: (double scale) {},
+      pullDownPopChanged: (PullDownPopStatus status, double pullScale) {
+        _pullDownPopStatus = status;
+        _pullDownScale = pullScale;
+        if (status == PullDownPopStatus.canPop) {
+          _pop();
+        }
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _buildCustomPage(int index) {
+    return CustomPage(
+      child: widget.customChildBuilder!(index),
+      backcolor: Colors.transparent,
+      routeType: widget.routeType,
+      heroTag: widget.heroTagBuilder != null && _curPage == index
+          ? widget.heroTagBuilder!(index)
+          : null,
+      allowShrinkPhoto: widget.allowShrinkPhoto,
+      willPop: _willPop,
+      allowPullDownToPop: widget.allowPullDownToPop,
+      pullDownPopConfig: widget.pullDownPopConfig,
       onScaleChanged: (double scale) {},
       pullDownPopChanged: (PullDownPopStatus status, double pullScale) {
         _pullDownPopStatus = status;

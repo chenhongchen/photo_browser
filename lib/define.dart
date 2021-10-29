@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 
+typedef OnScaleChanged = void Function(double scale);
+
 class CustomSingleChildLayoutDelegate extends SingleChildLayoutDelegate {
   const CustomSingleChildLayoutDelegate(
     this.subjectSize,
