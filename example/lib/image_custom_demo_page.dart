@@ -8,6 +8,7 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/custom_page.dart';
 import 'package:photo_browser/photo_browser.dart';
+import 'package:photo_browser_example/video_view.dart';
 
 class ImageCustomDemoPage extends StatefulWidget {
   @override
@@ -29,10 +30,10 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   @override
   void initState() {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 8; i++) {
       String bigPhoto = domain + 'big_${i + 1}.jpg';
       String thumPhoto = domain + 'thum_${i + 1}.jpg';
-      if (i == 6) {
+      if (i == 6 || i == 7) {
         bigPhoto = 'widget_$i';
         thumPhoto = bigPhoto;
       }
@@ -139,10 +140,17 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             return _thumPhotos[index];
           },
           customChildBuilder: (int index) {
-            return CustomChild(
-              child: _buildCustomChild(),
-              allowZoom: true,
-            );
+            if (index == 6) {
+              return CustomChild(
+                child: _buildCustomChild(),
+                allowZoom: true,
+              );
+            } else {
+              return CustomChild(
+                child: VideoView(),
+                allowZoom: true,
+              );
+            }
           },
           positionsBuilder: _positionsBuilder,
           loadFailedChild: _failedChild(),
@@ -196,7 +204,14 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   Widget _buildItem(int index) {
     if (_isCustomType(index)) {
-      return _buildCustomChild(font: 10, fill: true);
+      if (index == 6) {
+        return _buildCustomChild(
+          font: 10,
+          fill: true,
+        );
+      } else {
+        return _buildCustomChild(font: 12, fill: true, text: '视频(video)');
+      }
       // return Container(color: Colors.teal);
     }
     return Image.network(
@@ -205,7 +220,10 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
     );
   }
 
-  _buildCustomChild({double font = 16, bool fill = false}) {
+  _buildCustomChild(
+      {double font = 16,
+      bool fill = false,
+      String text = '自定义页(Custom page)'}) {
     return Material(
       child: Stack(
         children: [
@@ -218,7 +236,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               top: 5,
               right: 5,
               child: Text(
-                '自定义页(Custom page)',
+                text,
                 style: TextStyle(
                   fontSize: font,
                   color: Colors.white,
