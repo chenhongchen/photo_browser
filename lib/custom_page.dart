@@ -116,26 +116,27 @@ class _CustomPageState extends State<CustomPage>
 
   Widget _buildHeroImage() {
     if (widget.willPop) {
-      late double dx, dy, x, y, width, height, scale;
+      late double dx1, dy1, dx2, dy2, x, y, width, height, scale;
+      double minW = min((mImageSize?.width ?? 0), mImageDefW);
+      double minH = min((mImageSize?.height ?? 0), mImageDefH);
       if (mPullDownBgColorScale < 1) {
-        width = (mConstraints?.maxWidth ?? 0) * mPullDownContentScale * mScale;
-        height =
-            (mConstraints?.maxHeight ?? 0) * mPullDownContentScale * mScale;
-        dx = ((mConstraints?.maxWidth ?? 0) - width) * 0.5;
-        dy = ((mConstraints?.maxHeight ?? 0) - height) * 0.5;
-        x = mPullDownContentOffset.dx + dx;
-        y = mPullDownContentOffset.dy + dy;
         scale = mPullDownContentScale * mScale;
-      } else {
         width = (mConstraints?.maxWidth ?? 0);
         height = (mConstraints?.maxHeight ?? 0);
-        dx = (1 - mScale) * min(mImageSize!.width, mImageDefW) * 0.5;
-        dy = (1 - mScale) * min(mImageSize!.height, mImageDefH) * 0.5;
-        double sx = (1 - mScale) * width * 0.5;
-        double sy = (1 - mScale) * height * 0.5;
-        x = mOffset.dx - sx + dx;
-        y = mOffset.dy - sy + dy;
+        dx1 = (1 - mPullDownContentScale) * minW * 0.5;
+        dy1 = (1 - mPullDownContentScale) * minH * 0.5;
+        x = mPullDownContentOffset.dx + dx1;
+        y = mPullDownContentOffset.dy + dy1;
+      } else {
         scale = mScale;
+        width = (mConstraints?.maxWidth ?? 0);
+        height = (mConstraints?.maxHeight ?? 0);
+        dx1 = (1 - mScale) * width * 0.5;
+        dy1 = (1 - mScale) * height * 0.5;
+        dx2 = (1 - mScale) * minW * 0.5;
+        dy2 = (1 - mScale) * minH * 0.5;
+        x = mOffset.dx - dx1 + dx2;
+        y = mOffset.dy - dy1 + dy2;
       }
       return CustomSingleChildLayout(
         delegate: CustomSingleChildLayoutDelegate(

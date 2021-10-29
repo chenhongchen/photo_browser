@@ -453,7 +453,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     }
   }
 
-  void _pop() {
+  void _pop({bool canPop = true}) {
     // 滚动状态不允许pop处理
     if (!widget.canPopWhenScrolling &&
         (((_pageController.position.pixels * 1000).toInt() %
@@ -461,7 +461,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
             0)) return;
     _willPop = true;
     setState(() {});
-    Navigator.of(context).pop();
+    if (canPop == true) Navigator.of(context).pop();
   }
 }
 
