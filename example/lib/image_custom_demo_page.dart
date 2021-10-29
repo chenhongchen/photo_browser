@@ -189,10 +189,11 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
                   child: _buildItem(cellIndex),
                 ),
                 Positioned.fill(
-                    child: Hero(
-                  tag: _heroTags[cellIndex],
-                  child: _buildItem(cellIndex),
-                )),
+                  child: Hero(
+                    tag: _heroTags[cellIndex],
+                    child: _buildItem(cellIndex),
+                  ),
+                ),
               ],
             )
           : Hero(
@@ -259,28 +260,17 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
       right: 20,
-      top: MediaQuery.of(context).padding.top,
+      top: MediaQuery.of(context).padding.top + 10,
       child: GestureDetector(
         onTap: () {
           // Pop through controller
           // 通过控制器pop退出
           _browerController.pop();
         },
-        child: Container(
-          color: Colors.transparent,
-          alignment: Alignment.center,
-          height: 44,
-          child: Text(
-            '关闭',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-              color: Colors.white.withAlpha(230),
-              decoration: TextDecoration.none,
-              shadows: _shadows(),
-            ),
-          ),
+        child: Icon(
+          Icons.close,
+          color: Colors.white,
+          size: 36,
         ),
       ),
     );
@@ -288,6 +278,9 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   Positioned _buildSaveImageBtn(
       BuildContext context, int curIndex, int totalNum) {
+    if (_thumPhotos[curIndex].contains('widget_')) {
+      return Positioned(child: Container());
+    }
     return Positioned(
       left: 20,
       bottom: 20,
@@ -353,16 +346,10 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             }
           }
         },
-        child: Text(
-          '保存图片',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: Colors.white.withAlpha(230),
-            decoration: TextDecoration.none,
-            shadows: _shadows(),
-          ),
+        child: Icon(
+          Icons.save,
+          color: Colors.white,
+          size: 36,
         ),
       ),
     );

@@ -148,13 +148,14 @@ class _ImageDemoPage extends State<ImageDemoPage> {
                   ),
                 ),
                 Positioned.fill(
-                    child: Hero(
-                  tag: _heroTags[cellIndex],
-                  child: Image.network(
-                    _thumPhotos[cellIndex],
-                    fit: BoxFit.cover,
+                  child: Hero(
+                    tag: _heroTags[cellIndex],
+                    child: Image.network(
+                      _thumPhotos[cellIndex],
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                )),
+                ),
               ],
             )
           : Hero(
@@ -186,32 +187,10 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           // 通过控制器pop退出
           _browerController.pop();
         },
-        child: Container(
-          color: Colors.transparent,
-          alignment: Alignment.center,
-          height: 44,
-          child: Text(
-            '关闭',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-              color: Colors.white.withAlpha(230),
-              decoration: TextDecoration.none,
-              shadows: <Shadow>[
-                Shadow(
-                  offset: Offset(1.0, 1.0),
-                  blurRadius: 3.0,
-                  color: Colors.black,
-                ),
-                Shadow(
-                  offset: Offset(1.0, 1.0),
-                  blurRadius: 8.0,
-                  color: Colors.black,
-                ),
-              ],
-            ),
-          ),
+        child: Icon(
+          Icons.close,
+          color: Colors.white,
+          size: 36,
         ),
       ),
     );
@@ -284,27 +263,10 @@ class _ImageDemoPage extends State<ImageDemoPage> {
             }
           }
         },
-        child: Text(
-          '保存图片',
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: Colors.white.withAlpha(230),
-            decoration: TextDecoration.none,
-            shadows: <Shadow>[
-              Shadow(
-                offset: Offset(1.0, 1.0),
-                blurRadius: 3.0,
-                color: Colors.black,
-              ),
-              Shadow(
-                offset: Offset(1.0, 1.0),
-                blurRadius: 8.0,
-                color: Colors.black,
-              ),
-            ],
-          ),
+        child: Icon(
+          Icons.save,
+          color: Colors.white,
+          size: 36,
         ),
       ),
     );
