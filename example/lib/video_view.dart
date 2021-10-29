@@ -16,14 +16,14 @@ class _VideoViewState extends State<VideoView> {
   void initState() {
     super.initState();
     String v1 =
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4';
-    String v2 =
         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
     _controller = VideoPlayerController.network(v1)
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         setState(() {});
+        _controller.play();
       });
+    _controller.setLooping(true);
   }
 
   @override
@@ -58,7 +58,8 @@ class _VideoViewState extends State<VideoView> {
             },
             child: Icon(
               _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-              size: 30,
+              color: Colors.white,
+              size: 36,
             ),
           ),
         )

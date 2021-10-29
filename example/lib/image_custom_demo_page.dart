@@ -148,7 +148,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             } else {
               return CustomChild(
                 child: VideoView(),
-                allowZoom: true,
+                allowZoom: false,
               );
             }
           },
@@ -253,7 +253,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
     return <Positioned>[
       _buildCloseBtn(context, curIndex, totalNum),
       _buildSaveImageBtn(context, curIndex, totalNum),
-      _buildGuide(context, curIndex, totalNum),
     ];
   }
 
@@ -367,38 +366,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         ),
       ),
     );
-  }
-
-  Positioned _buildGuide(BuildContext context, int curIndex, int totalNum) {
-    return _showTip
-        ? Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                _showTip = false;
-                // Refresh the photoBrowser through the controller
-                // 通过控制器，刷新PhotoBrowser
-                _browerController.setState(() {});
-              },
-              child: Container(
-                color: Colors.black.withOpacity(0.3),
-                alignment: Alignment.center,
-                child: Text(
-                  '温馨提示😊：\n可单击或下拉退出浏览',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white.withAlpha(230),
-                    decoration: TextDecoration.none,
-                    shadows: _shadows(),
-                  ),
-                ),
-              ),
-            ),
-          )
-        : Positioned(
-            child: Container(),
-          );
   }
 
   Widget _failedChild() {
