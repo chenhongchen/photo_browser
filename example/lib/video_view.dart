@@ -36,15 +36,19 @@ class _VideoViewState extends State<VideoView> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
-            : Container(
-                color: Colors.grey,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.width * 9 / 16),
+        Container(
+            color: Colors.grey,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.width * 9 / 16),
+        Positioned.fill(
+          child: CupertinoActivityIndicator(radius: 15),
+        ),
+        Positioned.fill(
+          child: AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          ),
+        ),
         Positioned(
           bottom: 10,
           right: 10,
