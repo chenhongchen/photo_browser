@@ -1,3 +1,4 @@
+import 'package:flt_hc_hud/hud/hc_activity_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -11,6 +12,7 @@ class VideoView extends StatefulWidget {
 
 class _VideoViewState extends State<VideoView> {
   late VideoPlayerController _controller;
+  bool _hiddenIndicator = false;
 
   @override
   void initState() {
@@ -18,12 +20,19 @@ class _VideoViewState extends State<VideoView> {
     String v1 =
         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
     _controller = VideoPlayerController.network(v1)
+      ..setLooping(true)
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         setState(() {});
         _controller.play();
+      })
+      ..addListener(() {
+        if (_controller.value.position > Duration(milliseconds: 100)) {
+          setState(() {
+            _hiddenIndicator = true;
+          });
+        }
       });
-    _controller.setLooping(true);
   }
 
   @override
@@ -37,17 +46,18 @@ class _VideoViewState extends State<VideoView> {
     return Stack(
       children: [
         Container(
-            color: Colors.grey,
+            color: Colors.black,
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.width * 9 / 16),
-        Positioned.fill(
-          child: CupertinoActivityIndicator(radius: 15),
-        ),
         Positioned.fill(
           child: AspectRatio(
             aspectRatio: _controller.value.aspectRatio,
             child: VideoPlayer(_controller),
           ),
+        ),
+        Positioned.fill(
+          child:
+              _hiddenIndicator ? Container() : HCActivityIndicator(radius: 12),
         ),
         Positioned(
           bottom: 10,

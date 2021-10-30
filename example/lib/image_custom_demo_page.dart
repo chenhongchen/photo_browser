@@ -142,7 +142,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           customChildBuilder: (int index) {
             if (index == 6) {
               return CustomChild(
-                child: _buildCustomChild(),
+                child: _buildCustomImage(),
                 allowZoom: true,
               );
             } else {
@@ -186,48 +186,56 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           ? Stack(
               children: [
                 Positioned.fill(
-                  child: _buildItem(cellIndex),
+                  child: _buildImage(cellIndex),
                 ),
                 Positioned.fill(
                   child: Hero(
                     tag: _heroTags[cellIndex],
-                    child: _buildItem(cellIndex),
+                    child: _buildImage(cellIndex),
                   ),
                 ),
               ],
             )
           : Hero(
               tag: _heroTags[cellIndex],
-              child: _buildItem(cellIndex),
+              child: _buildImage(cellIndex),
             ),
     );
   }
 
-  Widget _buildItem(int index) {
+  Widget _buildImage(int index) {
     if (_isCustomType(index)) {
       if (index == 6) {
-        return _buildCustomChild(
+        return _buildCustomImage(
           font: 10,
           fill: true,
         );
       } else {
-        return _buildCustomChild(font: 12, fill: true, text: '视频(video)');
+        return _buildCustomImage(font: 12, fill: true, text: '视频(video)');
       }
       // return Container(color: Colors.teal);
     }
-    return Image.network(
-      _thumPhotos[index],
-      fit: BoxFit.cover,
+    return Stack(
+      children: [
+        Positioned.fill(child: Container(color: Colors.grey.withOpacity(0.6))),
+        Positioned.fill(
+            child: Image.network(
+          _thumPhotos[index],
+          fit: BoxFit.cover,
+        )),
+      ],
     );
   }
 
-  _buildCustomChild(
+  _buildCustomImage(
       {double font = 16,
       bool fill = false,
       String text = '自定义页(Custom page)'}) {
     return Material(
       child: Stack(
         children: [
+          Positioned.fill(
+              child: Container(color: Colors.grey.withOpacity(0.6))),
           fill
               ? Positioned.fill(
                   child: Image.network(_thumPhotos[0], fit: BoxFit.cover))

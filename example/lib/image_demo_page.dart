@@ -142,29 +142,33 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           ? Stack(
               children: [
                 Positioned.fill(
-                  child: Image.network(
-                    _thumPhotos[cellIndex],
-                    fit: BoxFit.cover,
-                  ),
+                  child: _buildImage(cellIndex),
                 ),
                 Positioned.fill(
                   child: Hero(
                     tag: _heroTags[cellIndex],
-                    child: Image.network(
-                      _thumPhotos[cellIndex],
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildImage(cellIndex),
                   ),
                 ),
               ],
             )
           : Hero(
               tag: _heroTags[cellIndex],
-              child: Image.network(
-                _thumPhotos[cellIndex],
-                fit: BoxFit.cover,
-              ),
+              child: _buildImage(cellIndex),
             ),
+    );
+  }
+
+  Widget _buildImage(int index) {
+    return Stack(
+      children: [
+        Positioned.fill(child: Container(color: Colors.grey.withOpacity(0.6))),
+        Positioned.fill(
+            child: Image.network(
+          _thumPhotos[index],
+          fit: BoxFit.cover,
+        )),
+      ],
     );
   }
 
