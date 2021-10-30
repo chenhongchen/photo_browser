@@ -9,6 +9,8 @@ import 'package:photo_browser/photo_browser.dart';
 
 class CustomChild {
   final Widget? child;
+
+  /// 是否允许缩放
   final bool allowZoom;
   CustomChild({this.child, this.allowZoom = false});
 }

@@ -1,3 +1,7 @@
+## 2.0.9
+
+* TODO: Provide custom page function.
+
 ## 2.0.8
 
 * TODO: Set the triggerScale default value to 0.1, and delete scale for RouteType.

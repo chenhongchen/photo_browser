@@ -14,7 +14,7 @@ Pull down to pop
 
 ```yaml
 dependencies:
-  photo_browser: 2.0.8
+  photo_browser: 2.0.9
 ```
 
 ```dart
@@ -39,6 +39,15 @@ Widget _buildCell(BuildContext context, int cellIndex) {
         heroTagBuilder: (int index) {
           return _heroTags[index];
         },
+        // Set the display type of each page,
+        // if the value is null, all are DisplayType.image.
+        // 设置每页显示的类型，值为null则都为DisplayType.image类型
+        displayTypeBuilder: (int index) {
+          if (_isCustomType(index)) {
+            return DisplayType.custom;
+          }
+          return DisplayType.image;
+        },
         // Large images setting.
         // If you want the displayed image to be cached to disk at the same time,
         // you can set the imageProviderBuilder property instead imageUrlBuilder,
@@ -52,6 +61,21 @@ Widget _buildCell(BuildContext context, int cellIndex) {
         // 缩略图设置
         thumImageUrlBuilder: (int index) {
           return _thumPhotos[index];
+        },
+        // Called when the display type is DisplayType.custom.
+        // 当显示类型为DisplayType.custom时会调用
+        customChildBuilder: (int index) {
+          if (index == 6) {
+            return CustomChild(
+              child: _buildCustomImage(),
+              allowZoom: true,
+            );
+          } else {
+            return CustomChild(
+              child: VideoView(),
+              allowZoom: false,
+            );
+          }
         },
         positionsBuilder: _positionsBuilder,
         loadFailedChild: _failedChild(),
@@ -87,27 +111,19 @@ Widget _buildCell(BuildContext context, int cellIndex) {
         ? Stack(
             children: [
               Positioned.fill(
-                child: Image.network(
-                  _thumPhotos[cellIndex],
-                  fit: BoxFit.cover,
-                ),
+                child: _buildImage(cellIndex),
               ),
               Positioned.fill(
-                  child: Hero(
-                tag: _heroTags[cellIndex],
-                child: Image.network(
-                  _thumPhotos[cellIndex],
-                  fit: BoxFit.cover,
+                child: Hero(
+                  tag: _heroTags[cellIndex],
+                  child: _buildImage(cellIndex),
                 ),
-              )),
+              ),
             ],
           )
         : Hero(
             tag: _heroTags[cellIndex],
-            child: Image.network(
-              _thumPhotos[cellIndex],
-              fit: BoxFit.cover,
-            ),
+            child: _buildImage(cellIndex),
           ),
   );
 }

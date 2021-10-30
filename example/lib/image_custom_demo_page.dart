@@ -119,6 +119,9 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           heroTagBuilder: (int index) {
             return _heroTags[index];
           },
+          // Set the display type of each page,
+          // if the value is null, all are DisplayType.image.
+          // 设置每页显示的类型，值为null则都为DisplayType.image类型
           displayTypeBuilder: (int index) {
             if (_isCustomType(index)) {
               return DisplayType.custom;
@@ -139,6 +142,8 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           thumImageUrlBuilder: (int index) {
             return _thumPhotos[index];
           },
+          // Called when the display type is DisplayType.custom.
+          // 当显示类型为DisplayType.custom时会调用
           customChildBuilder: (int index) {
             if (index == 6) {
               return CustomChild(
