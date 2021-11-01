@@ -4,11 +4,7 @@ PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and 
 
 ## Demo
 
-<img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_0.gif" width="360" height="640" alt="demo"/>
-
-Pull down to pop
-
-<img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_1.gif" width="360" height="640" alt="demo"/>
+<img src="https://github.com/chenhongchen/test_photos_lib/raw/master/gif/photo_browser_2.gif" width="255" height="400" alt="demo"/>
 
 ## Use it
 
