@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_browser/custom_page.dart';
+import 'package:photo_browser/page/custom_page.dart';
 import 'package:photo_browser/photo_browser.dart';
 import 'package:photo_browser_example/video_view.dart';
 
@@ -24,7 +24,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   List<String> _thumPhotos = <String>[];
   List<String> _heroTags = <String>[];
   PhotoBrowerController _browerController = PhotoBrowerController();
-  bool _showTip = true;
   int? _initIndex;
   int? _curIndex;
 

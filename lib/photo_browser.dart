@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_browser/custom_page.dart';
-import 'package:photo_browser/photo_page.dart';
+import 'package:photo_browser/page/custom_page.dart';
+import 'package:photo_browser/page/photo_page.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 
 typedef DisplayTypeBuilder = DisplayType Function(int index);
