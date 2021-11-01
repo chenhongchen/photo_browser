@@ -1,12 +1,14 @@
+export 'package:photo_browser/define.dart';
+export 'package:photo_browser/pull_down_pop.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_browser/define.dart';
+import 'package:photo_browser/pull_down_pop.dart';
 import 'package:photo_browser/page/custom_page.dart';
 import 'package:photo_browser/page/photo_page.dart';
-import 'package:photo_browser/pull_down_pop.dart';
 
 typedef DisplayTypeBuilder = DisplayType Function(int index);
 typedef ImageProviderBuilder = ImageProvider Function(int index);
-typedef StringBuilder = String Function(int index);
 typedef CustomChildBuilder = CustomChild Function(int index);
 typedef PageCodeBuilder = Positioned Function(
   BuildContext context,
