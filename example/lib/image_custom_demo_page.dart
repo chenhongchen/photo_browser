@@ -271,7 +271,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
-      right: 20,
+      right: 15,
       top: MediaQuery.of(context).padding.top + 10,
       child: GestureDetector(
         onTap: () {
@@ -282,7 +282,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         child: Icon(
           Icons.close,
           color: Colors.white,
-          size: 36,
+          size: 32,
         ),
       ),
     );
@@ -361,7 +361,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         child: Icon(
           Icons.save,
           color: Colors.white,
-          size: 36,
+          size: 32,
         ),
       ),
     );

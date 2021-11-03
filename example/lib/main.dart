@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_browser_example/easy_demo_page.dart';
 import 'package:photo_browser_example/image_demo_page.dart';
 import 'package:photo_browser_example/image_custom_demo_page.dart';
 
@@ -33,9 +34,20 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCell(
+              cn: '简单例子(无下拉关闭)',
+              en: 'Easy demo(No pull down pop)',
+              icon: Icons.vpn_key,
+              color: Colors.amber,
+              onTap: () {
+                Navigator.of(context, rootNavigator: true)
+                    .push(CupertinoPageRoute(builder: (BuildContext context) {
+                  return EasyDemoPage();
+                }));
+              }),
+          _buildCell(
               cn: '仅图片',
               en: 'Only image',
-              color: Colors.amber,
+              color: Colors.purpleAccent,
               onTap: () {
                 Navigator.of(context, rootNavigator: true)
                     .push(CupertinoPageRoute(builder: (BuildContext context) {
@@ -72,21 +84,23 @@ class _HomePageState extends State<HomePage> {
             color: Colors.transparent,
             child: Row(
               children: [
-                SizedBox(width: 15),
-                Icon(icon, size: 46, color: color),
+                SizedBox(width: 10),
+                Icon(icon, size: 44, color: color),
                 SizedBox(width: 5),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Container(
-                      child: Text(cn),
-                    ),
-                    Container(
-                      child: Text(en),
-                    ),
-                    SizedBox(height: 10),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Container(
+                        child: Text(cn, overflow: TextOverflow.ellipsis),
+                      ),
+                      Container(
+                        child: Text(en, overflow: TextOverflow.ellipsis),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
                 )
               ],
             ),

@@ -183,8 +183,8 @@ class _ImageDemoPage extends State<ImageDemoPage> {
 
   Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
     return Positioned(
-      right: 20,
-      top: MediaQuery.of(context).padding.top,
+      right: 15,
+      top: MediaQuery.of(context).padding.top + 10,
       child: GestureDetector(
         onTap: () {
           // Pop through controller
@@ -194,7 +194,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         child: Icon(
           Icons.close,
           color: Colors.white,
-          size: 36,
+          size: 32,
         ),
       ),
     );
@@ -270,7 +270,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         child: Icon(
           Icons.save,
           color: Colors.white,
-          size: 36,
+          size: 32,
         ),
       ),
     );
