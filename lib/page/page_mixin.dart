@@ -304,8 +304,10 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
     _hit.hitType = HitType.all;
     if (mScale > 1) {
       _hit.hitType = HitType.none;
-      double rightDistance =
-          (mOffset.dx - (mImageDefW - mConstraints!.maxWidth * mScale)).abs();
+      double rightDistance = (mOffset.dx -
+              mConstraints!.maxWidth +
+              mConstraints!.maxWidth * mScale)
+          .abs();
       if (mOffset.dx.abs() < 0.01) {
         _hit.hitType = HitType.left;
       } else if (rightDistance < 0.01) {
