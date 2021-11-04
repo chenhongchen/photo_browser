@@ -189,8 +189,7 @@ class _PhotoPageState extends State<PhotoPage>
         BuildContext context,
         BoxConstraints constraints,
       ) {
-        mConstraints = constraints;
-        mSetImageSize();
+        mSetImageSize(constraints: constraints);
         Widget content;
         if (_thumImageProvideInfo == null ||
             _imageProviderInfo.status == _ImageLoadStatus.completed) {

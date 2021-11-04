@@ -72,10 +72,10 @@ class _CustomPageState extends State<CustomPage>
   }
 
   @override
-  bool mSetImageSize() {
+  bool mSetImageSize({BoxConstraints? constraints}) {
     if (_globalKey.currentContext?.size == null) return false;
     mImageSize = _globalKey.currentContext!.size;
-    return super.mSetImageSize();
+    return super.mSetImageSize(constraints: constraints);
   }
 
   @override
@@ -85,9 +85,8 @@ class _CustomPageState extends State<CustomPage>
         BuildContext context,
         BoxConstraints constraints,
       ) {
-        mConstraints = constraints;
         SchedulerBinding.instance?.addPostFrameCallback((_) {
-          mSetImageSize();
+          mSetImageSize(constraints: constraints);
         });
 
         Widget content = _buildContent(constraints);

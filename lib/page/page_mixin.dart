@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:photo_browser/define.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 
@@ -176,8 +177,26 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
     setState(() {});
   }
 
-  bool mSetImageSize() {
-    if (mImageDefW > 0 && mImageDefH > 0) return true;
+  bool mSetImageSize({BoxConstraints? constraints}) {
+    if (constraints != null) {
+      if (constraints.maxWidth == mConstraints?.maxWidth &&
+          constraints.maxHeight == mConstraints?.maxHeight &&
+          mImageDefW > 0 &&
+          mImageDefH > 0) {
+        return true;
+      }
+      // 比如旋转时，按默认比例及位置显示
+      if (mConstraints != null &&
+          (constraints.maxWidth != mConstraints?.maxWidth ||
+              constraints.maxHeight != mConstraints?.maxHeight)) {
+        mScale = 1;
+        mOffset = Offset.zero;
+        Future.delayed(Duration(milliseconds: 0), () {
+          setState(() {});
+        });
+      }
+      mConstraints = constraints;
+    }
 
     if (mImageSize == null) return false;
     if (mConstraints == null) return false;
