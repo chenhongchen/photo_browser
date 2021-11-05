@@ -1,3 +1,7 @@
+## 2.0.10
+
+* TODO: Deal with some problems caused by rotation.
+
 ## 2.0.9
 
 * TODO: Provide custom page function.
