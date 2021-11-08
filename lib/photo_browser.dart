@@ -157,6 +157,8 @@ class PhotoBrowser extends StatefulWidget {
   /// 单击关闭功能开关
   final bool allowTapToPop;
 
+  final BoolBuilder? allowTapToPopBuilder;
+
   /// 向下轻扫关闭功能开关（allowPullDownToPop 为）
   /// allowPullDownToPop 等于 true 则allowSwipeDownToPop设置无效
   final bool allowSwipeDownToPop;
@@ -208,6 +210,7 @@ class PhotoBrowser extends StatefulWidget {
     this.filterQuality,
     this.backcolor,
     this.allowTapToPop = true,
+    this.allowTapToPopBuilder,
     bool allowSwipeDownToPop = true,
     this.allowPullDownToPop = false,
     this.canPopWhenScrolling = true,
@@ -311,39 +314,47 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   Widget _buildPageView() {
-    return GestureDetector(
-      onTap: widget.allowTapToPop ? _onTap : null,
-      onVerticalDragDown:
-          !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
-      onVerticalDragUpdate:
-          !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
-      child: PageView.builder(
-        reverse: widget.reverse,
-        controller: _pageController,
-        onPageChanged: (int index) {
-          _curPage = index;
-          setState(() {});
-          if (widget.onPageChanged != null) {
-            widget.onPageChanged!(index);
-          }
-        },
-        itemCount: widget.itemCount,
-        itemBuilder: _buildItem,
-        scrollDirection: widget.scrollDirection,
-        physics: _pullDownPopStatus == PullDownPopStatus.pulling
-            ? NeverScrollableScrollPhysics()
-            : widget.scrollPhysics,
-      ),
+    return PageView.builder(
+      reverse: widget.reverse,
+      controller: _pageController,
+      onPageChanged: (int index) {
+        _curPage = index;
+        setState(() {});
+        if (widget.onPageChanged != null) {
+          widget.onPageChanged!(index);
+        }
+      },
+      itemCount: widget.itemCount,
+      itemBuilder: _buildItem,
+      scrollDirection: widget.scrollDirection,
+      physics: _pullDownPopStatus == PullDownPopStatus.pulling
+          ? NeverScrollableScrollPhysics()
+          : widget.scrollPhysics,
     );
   }
 
   Widget _buildItem(BuildContext context, int index) {
+    late Widget child;
     if (widget.displayTypeBuilder == null ||
         widget.displayTypeBuilder!(index) == DisplayType.image) {
-      return _buildPhotoPage(index);
+      child = _buildPhotoPage(index);
     } else {
-      return _buildCustomPage(index);
+      child = _buildCustomPage(index);
     }
+    bool allowTapToPop = widget.allowTapToPopBuilder != null
+        ? widget.allowTapToPopBuilder!(index)
+        : widget.allowTapToPop;
+    return GestureDetector(
+      onTap: allowTapToPop ? _onTap : null,
+      onVerticalDragDown:
+          !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
+      onVerticalDragUpdate:
+          !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
+      child: Container(
+        color: Colors.transparent,
+        child: child,
+      ),
+    );
   }
 
   Widget _buildPhotoPage(int index) {

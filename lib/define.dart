@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 
 typedef StringBuilder = String Function(int index);
+typedef BoolBuilder = bool Function(int index);
 typedef OnScaleChanged = void Function(double scale);
 
 class CustomSingleChildLayoutDelegate extends SingleChildLayoutDelegate {

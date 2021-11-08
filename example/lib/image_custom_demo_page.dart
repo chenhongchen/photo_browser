@@ -110,7 +110,12 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           itemCount: _bigPhotos.length,
           initIndex: cellIndex,
           controller: _browerController,
-          allowTapToPop: true,
+          allowTapToPopBuilder: (int index) {
+            if (index == 7) {
+              return false;
+            }
+            return true;
+          },
           allowSwipeDownToPop: true,
           // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
           // 如果allowPullDownToPop为true，则allowTapToPop设置无效
