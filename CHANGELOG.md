@@ -1,3 +1,7 @@
+## 2.0.11
+
+* TODO: Add allowTapToPopBuilder property.
+
 ## 2.0.10
 
 * TODO: Deal with some problems caused by rotation.
