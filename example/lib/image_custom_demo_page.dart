@@ -117,8 +117,8 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             return true;
           },
           allowSwipeDownToPop: true,
-          // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
-          // 如果allowPullDownToPop为true，则allowTapToPop设置无效
+          // If allowPullDownToPop is true, the allowSwipeDownToPop setting is invalid.
+          // 如果allowPullDownToPop为true，则allowSwipeDownToPop设置无效
           allowPullDownToPop: true,
           heroTagBuilder: (int index) {
             return _heroTags[index];
