@@ -108,7 +108,8 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           thumImageUrlBuilder: (int index) {
             return _thumPhotos[index];
           },
-          positioneds: <Positioned>[_buildCloseBtn()],
+          positioneds: (BuildContext context) =>
+              <Positioned>[_buildCloseBtn(context)],
           positionedBuilders: <PositionedBuilder>[
             _buildSaveImageBtn,
             _buildGuide,
@@ -176,7 +177,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
     );
   }
 
-  Positioned _buildCloseBtn() {
+  Positioned _buildCloseBtn(BuildContext context) {
     return Positioned(
       right: 15,
       top: MediaQuery.of(context).padding.top + 10,

@@ -16,6 +16,7 @@ typedef PositionedBuilder = Positioned Function(
   int curIndex,
   int totalNum,
 );
+typedef PositionedsBuilder = List<Positioned> Function(BuildContext context);
 
 enum RouteType {
   fade, // 淡入淡出
@@ -145,7 +146,7 @@ class PhotoBrowser extends StatefulWidget {
   final PositionedBuilder? pageCodeBuild;
 
   /// 设置更多自定控件
-  final List<Positioned>? positioneds;
+  final PositionedsBuilder? positioneds;
 
   /// 设置更多自定控件（页面索引变化会刷新里面的builder）
   final List<PositionedBuilder>? positionedBuilders;
@@ -309,7 +310,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       ),
     ];
     if (widget.positioneds != null) {
-      children.addAll(widget.positioneds!);
+      children.addAll(widget.positioneds!(context));
     }
     if (widget.positionedBuilders != null) {
       for (PositionedBuilder builder in widget.positionedBuilders!) {

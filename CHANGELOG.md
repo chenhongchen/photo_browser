@@ -1,3 +1,7 @@
+## 2.0.13
+
+* TODO: Modified the positions attribute type.
+
 ## 2.0.12
 
 * TODO: Page turning refresh state optimization.

@@ -161,7 +161,8 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               );
             }
           },
-          positioneds: <Positioned>[_buildCloseBtn()],
+          positioneds: (BuildContext context) =>
+              <Positioned>[_buildCloseBtn(context)],
           positionedBuilders: <PositionedBuilder>[_buildSaveImageBtn],
           loadFailedChild: _failedChild(),
           onPageChanged: (int index) {
@@ -267,7 +268,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
     );
   }
 
-  Positioned _buildCloseBtn() {
+  Positioned _buildCloseBtn(BuildContext context) {
     return Positioned(
       right: 15,
       top: MediaQuery.of(context).padding.top + 10,
