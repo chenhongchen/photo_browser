@@ -2,6 +2,7 @@ export 'package:photo_browser/define.dart';
 export 'package:photo_browser/pull_down_pop.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:photo_browser/define.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 import 'package:photo_browser/page/custom_page.dart';
@@ -10,12 +11,7 @@ import 'package:photo_browser/page/photo_page.dart';
 typedef DisplayTypeBuilder = DisplayType Function(int index);
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef CustomChildBuilder = CustomChild Function(int index);
-typedef PageCodeBuilder = Positioned Function(
-  BuildContext context,
-  int curIndex,
-  int totalNum,
-);
-typedef PositionsBuilder = List<Positioned> Function(
+typedef PositionedBuilder = Positioned Function(
   BuildContext context,
   int curIndex,
   int totalNum,
@@ -146,10 +142,13 @@ class PhotoBrowser extends StatefulWidget {
   final Widget? loadFailedChild;
 
   /// 设置自定义页码，为null则使用默认的
-  final PageCodeBuilder? pageCodeBuild;
+  final PositionedBuilder? pageCodeBuild;
 
   /// 设置更多自定控件
-  final PositionsBuilder? positionsBuilder;
+  final List<Positioned>? positioneds;
+
+  /// 设置更多自定控件（页面索引变化会刷新里面的builder）
+  final List<PositionedBuilder>? positionedBuilders;
 
   /// 设置背景色
   final Color? backcolor;
@@ -203,7 +202,8 @@ class PhotoBrowser extends StatefulWidget {
     this.loadingBuilder,
     this.loadFailedChild,
     this.pageCodeBuild,
-    this.positionsBuilder,
+    this.positioneds,
+    this.positionedBuilders,
     this.imageColor,
     this.imageColorBlendMode,
     this.gaplessPlayback,
@@ -260,8 +260,8 @@ class PhotoBrowser extends StatefulWidget {
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
+  late PhotoBrowerController _browerController;
   late PageController _pageController;
-  int _curPage = 0;
   double? _lastDownY;
   bool _willPop = false;
   BoxConstraints? _constraints;
@@ -270,10 +270,11 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   @override
   void initState() {
-    widget.controller?._state = this;
-    _curPage = widget.initIndex;
+    _browerController = widget.controller ?? PhotoBrowerController();
+    _browerController._state = this;
+    _browerController._curIndex = widget.initIndex;
     _pageController =
-        widget.pageController ?? PageController(initialPage: _curPage);
+        widget.pageController ?? PageController(initialPage: widget.initIndex);
     super.initState();
   }
 
@@ -281,6 +282,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   void dispose() {
     if (widget.pageController == null) {
       _pageController.dispose();
+    }
+    if (widget.controller == null) {
+      _browerController.dispose();
     }
     super.dispose();
   }
@@ -299,11 +303,21 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildContent() {
     List<Widget> children = <Widget>[
       _buildPageView(),
-      _buildPageCode(_curPage, widget.itemCount),
+      PhotoBrowserProvider(
+        controller: _browerController,
+        builder: (BuildContext context) => _buildPageCode(widget.itemCount),
+      ),
     ];
-    if (widget.positionsBuilder != null) {
-      children.addAll(
-          widget.positionsBuilder!(context, _curPage, widget.itemCount));
+    if (widget.positioneds != null) {
+      children.addAll(widget.positioneds!);
+    }
+    if (widget.positionedBuilders != null) {
+      for (PositionedBuilder builder in widget.positionedBuilders!) {
+        children.add(PhotoBrowserProvider(
+            controller: _browerController,
+            builder: (BuildContext context) => builder(
+                context, _browerController.curIndex, widget.itemCount)));
+      }
     }
     return Container(
       color: (widget.backcolor ?? Colors.black).withOpacity(_pullDownScale),
@@ -318,8 +332,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       reverse: widget.reverse,
       controller: _pageController,
       onPageChanged: (int index) {
-        _curPage = index;
-        setState(() {});
+        _browerController.curIndex = index;
         if (widget.onPageChanged != null) {
           widget.onPageChanged!(index);
         }
@@ -365,9 +378,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
       routeType: widget.routeType,
-      heroTag: widget.heroTagBuilder != null && _curPage == index
-          ? widget.heroTagBuilder!(index)
-          : null,
+      heroTag:
+          widget.heroTagBuilder != null && _browerController.curIndex == index
+              ? widget.heroTagBuilder!(index)
+              : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       allowPullDownToPop: widget.allowPullDownToPop,
@@ -399,9 +413,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       child: widget.customChildBuilder!(index),
       backcolor: Colors.transparent,
       routeType: widget.routeType,
-      heroTag: widget.heroTagBuilder != null && _curPage == index
-          ? widget.heroTagBuilder!(index)
-          : null,
+      heroTag:
+          widget.heroTagBuilder != null && _browerController.curIndex == index
+              ? widget.heroTagBuilder!(index)
+              : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       allowPullDownToPop: widget.allowPullDownToPop,
@@ -418,15 +433,16 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     );
   }
 
-  Positioned _buildPageCode(int curIndex, int totalNum) {
+  Positioned _buildPageCode(int totalNum) {
+    int showIndex = _browerController.curIndex + 1;
     if (widget.pageCodeBuild != null) {
-      return widget.pageCodeBuild!(context, curIndex + 1, totalNum);
+      return widget.pageCodeBuild!(context, showIndex, totalNum);
     }
     return Positioned(
       right: 20,
       bottom: 20,
       child: Text(
-        '${curIndex + 1}/$totalNum',
+        '$showIndex/$totalNum',
         textAlign: TextAlign.right,
         style: TextStyle(
           fontSize: 18,
@@ -478,10 +494,33 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 }
 
-class PhotoBrowerController {
+class PhotoBrowerController with ChangeNotifier {
+  int _curIndex = 0;
+  int get curIndex => _curIndex;
+  set curIndex(int value) {
+    _curIndex = value;
+    notifyListeners();
+  }
+
+  bool _disposed = false;
+  bool get disposed => _disposed;
+
   _PhotoBrowserState? _state;
   final Map<int, ImageInfo> imageInfos = Map<int, ImageInfo>();
   final Map<int, ImageInfo> thumImageInfos = Map<int, ImageInfo>();
+
+  static PhotoBrowerController? of(BuildContext context) {
+    final PhotoBrowserProvider? provider =
+        context.dependOnInheritedWidgetOfExactType<PhotoBrowserProvider>();
+    return provider?.controller;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _disposed = true;
+    _state = null;
+  }
 
   void pop() {
     _state?._pop();
@@ -490,8 +529,55 @@ class PhotoBrowerController {
   setState(VoidCallback fn) {
     _state?.setState(fn);
   }
+}
 
-  dispose() {
-    _state = null;
+class PhotoBrowserProvider extends InheritedWidget {
+  final PhotoBrowerController controller;
+  PhotoBrowserProvider({
+    Key? key,
+    required this.controller,
+    required WidgetBuilder builder,
+  }) : super(key: key, child: _NotificationListener(builder: builder));
+  @override
+  bool updateShouldNotify(covariant PhotoBrowserProvider oldWidget) {
+    return controller != oldWidget.controller;
+  }
+}
+
+class _NotificationListener extends StatefulWidget {
+  final WidgetBuilder builder;
+
+  _NotificationListener({Key? key, required this.builder}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _NotificationListenerState();
+  }
+}
+
+class _NotificationListenerState extends State<_NotificationListener> {
+  PhotoBrowerController? _controller;
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
+      _controller = PhotoBrowerController.of(context);
+      _controller?.addListener(listener);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller?.removeListener(listener);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context);
+  }
+
+  void listener() {
+    setState(() {});
   }
 }

@@ -161,7 +161,8 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               );
             }
           },
-          positionsBuilder: _positionsBuilder,
+          positioneds: <Positioned>[_buildCloseBtn()],
+          positionedBuilders: <PositionedBuilder>[_buildSaveImageBtn],
           loadFailedChild: _failedChild(),
           onPageChanged: (int index) {
             _curIndex = index;
@@ -266,15 +267,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
     );
   }
 
-  List<Positioned> _positionsBuilder(
-      BuildContext context, int curIndex, int totalNum) {
-    return <Positioned>[
-      _buildCloseBtn(context, curIndex, totalNum),
-      _buildSaveImageBtn(context, curIndex, totalNum),
-    ];
-  }
-
-  Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
+  Positioned _buildCloseBtn() {
     return Positioned(
       right: 15,
       top: MediaQuery.of(context).padding.top + 10,

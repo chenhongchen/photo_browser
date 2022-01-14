@@ -108,7 +108,11 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           thumImageUrlBuilder: (int index) {
             return _thumPhotos[index];
           },
-          positionsBuilder: _positionsBuilder,
+          positioneds: <Positioned>[_buildCloseBtn()],
+          positionedBuilders: <PositionedBuilder>[
+            _buildSaveImageBtn,
+            _buildGuide,
+          ],
           loadFailedChild: _failedChild(),
           onPageChanged: (int index) {
             _curIndex = index;
@@ -172,16 +176,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
     );
   }
 
-  List<Positioned> _positionsBuilder(
-      BuildContext context, int curIndex, int totalNum) {
-    return <Positioned>[
-      _buildCloseBtn(context, curIndex, totalNum),
-      _buildSaveImageBtn(context, curIndex, totalNum),
-      _buildGuide(context, curIndex, totalNum),
-    ];
-  }
-
-  Positioned _buildCloseBtn(BuildContext context, int curIndex, int totalNum) {
+  Positioned _buildCloseBtn() {
     return Positioned(
       right: 15,
       top: MediaQuery.of(context).padding.top + 10,
