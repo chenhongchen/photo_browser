@@ -1,3 +1,7 @@
+## 2.0.12
+
+* TODO: Page turning refresh state optimization.
+
 ## 2.0.11
 
 * TODO: Add allowTapToPopBuilder property.

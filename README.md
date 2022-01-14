@@ -10,7 +10,7 @@ PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and 
 
 ```yaml
 dependencies:
-  photo_browser: 2.0.11
+  photo_browser: 2.0.12
 ```
 
 ```dart
@@ -27,10 +27,15 @@ Widget _buildCell(BuildContext context, int cellIndex) {
         itemCount: _bigPhotos.length,
         initIndex: cellIndex,
         controller: _browerController,
-        allowTapToPop: true,
+        allowTapToPopBuilder: (int index) {
+          if (index == 7) {
+            return false;
+          }
+          return true;
+        },
         allowSwipeDownToPop: true,
-        // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
-        // 如果allowPullDownToPop为true，则allowTapToPop设置无效
+        // If allowPullDownToPop is true, the allowSwipeDownToPop setting is invalid.
+        // 如果allowPullDownToPop为true，则allowSwipeDownToPop设置无效
         allowPullDownToPop: true,
         heroTagBuilder: (int index) {
           return _heroTags[index];
@@ -73,7 +78,8 @@ Widget _buildCell(BuildContext context, int cellIndex) {
             );
           }
         },
-        positionsBuilder: _positionsBuilder,
+        positioneds: <Positioned>[_buildCloseBtn()],
+        positionedBuilders: <PositionedBuilder>[_buildSaveImageBtn],
         loadFailedChild: _failedChild(),
         onPageChanged: (int index) {
           _curIndex = index;
