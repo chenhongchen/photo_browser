@@ -290,6 +290,14 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     super.dispose();
   }
 
+  void _setState(VoidCallback fn) {
+    if (!mounted) {
+      fn();
+      return;
+    }
+    setState(fn);
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (
@@ -528,7 +536,7 @@ class PhotoBrowerController with ChangeNotifier {
   }
 
   setState(VoidCallback fn) {
-    _state?.setState(fn);
+    _state?._setState(fn);
   }
 }
 
