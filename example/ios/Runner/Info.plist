@@ -22,6 +22,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>need use your photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>申请相册权限</string>
 	<key>UILaunchStoryboardName</key>
