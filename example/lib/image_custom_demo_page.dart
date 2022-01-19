@@ -24,8 +24,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   List<String> _thumPhotos = <String>[];
   List<String> _heroTags = <String>[];
   PhotoBrowerController _browerController = PhotoBrowerController();
-  int? _initIndex;
-  int? _curIndex;
 
   @override
   void initState() {
@@ -165,9 +163,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               <Positioned>[_buildCloseBtn(context)],
           positionedBuilders: <PositionedBuilder>[_buildSaveImageBtn],
           loadFailedChild: _failedChild(),
-          onPageChanged: (int index) {
-            _curIndex = index;
-          },
         );
 
         // You can push directly.
@@ -180,77 +175,47 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          setState(() {});
-          Future.delayed(Duration(milliseconds: 600), () {
-            _initIndex = null;
-            _curIndex = null;
-            setState(() {});
-          });
           print('PhotoBrowser poped');
         });
-
-        setState(() {
-          _initIndex = cellIndex;
-        });
       },
-      child: _initIndex == cellIndex || _curIndex == cellIndex
-          ? Stack(
-              children: [
-                Positioned.fill(
-                  child: _buildImage(cellIndex),
-                ),
-                Positioned.fill(
-                  child: Hero(
-                    tag: _heroTags[cellIndex],
-                    child: _buildImage(cellIndex),
-                  ),
-                ),
-              ],
-            )
-          : Hero(
-              tag: _heroTags[cellIndex],
-              child: _buildImage(cellIndex),
-            ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+              child: Container(color: Colors.grey.withOpacity(0.6))),
+          Positioned.fill(
+            child: Hero(
+                tag: _heroTags[cellIndex],
+                child: _buildImage(cellIndex),
+                placeholderBuilder:
+                    (BuildContext context, Size heroSize, Widget child) =>
+                        child),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildImage(int index) {
     if (_isCustomType(index)) {
       if (index == 6) {
-        return _buildCustomImage(
-          font: 10,
-          fill: true,
-        );
+        return _buildCustomImage(font: 10);
       } else {
-        return _buildCustomImage(font: 12, fill: true, text: '视频(video)');
+        return _buildCustomImage(font: 12, text: '视频(video)');
       }
       // return Container(color: Colors.teal);
     }
-    return Stack(
-      children: [
-        Positioned.fill(child: Container(color: Colors.grey.withOpacity(0.6))),
-        Positioned.fill(
-            child: Image.network(
-          _thumPhotos[index],
-          fit: BoxFit.cover,
-        )),
-      ],
+    return Image.network(
+      _thumPhotos[index],
+      fit: BoxFit.cover,
     );
   }
 
-  _buildCustomImage(
-      {double font = 16,
-      bool fill = false,
-      String text = '自定义页(Custom page)'}) {
+  _buildCustomImage({double font = 16, String text = '自定义页(Custom page)'}) {
     return Material(
       child: Stack(
         children: [
           Positioned.fill(
-              child: Container(color: Colors.grey.withOpacity(0.6))),
-          fill
-              ? Positioned.fill(
-                  child: Image.network(_thumPhotos[0], fit: BoxFit.cover))
-              : Image.network(_thumPhotos[0], fit: BoxFit.cover),
+              child: Image.network(_thumPhotos[0], fit: BoxFit.cover)),
           Positioned(
               left: 5,
               top: 5,

@@ -87,23 +87,25 @@ class _EasyDemoPage extends State<EasyDemoPage> {
           },
         ).push(context);
       },
-      child: Hero(
-        tag: _heroTags[cellIndex],
-        child: _buildImage(cellIndex),
+      child: Stack(
+        children: [
+          Positioned.fill(
+              child: Container(color: Colors.grey.withOpacity(0.6))),
+          Positioned.fill(
+            child: Hero(
+              tag: _heroTags[cellIndex],
+              child: _buildImage(cellIndex),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildImage(int index) {
-    return Stack(
-      children: [
-        Positioned.fill(child: Container(color: Colors.grey.withOpacity(0.6))),
-        Positioned.fill(
-            child: Image.network(
-          _thumPhotos[index],
-          fit: BoxFit.cover,
-        )),
-      ],
+    return Image.network(
+      _thumPhotos[index],
+      fit: BoxFit.cover,
     );
   }
 }

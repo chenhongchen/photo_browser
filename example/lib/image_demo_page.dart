@@ -23,8 +23,6 @@ class _ImageDemoPage extends State<ImageDemoPage> {
   List<String> _heroTags = <String>[];
   PhotoBrowerController _browerController = PhotoBrowerController();
   bool _showTip = true;
-  int? _initIndex;
-  int? _curIndex;
 
   @override
   void initState() {
@@ -115,9 +113,6 @@ class _ImageDemoPage extends State<ImageDemoPage> {
             _buildGuide,
           ],
           loadFailedChild: _failedChild(),
-          onPageChanged: (int index) {
-            _curIndex = index;
-          },
         );
 
         // You can push directly.
@@ -130,50 +125,30 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          setState(() {});
-          Future.delayed(Duration(milliseconds: 600), () {
-            _initIndex = null;
-            _curIndex = null;
-            setState(() {});
-          });
           print('PhotoBrowser poped');
         });
-
-        setState(() {
-          _initIndex = cellIndex;
-        });
       },
-      child: _initIndex == cellIndex || _curIndex == cellIndex
-          ? Stack(
-              children: [
-                Positioned.fill(
-                  child: _buildImage(cellIndex),
-                ),
-                Positioned.fill(
-                  child: Hero(
-                    tag: _heroTags[cellIndex],
-                    child: _buildImage(cellIndex),
-                  ),
-                ),
-              ],
-            )
-          : Hero(
-              tag: _heroTags[cellIndex],
-              child: _buildImage(cellIndex),
-            ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+              child: Container(color: Colors.grey.withOpacity(0.6))),
+          Positioned.fill(
+            child: Hero(
+                tag: _heroTags[cellIndex],
+                child: _buildImage(cellIndex),
+                placeholderBuilder:
+                    (BuildContext context, Size heroSize, Widget child) =>
+                        child),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildImage(int index) {
-    return Stack(
-      children: [
-        Positioned.fill(child: Container(color: Colors.grey.withOpacity(0.6))),
-        Positioned.fill(
-            child: Image.network(
-          _thumPhotos[index],
-          fit: BoxFit.cover,
-        )),
-      ],
+    return Image.network(
+      _thumPhotos[index],
+      fit: BoxFit.cover,
     );
   }
 
