@@ -1,3 +1,7 @@
+## 2.0.14
+
+* TODO: Optimized status management for background color change.
+
 ## 2.0.13
 
 * TODO: Modified the positions attribute type.

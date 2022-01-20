@@ -212,6 +212,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   _buildCustomImage({double font = 16, String text = '自定义页(Custom page)'}) {
     return Material(
+      color: Colors.transparent,
       child: Stack(
         children: [
           Positioned.fill(

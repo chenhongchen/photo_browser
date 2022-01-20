@@ -36,7 +36,7 @@ class PhotoPage extends StatefulWidget {
     this.thumImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
-    this.backcolor,
+    this.backcolor = Colors.black,
     this.heroTag,
     this.routeType = RouteType.fade,
     this.allowShrinkPhoto = true,
@@ -57,7 +57,7 @@ class PhotoPage extends StatefulWidget {
   final ImageProvider? thumImageProvider;
   final LoadingBuilder? loadingBuilder;
   final Widget? loadFailedChild;
-  final Color? backcolor;
+  final Color backcolor;
   final String? heroTag;
   final RouteType routeType;
   final bool allowShrinkPhoto;
@@ -198,12 +198,14 @@ class _PhotoPageState extends State<PhotoPage>
           content = _buildContent(context, constraints, _thumImageProvideInfo!);
         }
 
+        Color backColor = widget.backcolor == Colors.transparent
+            ? Colors.transparent
+            : widget.backcolor.withOpacity(mPullDownBgColorScale);
         return mRawGestureDetector(
           child: Container(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
-            color: (widget.backcolor ?? Colors.black)
-                .withOpacity(mPullDownBgColorScale),
+            color: backColor,
             child: ClipRect(child: content),
           ),
         );

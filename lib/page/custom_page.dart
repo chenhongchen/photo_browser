@@ -19,7 +19,7 @@ class CustomPage extends StatefulWidget {
   CustomPage({
     Key? key,
     required this.child,
-    this.backcolor,
+    this.backcolor = Colors.black,
     this.heroTag,
     this.routeType = RouteType.fade,
     this.allowShrinkPhoto = true,
@@ -31,7 +31,7 @@ class CustomPage extends StatefulWidget {
   }) : super(key: key);
 
   final CustomChild child;
-  final Color? backcolor;
+  final Color backcolor;
   final String? heroTag;
   final RouteType routeType;
   final bool allowShrinkPhoto;
@@ -91,12 +91,14 @@ class _CustomPageState extends State<CustomPage>
 
         Widget content = _buildContent(constraints);
 
+        Color backColor = widget.backcolor == Colors.transparent
+            ? Colors.transparent
+            : widget.backcolor.withOpacity(mPullDownBgColorScale);
         return mRawGestureDetector(
           child: Container(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
-            color: (widget.backcolor ?? Colors.black)
-                .withOpacity(mPullDownBgColorScale),
+            color: backColor,
             child: ClipRect(child: widget.willPop ? content : content),
           ),
         );
