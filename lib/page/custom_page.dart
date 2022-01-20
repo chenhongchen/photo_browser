@@ -126,8 +126,8 @@ class _CustomPageState extends State<CustomPage>
         scale = mPullDownContentScale * mScale;
         width = (mConstraints?.maxWidth ?? 0);
         height = (mConstraints?.maxHeight ?? 0);
-        dx1 = (1 - mPullDownContentScale) * minW * 0.5;
-        dy1 = (1 - mPullDownContentScale) * minH * 0.5;
+        dx1 = (1 - scale) * minW * 0.5;
+        dy1 = (1 - scale) * minH * 0.5;
         x = mPullDownContentOffset.dx + dx1;
         y = mPullDownContentOffset.dy + dy1;
       } else {
