@@ -339,7 +339,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       for (PositionedBuilder builder in widget.positionedBuilders!) {
         children.add(PhotoBrowserProvider(
             controller: _browerController,
-            notificationName: _notifyCurrentIndexChanged,
+            notificationNames: <String>[_notifyCurrentIndexChanged],
             builder: (BuildContext context) =>
                 builder(context, _curIndex, widget.itemCount)));
       }
@@ -350,7 +350,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildBackColor() {
     return PhotoBrowserProvider(
       controller: _browerController,
-      notificationName: _notifyPullDownScaleChanged,
+      notificationNames: <String>[_notifyPullDownScaleChanged],
       builder: (BuildContext context) => Container(
           color:
               (widget.backcolor ?? Colors.black).withOpacity(_pullDownScale)),
@@ -495,7 +495,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
     return PhotoBrowserProvider(
       controller: _browerController,
-      notificationName: _notifyCurrentIndexChanged,
+      notificationNames: <String>[_notifyCurrentIndexChanged],
       builder: (BuildContext context) => pageCode(),
     );
   }
@@ -575,12 +575,12 @@ class PhotoBrowserProvider extends InheritedWidget {
     Key? key,
     required this.controller,
     required WidgetBuilder builder,
-    String? notificationName,
+    List<String>? notificationNames,
   }) : super(
             key: key,
             child: _NotificationListener(
               builder: builder,
-              name: notificationName,
+              notificationNames: notificationNames,
             ));
   @override
   bool updateShouldNotify(covariant PhotoBrowserProvider oldWidget) {
@@ -590,9 +590,10 @@ class PhotoBrowserProvider extends InheritedWidget {
 
 class _NotificationListener extends StatefulWidget {
   final WidgetBuilder builder;
-  final String? name;
+  final List<String>? notificationNames;
 
-  _NotificationListener({Key? key, required this.builder, this.name})
+  _NotificationListener(
+      {Key? key, required this.builder, this.notificationNames})
       : super(key: key);
 
   @override
@@ -624,7 +625,9 @@ class _NotificationListenerState extends State<_NotificationListener> {
   }
 
   void listener() {
-    if (widget.name == _controller?.notificationName) {
+    if (_controller?.notificationName == null ||
+        widget.notificationNames?.contains(_controller?.notificationName) ==
+            true) {
       setState(() {});
     }
   }
