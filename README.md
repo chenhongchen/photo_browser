@@ -1,6 +1,9 @@
 # photo_browser
 
-PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and provides picture data that you can use to download to your local album.
+[![pub package](https://img.shields.io/pub/v/photo_browser.svg)](https://pub.dartlang.org/packages/photo_browser)
+[![GitHub stars](https://img.shields.io/github/stars/chenhongchen/photo_browser.svg?style=social&label=Stars)](https://github.com/chenhongchen/photo_browser)
+
+PhotoBrowser is a zoomable picture and custom view browsing plugin that supports thumbnails and provides picture data that you can use to download to your local album.
 
 ## Demo
 
@@ -8,10 +11,14 @@ PhotoBrowser is a zoomable picture browsing plugin that supports thumbnails and 
 
 ## Use it
 
+### Depend on it
+
 ```yaml
 dependencies:
-  photo_browser: 2.0.14
+  photo_browser: 2.0.15
 ```
+
+### Import it
 
 ```dart
 import 'package:photo_browser/photo_browser.dart';

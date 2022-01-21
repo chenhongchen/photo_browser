@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_browser_example/easy_demo_page.dart';
 import 'package:photo_browser_example/image_demo_page.dart';
 import 'package:photo_browser_example/image_custom_demo_page.dart';
 
@@ -33,17 +32,6 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCell(
-              cn: '简单例子(无下拉关闭)',
-              en: 'Easy demo(No pull down pop)',
-              icon: Icons.vpn_key,
-              color: Colors.amber,
-              onTap: () {
-                Navigator.of(context, rootNavigator: true)
-                    .push(CupertinoPageRoute(builder: (BuildContext context) {
-                  return EasyDemoPage();
-                }));
-              }),
           _buildCell(
               cn: '仅图片',
               en: 'Only image',

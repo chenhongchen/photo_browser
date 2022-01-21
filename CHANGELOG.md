@@ -1,3 +1,7 @@
+## 2.0.15
+
+* TODO: Fixed the pull down pop custom view animation and improved the notification receiving logic.
+
 ## 2.0.14
 
 * TODO: Optimized status management for background color change.

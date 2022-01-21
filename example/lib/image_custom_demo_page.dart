@@ -202,7 +202,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
       } else {
         return _buildCustomImage(font: 12, text: '视频(video)');
       }
-      // return Container(color: Colors.teal);
     }
     return Image.network(
       _thumPhotos[index],
