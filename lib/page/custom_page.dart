@@ -1,11 +1,9 @@
 import 'dart:math';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:photo_browser/define.dart';
 import 'package:photo_browser/page/page_mixin.dart';
 import 'package:photo_browser/pull_down_pop.dart';
-import 'package:photo_browser/photo_browser.dart';
 
 class CustomChild {
   final Widget? child;

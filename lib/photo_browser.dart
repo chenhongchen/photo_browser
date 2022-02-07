@@ -1,5 +1,3 @@
-export 'package:photo_browser/define.dart';
-export 'package:photo_browser/pull_down_pop.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -20,11 +18,6 @@ typedef PositionedsBuilder = List<Positioned> Function(BuildContext context);
 
 final String _notifyCurrentIndexChanged = 'currentIndexChanged';
 final String _notifyPullDownScaleChanged = 'pullDownScaleChanged';
-
-enum RouteType {
-  fade, // 淡入淡出
-  normal, // 从右到左，或下到上
-}
 
 enum DisplayType {
   image,

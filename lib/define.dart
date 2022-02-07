@@ -1,6 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 
+enum RouteType {
+  fade, // 淡入淡出
+  normal, // 从右到左，或下到上
+}
+
 typedef StringBuilder = String Function(int index);
 typedef BoolBuilder = bool Function(int index);
 typedef OnScaleChanged = void Function(double scale);
