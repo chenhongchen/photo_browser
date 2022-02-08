@@ -17,6 +17,7 @@ enum _ImageLoadStatus {
   completed,
 }
 
+/// ImageProvider信息
 class ImageProviderInfo {
   ImageProvider imageProvider;
   Size? imageSize;
@@ -51,25 +52,54 @@ class PhotoPage extends StatefulWidget {
     this.pullDownPopChanged,
   }) : super(key: key);
 
+  /// 大图的imageProvider
   final ImageProvider imageProvider;
+
+  /// 缩略图的imageProvider
   final ImageProvider? thumImageProvider;
+
+  /// 设置自定义图片加载指示器，为null则使用默认的
   final LoadingBuilder? loadingBuilder;
+
+  /// 图片加载失败Widget
   final Widget? loadFailedChild;
+
+  /// 设置背景色
   final Color backcolor;
+
+  /// 飞行动画的tag
   final String? heroTag;
+
+  /// 路由类型，默认值：RouteType.fade
   final RouteType routeType;
+
+  /// 允许缩小图片
   final bool allowShrinkPhoto;
+
   final bool willPop;
+
+  /// 下拉关闭功能开关
   final bool allowPullDownToPop;
+
+  /// 下拉关闭功能配置
   final PullDownPopConfig pullDownPopConfig;
+
+  /// 大图加载完成回调
+  final ImageLoadSuccess? imageLoadSuccess;
+
+  /// 缩略图加载完成回调
+  final ImageLoadSuccess? thumImageLoadSuccess;
+
+  /// 比例变化回调
+  final OnScaleChanged? onScaleChanged;
+
+  /// 下拉关闭状态变化回调
+  final PullDownPopChanged? pullDownPopChanged;
+
   final Color? imageColor;
   final BlendMode? imageColorBlendMode;
   final bool? gaplessPlayback;
   final FilterQuality? filterQuality;
-  final ImageLoadSuccess? imageLoadSuccess;
-  final ImageLoadSuccess? thumImageLoadSuccess;
-  final OnScaleChanged? onScaleChanged;
-  final PullDownPopChanged? pullDownPopChanged;
 
   @override
   State<StatefulWidget> createState() {

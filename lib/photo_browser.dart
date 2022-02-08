@@ -19,12 +19,14 @@ typedef PositionedsBuilder = List<Positioned> Function(BuildContext context);
 final String _notifyCurrentIndexChanged = 'currentIndexChanged';
 final String _notifyPullDownScaleChanged = 'pullDownScaleChanged';
 
+/// 显示类型
 enum DisplayType {
-  image,
-  custom,
+  image, // 图片
+  custom, // 自定义
 }
 
 class PhotoBrowser extends StatefulWidget {
+  /// 弹出图片浏览器
   Future<dynamic> push(
     BuildContext context, {
     bool rootNavigator = true,
