@@ -5,11 +5,13 @@ import 'package:photo_browser/define.dart';
 import 'package:photo_browser/page/page_mixin.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 
+/// 自定义子Widget
 class CustomChild {
   final Widget? child;
 
   /// 是否允许缩放
   final bool allowZoom;
+
   CustomChild({this.child, this.allowZoom = false});
 }
 
@@ -28,15 +30,33 @@ class CustomPage extends StatefulWidget {
     this.pullDownPopChanged,
   }) : super(key: key);
 
+  /// 自定义子Widget
   final CustomChild child;
+
+  /// 设置背景色
   final Color backcolor;
+
+  /// 飞行动画的tag
   final String? heroTag;
+
+  /// 路由类型，默认值：RouteType.fade
   final RouteType routeType;
+
+  /// 允许缩小子Widget
   final bool allowShrinkPhoto;
+
   final bool willPop;
+
+  /// 下拉关闭功能开关
   final bool allowPullDownToPop;
+
+  /// 下拉关闭功能配置
   final PullDownPopConfig pullDownPopConfig;
+
+  /// 比例变化回调
   final OnScaleChanged? onScaleChanged;
+
+  /// 下拉关闭状态变化回调
   final PullDownPopChanged? pullDownPopChanged;
 
   @override

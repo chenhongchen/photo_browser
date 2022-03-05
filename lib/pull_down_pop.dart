@@ -1,12 +1,14 @@
 typedef PullDownPopChanged = void Function(
     PullDownPopStatus status, double pullScale);
 
+/// 下拉关闭状态
 enum PullDownPopStatus {
   none,
-  pulling,
-  canPop,
+  pulling, // 下拉中
+  canPop, // 可关闭
 }
 
+/// 下拉关闭配置
 class PullDownPopConfig {
   /// 触发pop的下拉距离占全屏的比例
   /// 取值范围：(0.0, 1.0)
@@ -23,6 +25,7 @@ class PullDownPopConfig {
   /// 下拉时图片大小、背景色透明度变化的快慢
   /// 取值范围：(0.0~1.0]，值越小变化越快
   final double changeRate;
+
   const PullDownPopConfig(
       {double? triggerScale,
       double? bgColorMinOpacity,

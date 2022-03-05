@@ -19,12 +19,14 @@ typedef PositionedsBuilder = List<Positioned> Function(BuildContext context);
 final String _notifyCurrentIndexChanged = 'currentIndexChanged';
 final String _notifyPullDownScaleChanged = 'pullDownScaleChanged';
 
+/// 显示类型
 enum DisplayType {
-  image,
-  custom,
+  image, // 图片
+  custom, // 自定义
 }
 
 class PhotoBrowser extends StatefulWidget {
+  /// 弹出图片浏览器
   Future<dynamic> push(
     BuildContext context, {
     bool rootNavigator = true,
@@ -178,10 +180,6 @@ class PhotoBrowser extends StatefulWidget {
   final Axis scrollDirection;
   final ValueChanged<int>? onPageChanged;
 
-  //
-  ImageProvider? _initImageProvider;
-  ImageProvider? _initThumImageProvider;
-
   PhotoBrowser({
     Key? key,
     required this.itemCount,
@@ -221,39 +219,7 @@ class PhotoBrowser extends StatefulWidget {
             (allowPullDownToPop == true) ? false : allowSwipeDownToPop,
         assert(imageProviderBuilder != null || imageUrlBuilder != null,
             'imageProviderBuilder,imageUrlBuilder can not all null'),
-        super(key: key) {
-    if (displayTypeBuilder == null ||
-        displayTypeBuilder!(initIndex) == DisplayType.image) {
-      _initImageProvider = _getImageProvider(initIndex);
-      _initThumImageProvider = _getThumImageProvider(initIndex);
-    }
-  }
-
-  ImageProvider _getImageProvider(int index) {
-    if (index == initIndex && _initImageProvider != null) {
-      return _initImageProvider!;
-    }
-    ImageProvider? imageProvider;
-    if (imageProviderBuilder != null) {
-      imageProvider = imageProviderBuilder!(index);
-    } else if (imageUrlBuilder != null) {
-      imageProvider = NetworkImage(imageUrlBuilder!(index));
-    }
-    return imageProvider!;
-  }
-
-  ImageProvider? _getThumImageProvider(int index) {
-    if (index == initIndex && _initThumImageProvider != null) {
-      return _initThumImageProvider!;
-    }
-    ImageProvider? thumImageProvider;
-    if (thumImageProviderBuilder != null) {
-      thumImageProvider = thumImageProviderBuilder!(index);
-    } else if (thumImageUrlBuilder != null) {
-      thumImageProvider = NetworkImage(thumImageUrlBuilder!(index));
-    }
-    return thumImageProvider;
-  }
+        super(key: key);
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
@@ -265,14 +231,18 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   PullDownPopStatus _pullDownPopStatus = PullDownPopStatus.none;
 
   double _pullDownScale = 1.0;
+
   double get pullDownScale => _pullDownScale;
+
   set pullDownScale(double value) {
     _pullDownScale = value;
     _browerController.notifyWithName(name: _notifyPullDownScaleChanged);
   }
 
   int _curIndex = 0;
+
   int get curIndex => _curIndex;
+
   set curIndex(int value) {
     _curIndex = value;
     _browerController.notifyWithName(name: _notifyCurrentIndexChanged);
@@ -306,6 +276,26 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       return;
     }
     setState(fn);
+  }
+
+  ImageProvider _getImageProvider(int index) {
+    ImageProvider? imageProvider;
+    if (widget.imageProviderBuilder != null) {
+      imageProvider = widget.imageProviderBuilder!(index);
+    } else if (widget.imageUrlBuilder != null) {
+      imageProvider = NetworkImage(widget.imageUrlBuilder!(index));
+    }
+    return imageProvider!;
+  }
+
+  ImageProvider? _getThumImageProvider(int index) {
+    ImageProvider? thumImageProvider;
+    if (widget.thumImageProviderBuilder != null) {
+      thumImageProvider = widget.thumImageProviderBuilder!(index);
+    } else if (widget.thumImageUrlBuilder != null) {
+      thumImageProvider = NetworkImage(widget.thumImageUrlBuilder!(index));
+    }
+    return thumImageProvider;
   }
 
   @override
@@ -395,8 +385,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   Widget _buildPhotoPage(int index) {
     return PhotoPage(
-      imageProvider: widget._getImageProvider(index),
-      thumImageProvider: widget._getThumImageProvider(index),
+      imageProvider: _getImageProvider(index),
+      thumImageProvider: _getThumImageProvider(index),
       loadingBuilder: widget.loadingBuilder,
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
@@ -535,6 +525,7 @@ class PhotoBrowerController with ChangeNotifier {
   }
 
   bool _disposed = false;
+
   bool get disposed => _disposed;
 
   _PhotoBrowserState? _state;
@@ -564,6 +555,7 @@ class PhotoBrowerController with ChangeNotifier {
 
 class PhotoBrowserProvider extends InheritedWidget {
   final PhotoBrowerController controller;
+
   PhotoBrowserProvider({
     Key? key,
     required this.controller,
@@ -575,6 +567,7 @@ class PhotoBrowserProvider extends InheritedWidget {
               builder: builder,
               notificationNames: notificationNames,
             ));
+
   @override
   bool updateShouldNotify(covariant PhotoBrowserProvider oldWidget) {
     return controller != oldWidget.controller;
@@ -597,6 +590,7 @@ class _NotificationListener extends StatefulWidget {
 
 class _NotificationListenerState extends State<_NotificationListener> {
   PhotoBrowerController? _controller;
+
   @override
   void initState() {
     super.initState();
