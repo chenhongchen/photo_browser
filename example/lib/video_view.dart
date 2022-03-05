@@ -1,5 +1,4 @@
 import 'package:flt_hc_hud/hud/hc_activity_indicator.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 

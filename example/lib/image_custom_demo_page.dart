@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flt_hc_hud/flt_hc_hud.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
