@@ -103,7 +103,7 @@ class _CustomPageState extends State<CustomPage>
         BuildContext context,
         BoxConstraints constraints,
       ) {
-        SchedulerBinding.instance?.addPostFrameCallback((_) {
+        Future.delayed(Duration(seconds: 0), () {
           mSetImageSize(constraints: constraints);
         });
 

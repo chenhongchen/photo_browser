@@ -49,6 +49,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace 'com.example.photo_browser_example'
 }
 
 flutter {

@@ -596,7 +596,7 @@ class _NotificationListenerState extends State<_NotificationListener> {
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance?.addPostFrameCallback((_) {
+    Future.delayed(Duration(seconds: 0), () {
       _controller = PhotoBrowerController.of(context);
       _controller?.addListener(listener);
     });
