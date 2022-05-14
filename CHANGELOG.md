@@ -1,4 +1,4 @@
-## 2.1.4
+## 2.1.5
 
 * TODO: Version compatible.
 
@@ -92,7 +92,8 @@
 
 ## 1.0.7
 
-* TODO: Remove imageFileBuilder thumbImageFileBuilder imageAssetBuilder and thumImageAssetBuilder properties.
+* TODO: Remove imageFileBuilder thumbImageFileBuilder imageAssetBuilder and thumImageAssetBuilder
+  properties.
 
 ## 1.0.6
 
