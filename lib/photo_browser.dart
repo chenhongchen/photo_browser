@@ -2,7 +2,6 @@ export 'package:photo_browser/define.dart';
 export 'package:photo_browser/pull_down_pop.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:photo_browser/define.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 import 'package:photo_browser/page/custom_page.dart';

@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:photo_browser/define.dart';
 import 'package:photo_browser/page/page_mixin.dart';
 import 'package:photo_browser/pull_down_pop.dart';
