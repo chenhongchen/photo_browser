@@ -18,9 +18,9 @@ class _ImageDemoPage extends State<ImageDemoPage> {
   String domain =
       'https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
   List<String> _bigPhotos = <String>[];
-  List<String> _thumPhotos = <String>[];
+  List<String> _thumbPhotos = <String>[];
   List<String> _heroTags = <String>[];
-  PhotoBrowerController _browerController = PhotoBrowerController();
+  PhotoBrowserController _browserController = PhotoBrowserController();
   bool _showTip = true;
 
   @override
@@ -28,16 +28,16 @@ class _ImageDemoPage extends State<ImageDemoPage> {
     for (int i = 1; i <= 6; i++) {
       String bigPhoto = domain + 'big_$i.jpg';
       _bigPhotos.add(bigPhoto);
-      String thumPhoto = domain + 'thum_$i.jpg';
-      _thumPhotos.add(thumPhoto);
-      _heroTags.add(thumPhoto);
+      String thumbPhoto = domain + 'thumb_$i.jpg';
+      _thumbPhotos.add(thumbPhoto);
+      _heroTags.add(thumbPhoto);
     }
     super.initState();
   }
 
   @override
   void dispose() {
-    _browerController.dispose();
+    _browserController.dispose();
     super.dispose();
   }
 
@@ -59,7 +59,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           return Container(
             margin: EdgeInsets.all(5),
             child: GridView.builder(
-              itemCount: _thumPhotos.length,
+              itemCount: _thumbPhotos.length,
               physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
@@ -82,7 +82,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         PhotoBrowser photoBrowser = PhotoBrowser(
           itemCount: _bigPhotos.length,
           initIndex: cellIndex,
-          controller: _browerController,
+          controller: _browserController,
           allowTapToPop: true,
           allowSwipeDownToPop: true,
           // If allowPullDownToPop is true, the allowTapToPop setting is invalid.
@@ -92,22 +92,18 @@ class _ImageDemoPage extends State<ImageDemoPage> {
             return _heroTags[index];
           },
           // Large images setting.
-          // If you want the displayed image to be cached to disk at the same time,
-          // you can set the imageProviderBuilder property instead imageUrlBuilder,
-          // then set it with imageProvider with disk caching function.
-          // 大图设置，如果希望图片显示的同时进行磁盘缓存可换imageProviderBuilder属性设置，
-          // 然后传入带磁盘缓存功能的imageProvider
+          // 大图设置
           imageUrlBuilder: (int index) {
             return _bigPhotos[index];
           },
           // Thumbnails setting.
           // 缩略图设置
-          thumImageUrlBuilder: (int index) {
-            return _thumPhotos[index];
+          thumbImageUrlBuilder: (int index) {
+            return _thumbPhotos[index];
           },
-          positioneds: (BuildContext context) =>
+          positions: (BuildContext context) =>
               <Positioned>[_buildCloseBtn(context)],
-          positionedBuilders: <PositionedBuilder>[
+          positionBuilders: <PositionBuilder>[
             _buildSaveImageBtn,
             _buildGuide,
           ],
@@ -117,14 +113,10 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         // You can push directly.
         // 可以直接push
         // photoBrowser.push(context);
-
-        // If necessary, it can also be wrapped in a widget
-        // Here it is wrapped with HCHud (a toast plugin)
-        // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          print('PhotoBrowser poped');
+          print('PhotoBrowser closed');
         });
       },
       child: Stack(
@@ -146,7 +138,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
 
   Widget _buildImage(int index) {
     return Image.network(
-      _thumPhotos[index],
+      _thumbPhotos[index],
       fit: BoxFit.cover,
     );
   }
@@ -159,7 +151,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         onTap: () {
           // Pop through controller
           // 通过控制器pop退出
-          _browerController.pop();
+          _browserController.pop();
         },
         child: Icon(
           Icons.close,
@@ -210,10 +202,10 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           // Obtain image data through the controller
           // 通过控制器获取图片数据
           ImageInfo? imageInfo;
-          if (_browerController.imageInfos[curIndex] != null) {
-            imageInfo = _browerController.imageInfos[curIndex];
-          } else if (_browerController.thumImageInfos[curIndex] != null) {
-            imageInfo = _browerController.thumImageInfos[curIndex];
+          if (_browserController.imageInfo[curIndex] != null) {
+            imageInfo = _browserController.imageInfo[curIndex];
+          } else if (_browserController.thumbImageInfo[curIndex] != null) {
+            imageInfo = _browserController.thumbImageInfo[curIndex];
           }
           if (imageInfo == null) {
             HCHud.of(context)?.showErrorAndDismiss(text: '没有发现图片');
@@ -254,7 +246,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
                 _showTip = false;
                 // Refresh the photoBrowser through the controller
                 // 通过控制器，刷新PhotoBrowser
-                _browerController.setState(() {});
+                _browserController.setState(() {});
               },
               child: Container(
                 color: Colors.black.withOpacity(0.3),

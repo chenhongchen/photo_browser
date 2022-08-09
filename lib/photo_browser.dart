@@ -10,12 +10,12 @@ import 'package:photo_browser/page/photo_page.dart';
 typedef DisplayTypeBuilder = DisplayType Function(int index);
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef CustomChildBuilder = CustomChild Function(int index);
-typedef PositionedBuilder = Positioned Function(
+typedef PositionBuilder = Positioned Function(
   BuildContext context,
   int curIndex,
   int totalNum,
 );
-typedef PositionedsBuilder = List<Positioned> Function(BuildContext context);
+typedef PositionsBuilder = List<Positioned> Function(BuildContext context);
 
 final String _notifyCurrentIndexChanged = 'currentIndexChanged';
 final String _notifyPullDownScaleChanged = 'pullDownScaleChanged';
@@ -104,7 +104,7 @@ class PhotoBrowser extends StatefulWidget {
   final int initIndex;
 
   /// 控制器，用于给外部提供一些功能，如图片数据、pop、刷新相册浏览器状态
-  final PhotoBrowerController? controller;
+  final PhotoBrowserController? controller;
 
   /// 路由类型，默认值：RouteType.fade
   final RouteType routeType;
@@ -123,14 +123,14 @@ class PhotoBrowser extends StatefulWidget {
   final ImageProviderBuilder? imageProviderBuilder;
 
   /// 设置每张缩略图的imageProvider
-  /// thumImageProviderBuilder、thumImageUrlBuilder二选一，可选
-  final ImageProviderBuilder? thumImageProviderBuilder;
+  /// thumbImageProviderBuilder、thumbImageUrlBuilder二选一，可选
+  final ImageProviderBuilder? thumbImageProviderBuilder;
 
   /// 设置每张大图的url
   final StringBuilder? imageUrlBuilder;
 
   /// 设置每张缩略图的url
-  final StringBuilder? thumImageUrlBuilder;
+  final StringBuilder? thumbImageUrlBuilder;
 
   /// 设置widget
   final CustomChildBuilder? customChildBuilder;
@@ -142,13 +142,13 @@ class PhotoBrowser extends StatefulWidget {
   final Widget? loadFailedChild;
 
   /// 设置自定义页码，为null则使用默认的
-  final PositionedBuilder? pageCodeBuild;
+  final PositionBuilder? pageCodeBuild;
 
   /// 设置更多自定控件
-  final PositionedsBuilder? positioneds;
+  final PositionsBuilder? positions;
 
   /// 设置更多自定控件（页面索引变化会刷新里面的builder）
-  final List<PositionedBuilder>? positionedBuilders;
+  final List<PositionBuilder>? positionBuilders;
 
   /// 设置背景色
   final Color? backcolor;
@@ -191,15 +191,15 @@ class PhotoBrowser extends StatefulWidget {
     this.heroTagBuilder,
     this.displayTypeBuilder,
     this.imageProviderBuilder,
-    this.thumImageProviderBuilder,
+    this.thumbImageProviderBuilder,
     this.imageUrlBuilder,
-    this.thumImageUrlBuilder,
+    this.thumbImageUrlBuilder,
     this.customChildBuilder,
     this.loadingBuilder,
     this.loadFailedChild,
     this.pageCodeBuild,
-    this.positioneds,
-    this.positionedBuilders,
+    this.positions,
+    this.positionBuilders,
     this.imageColor,
     this.imageColorBlendMode,
     this.gaplessPlayback,
@@ -224,7 +224,7 @@ class PhotoBrowser extends StatefulWidget {
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
-  late PhotoBrowerController _browerController;
+  late PhotoBrowserController _browserController;
   late PageController _pageController;
   double? _lastDownY;
   bool _willPop = false;
@@ -237,7 +237,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   set pullDownScale(double value) {
     _pullDownScale = value;
-    _browerController.notifyWithName(name: _notifyPullDownScaleChanged);
+    _browserController.notifyWithName(name: _notifyPullDownScaleChanged);
   }
 
   int _curIndex = 0;
@@ -246,13 +246,13 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   set curIndex(int value) {
     _curIndex = value;
-    _browerController.notifyWithName(name: _notifyCurrentIndexChanged);
+    _browserController.notifyWithName(name: _notifyCurrentIndexChanged);
   }
 
   @override
   void initState() {
-    _browerController = widget.controller ?? PhotoBrowerController();
-    _browerController._state = this;
+    _browserController = widget.controller ?? PhotoBrowserController();
+    _browserController._state = this;
     _curIndex = widget.initIndex;
     _pageController =
         widget.pageController ?? PageController(initialPage: widget.initIndex);
@@ -264,9 +264,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     if (widget.pageController == null) {
       _pageController.dispose();
     }
-    _browerController._state = null;
+    _browserController._state = null;
     if (widget.controller == null) {
-      _browerController.dispose();
+      _browserController.dispose();
     }
     super.dispose();
   }
@@ -289,14 +289,14 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     return imageProvider!;
   }
 
-  ImageProvider? _getThumImageProvider(int index) {
-    ImageProvider? thumImageProvider;
-    if (widget.thumImageProviderBuilder != null) {
-      thumImageProvider = widget.thumImageProviderBuilder!(index);
-    } else if (widget.thumImageUrlBuilder != null) {
-      thumImageProvider = NetworkImage(widget.thumImageUrlBuilder!(index));
+  ImageProvider? _getThumbImageProvider(int index) {
+    ImageProvider? thumbImageProvider;
+    if (widget.thumbImageProviderBuilder != null) {
+      thumbImageProvider = widget.thumbImageProviderBuilder!(index);
+    } else if (widget.thumbImageUrlBuilder != null) {
+      thumbImageProvider = NetworkImage(widget.thumbImageUrlBuilder!(index));
     }
-    return thumImageProvider;
+    return thumbImageProvider;
   }
 
   @override
@@ -316,13 +316,13 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       _buildPageView(),
       _buildPageCode(),
     ];
-    if (widget.positioneds != null) {
-      children.addAll(widget.positioneds!(context));
+    if (widget.positions != null) {
+      children.addAll(widget.positions!(context));
     }
-    if (widget.positionedBuilders != null) {
-      for (PositionedBuilder builder in widget.positionedBuilders!) {
+    if (widget.positionBuilders != null) {
+      for (PositionBuilder builder in widget.positionBuilders!) {
         children.add(PhotoBrowserProvider(
-            controller: _browerController,
+            controller: _browserController,
             notificationNames: <String>[_notifyCurrentIndexChanged],
             builder: (BuildContext context) =>
                 builder(context, _curIndex, widget.itemCount)));
@@ -333,7 +333,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   Widget _buildBackColor() {
     return PhotoBrowserProvider(
-      controller: _browerController,
+      controller: _browserController,
       notificationNames: <String>[_notifyPullDownScaleChanged],
       builder: (BuildContext context) => Container(
           color:
@@ -387,7 +387,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildPhotoPage(int index) {
     return PhotoPage(
       imageProvider: _getImageProvider(index),
-      thumImageProvider: _getThumImageProvider(index),
+      thumbImageProvider: _getThumbImageProvider(index),
       loadingBuilder: widget.loadingBuilder,
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
@@ -404,10 +404,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       gaplessPlayback: widget.gaplessPlayback,
       filterQuality: widget.filterQuality,
       imageLoadSuccess: (ImageInfo imageInfo) {
-        widget.controller?.imageInfos[index] = imageInfo;
+        widget.controller?.imageInfo[index] = imageInfo;
       },
-      thumImageLoadSuccess: (ImageInfo imageInfo) {
-        widget.controller?.thumImageInfos[index] = imageInfo;
+      thumbImageLoadSuccess: (ImageInfo imageInfo) {
+        widget.controller?.thumbImageInfo[index] = imageInfo;
       },
       onScaleChanged: (double scale) {},
       pullDownPopChanged: (PullDownPopStatus status, double pullScale) {
@@ -478,7 +478,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     }
 
     return PhotoBrowserProvider(
-      controller: _browerController,
+      controller: _browserController,
       notificationNames: <String>[_notifyCurrentIndexChanged],
       builder: (BuildContext context) => pageCode(),
     );
@@ -512,7 +512,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 }
 
-class PhotoBrowerController with ChangeNotifier {
+class PhotoBrowserController with ChangeNotifier {
   String? notificationName;
 
   void notifyWithName({String? name}) {
@@ -530,10 +530,10 @@ class PhotoBrowerController with ChangeNotifier {
   bool get disposed => _disposed;
 
   _PhotoBrowserState? _state;
-  final Map<int, ImageInfo> imageInfos = Map<int, ImageInfo>();
-  final Map<int, ImageInfo> thumImageInfos = Map<int, ImageInfo>();
+  final Map<int, ImageInfo> imageInfo = Map<int, ImageInfo>();
+  final Map<int, ImageInfo> thumbImageInfo = Map<int, ImageInfo>();
 
-  static PhotoBrowerController? of(BuildContext context) {
+  static PhotoBrowserController? of(BuildContext context) {
     final PhotoBrowserProvider? provider =
         context.dependOnInheritedWidgetOfExactType<PhotoBrowserProvider>();
     return provider?.controller;
@@ -555,7 +555,7 @@ class PhotoBrowerController with ChangeNotifier {
 }
 
 class PhotoBrowserProvider extends InheritedWidget {
-  final PhotoBrowerController controller;
+  final PhotoBrowserController controller;
 
   PhotoBrowserProvider({
     Key? key,
@@ -590,13 +590,13 @@ class _NotificationListener extends StatefulWidget {
 }
 
 class _NotificationListenerState extends State<_NotificationListener> {
-  PhotoBrowerController? _controller;
+  PhotoBrowserController? _controller;
 
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration(seconds: 0), () {
-      _controller = PhotoBrowerController.of(context);
+      _controller = PhotoBrowserController.of(context);
       _controller?.addListener(listener);
     });
   }

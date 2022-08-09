@@ -20,29 +20,29 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   String domain =
       'https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
   List<String> _bigPhotos = <String>[];
-  List<String> _thumPhotos = <String>[];
+  List<String> _thumbPhotos = <String>[];
   List<String> _heroTags = <String>[];
-  PhotoBrowerController _browerController = PhotoBrowerController();
+  PhotoBrowserController _browserController = PhotoBrowserController();
 
   @override
   void initState() {
     for (int i = 0; i < 8; i++) {
       String bigPhoto = domain + 'big_${i + 1}.jpg';
-      String thumPhoto = domain + 'thum_${i + 1}.jpg';
+      String thumbPhoto = domain + 'thumb_${i + 1}.jpg';
       if (i == 6 || i == 7) {
         bigPhoto = 'widget_$i';
-        thumPhoto = bigPhoto;
+        thumbPhoto = bigPhoto;
       }
       _bigPhotos.add(bigPhoto);
-      _thumPhotos.add(thumPhoto);
-      _heroTags.add(thumPhoto);
+      _thumbPhotos.add(thumbPhoto);
+      _heroTags.add(thumbPhoto);
     }
     super.initState();
   }
 
   @override
   void dispose() {
-    _browerController.dispose();
+    _browserController.dispose();
     super.dispose();
   }
 
@@ -83,7 +83,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           return Container(
             margin: EdgeInsets.all(5),
             child: GridView.builder(
-              itemCount: _thumPhotos.length,
+              itemCount: _thumbPhotos.length,
               physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
@@ -106,7 +106,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         PhotoBrowser photoBrowser = PhotoBrowser(
           itemCount: _bigPhotos.length,
           initIndex: cellIndex,
-          controller: _browerController,
+          controller: _browserController,
           allowTapToPopBuilder: (int index) {
             if (index == 7) {
               return false;
@@ -130,18 +130,14 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             return DisplayType.image;
           },
           // Large images setting.
-          // If you want the displayed image to be cached to disk at the same time,
-          // you can set the imageProviderBuilder property instead imageUrlBuilder,
-          // then set it with imageProvider with disk caching function.
-          // 大图设置，如果希望图片显示的同时进行磁盘缓存可换imageProviderBuilder属性设置，
-          // 然后传入带磁盘缓存功能的imageProvider
+          // 大图设置
           imageUrlBuilder: (int index) {
             return _bigPhotos[index];
           },
           // Thumbnails setting.
           // 缩略图设置
-          thumImageUrlBuilder: (int index) {
-            return _thumPhotos[index];
+          thumbImageUrlBuilder: (int index) {
+            return _thumbPhotos[index];
           },
           // Called when the display type is DisplayType.custom.
           // 当显示类型为DisplayType.custom时会调用
@@ -158,23 +154,19 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               );
             }
           },
-          positioneds: (BuildContext context) =>
+          positions: (BuildContext context) =>
               <Positioned>[_buildCloseBtn(context)],
-          positionedBuilders: <PositionedBuilder>[_buildSaveImageBtn],
+          positionBuilders: <PositionBuilder>[_buildSaveImageBtn],
           loadFailedChild: _failedChild(),
         );
 
         // You can push directly.
         // 可以直接push
         // photoBrowser.push(context);
-
-        // If necessary, it can also be wrapped in a widget
-        // Here it is wrapped with HCHud (a toast plugin)
-        // 需要的话，也可包裹在一个Widget里，这里用HCHud（一个Toast插件）包裹
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          print('PhotoBrowser poped');
+          print('PhotoBrowser closed');
         });
       },
       child: Stack(
@@ -203,7 +195,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
       }
     }
     return Image.network(
-      _thumPhotos[index],
+      _thumbPhotos[index],
       fit: BoxFit.cover,
     );
   }
@@ -214,7 +206,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
       child: Stack(
         children: [
           Positioned.fill(
-              child: Image.network(_thumPhotos[0], fit: BoxFit.cover)),
+              child: Image.network(_thumbPhotos[0], fit: BoxFit.cover)),
           Positioned(
               left: 5,
               top: 5,
@@ -240,7 +232,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         onTap: () {
           // Pop through controller
           // 通过控制器pop退出
-          _browerController.pop();
+          _browserController.pop();
         },
         child: Icon(
           Icons.close,
@@ -253,7 +245,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   Positioned _buildSaveImageBtn(
       BuildContext context, int curIndex, int totalNum) {
-    if (_thumPhotos[curIndex].contains('widget_')) {
+    if (_thumbPhotos[curIndex].contains('widget_')) {
       return Positioned(child: Container());
     }
     return Positioned(
@@ -294,10 +286,10 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           // Obtain image data through the controller
           // 通过控制器获取图片数据
           ImageInfo? imageInfo;
-          if (_browerController.imageInfos[curIndex] != null) {
-            imageInfo = _browerController.imageInfos[curIndex];
-          } else if (_browerController.thumImageInfos[curIndex] != null) {
-            imageInfo = _browerController.thumImageInfos[curIndex];
+          if (_browserController.imageInfo[curIndex] != null) {
+            imageInfo = _browserController.imageInfo[curIndex];
+          } else if (_browserController.thumbImageInfo[curIndex] != null) {
+            imageInfo = _browserController.thumbImageInfo[curIndex];
           }
           if (imageInfo == null) {
             HCHud.of(context)?.showErrorAndDismiss(text: '没有发现图片');

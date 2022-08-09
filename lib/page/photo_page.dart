@@ -32,7 +32,7 @@ class PhotoPage extends StatefulWidget {
   PhotoPage({
     Key? key,
     required this.imageProvider,
-    this.thumImageProvider,
+    this.thumbImageProvider,
     this.loadingBuilder,
     this.loadFailedChild,
     this.backcolor = Colors.black,
@@ -47,7 +47,7 @@ class PhotoPage extends StatefulWidget {
     this.imageColorBlendMode,
     this.filterQuality,
     this.imageLoadSuccess,
-    this.thumImageLoadSuccess,
+    this.thumbImageLoadSuccess,
     this.onScaleChanged,
     this.pullDownPopChanged,
   }) : super(key: key);
@@ -56,7 +56,7 @@ class PhotoPage extends StatefulWidget {
   final ImageProvider imageProvider;
 
   /// 缩略图的imageProvider
-  final ImageProvider? thumImageProvider;
+  final ImageProvider? thumbImageProvider;
 
   /// 设置自定义图片加载指示器，为null则使用默认的
   final LoadingBuilder? loadingBuilder;
@@ -88,7 +88,7 @@ class PhotoPage extends StatefulWidget {
   final ImageLoadSuccess? imageLoadSuccess;
 
   /// 缩略图加载完成回调
-  final ImageLoadSuccess? thumImageLoadSuccess;
+  final ImageLoadSuccess? thumbImageLoadSuccess;
 
   /// 比例变化回调
   final OnScaleChanged? onScaleChanged;
@@ -110,7 +110,7 @@ class PhotoPage extends StatefulWidget {
 class _PhotoPageState extends State<PhotoPage>
     with TickerProviderStateMixin, PageMixin {
   late ImageProviderInfo _imageProviderInfo;
-  ImageProviderInfo? _thumImageProvideInfo;
+  ImageProviderInfo? _thumbImageProvideInfo;
 
   @override
   void initState() {
@@ -125,7 +125,7 @@ class _PhotoPageState extends State<PhotoPage>
     mInitAnimationController(this);
 
     _getImageInfo();
-    _getThumImageInfo();
+    _getThumbImageInfo();
   }
 
   @override
@@ -142,12 +142,12 @@ class _PhotoPageState extends State<PhotoPage>
     }
   }
 
-  void _getThumImageInfo() async {
-    if (widget.thumImageProvider == null) return;
-    _thumImageProvideInfo = ImageProviderInfo(widget.thumImageProvider!);
-    var imageInfo = await _getImage(_thumImageProvideInfo!);
-    if (widget.thumImageLoadSuccess != null) {
-      widget.thumImageLoadSuccess!(imageInfo);
+  void _getThumbImageInfo() async {
+    if (widget.thumbImageProvider == null) return;
+    _thumbImageProvideInfo = ImageProviderInfo(widget.thumbImageProvider!);
+    var imageInfo = await _getImage(_thumbImageProvideInfo!);
+    if (widget.thumbImageLoadSuccess != null) {
+      widget.thumbImageLoadSuccess!(imageInfo);
     }
   }
 
@@ -207,8 +207,8 @@ class _PhotoPageState extends State<PhotoPage>
   @override
   Widget build(BuildContext context) {
     if (_imageProviderInfo.status == _ImageLoadStatus.failed &&
-        (_thumImageProvideInfo == null ||
-            _thumImageProvideInfo?.status == _ImageLoadStatus.failed)) {
+        (_thumbImageProvideInfo == null ||
+            _thumbImageProvideInfo?.status == _ImageLoadStatus.failed)) {
       return _buildLoadFailed();
     }
 
@@ -219,11 +219,12 @@ class _PhotoPageState extends State<PhotoPage>
       ) {
         mSetImageSize(constraints: constraints);
         Widget content;
-        if (_thumImageProvideInfo == null ||
+        if (_thumbImageProvideInfo == null ||
             _imageProviderInfo.status == _ImageLoadStatus.completed) {
           content = _buildContent(context, constraints, _imageProviderInfo);
         } else {
-          content = _buildContent(context, constraints, _thumImageProvideInfo!);
+          content =
+              _buildContent(context, constraints, _thumbImageProvideInfo!);
         }
 
         Color backColor = widget.backcolor == Colors.transparent
