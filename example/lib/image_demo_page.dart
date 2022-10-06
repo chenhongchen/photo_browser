@@ -28,7 +28,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
     for (int i = 1; i <= 6; i++) {
       String bigPhoto = domain + 'big_$i.jpg';
       _bigPhotos.add(bigPhoto);
-      String thumbPhoto = domain + 'thumb_$i.jpg';
+      String thumbPhoto = domain + 'thum_$i.jpg';
       _thumbPhotos.add(thumbPhoto);
       _heroTags.add(thumbPhoto);
     }

@@ -28,7 +28,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   void initState() {
     for (int i = 0; i < 8; i++) {
       String bigPhoto = domain + 'big_${i + 1}.jpg';
-      String thumbPhoto = domain + 'thumb_${i + 1}.jpg';
+      String thumbPhoto = domain + 'thum_${i + 1}.jpg';
       if (i == 6 || i == 7) {
         bigPhoto = 'widget_$i';
         thumbPhoto = bigPhoto;
