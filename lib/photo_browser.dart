@@ -1,5 +1,7 @@
 export 'package:photo_browser/define.dart';
 export 'package:photo_browser/pull_down_pop.dart';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/define.dart';
@@ -171,6 +173,9 @@ class PhotoBrowser extends StatefulWidget {
   /// 下拉关闭功能配置
   final PullDownPopConfig pullDownPopConfig;
 
+  /// 显示左右翻页箭头按钮
+  final bool showPageTurnBtn;
+
   final bool reverse;
   final Color? imageColor;
   final BlendMode? imageColorBlendMode;
@@ -211,6 +216,7 @@ class PhotoBrowser extends StatefulWidget {
     this.allowPullDownToPop = false,
     this.canPopWhenScrolling = true,
     this.pullDownPopConfig = const PullDownPopConfig(),
+    bool? showPageTurnBtn,
     this.reverse = false,
     this.pageController,
     this.scrollPhysics,
@@ -218,6 +224,8 @@ class PhotoBrowser extends StatefulWidget {
     this.onPageChanged,
   })  : this.allowSwipeDownToPop =
             (allowPullDownToPop == true) ? false : allowSwipeDownToPop,
+        this.showPageTurnBtn = showPageTurnBtn ??
+            (Platform.isIOS || Platform.isAndroid ? false : true),
         assert(imageProviderBuilder != null || imageUrlBuilder != null,
             'imageProviderBuilder,imageUrlBuilder can not all null'),
         super(key: key);
@@ -315,6 +323,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       _buildBackColor(),
       _buildPageView(),
       _buildPageCode(),
+      if (widget.showPageTurnBtn) _buildLeftArrow(),
+      if (widget.showPageTurnBtn) _buildRightArrow(),
     ];
     if (widget.positions != null) {
       children.addAll(widget.positions!(context));
@@ -444,7 +454,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   }
 
   Widget _buildPageCode() {
-    Positioned pageCode() {
+    Positioned builder() {
       int showIndex = curIndex + 1;
       if (widget.pageCodeBuild != null) {
         return widget.pageCodeBuild!(context, showIndex, widget.itemCount);
@@ -480,7 +490,75 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     return PhotoBrowserProvider(
       controller: _browserController,
       notificationNames: <String>[_notifyCurrentIndexChanged],
-      builder: (BuildContext context) => pageCode(),
+      builder: (BuildContext context) => builder(),
+    );
+  }
+
+  Widget _buildLeftArrow() {
+    Positioned builder() {
+      return Positioned(
+        left: 20,
+        top: MediaQuery.of(context).size.height * 0.5,
+        child: GestureDetector(
+          onTap: () {
+            int index = curIndex <= 1 ? 0 : curIndex - 1;
+            if (index == curIndex) return;
+            _pageController.animateToPage(
+              index,
+              duration: Duration(milliseconds: 333),
+              curve: Curves.easeInOut,
+            );
+          },
+          child: curIndex <= 0
+              ? Container(width: 36, height: 36, color: Colors.transparent)
+              : Icon(
+                  Icons.keyboard_arrow_left,
+                  color: Colors.white.withAlpha(230),
+                  size: 36,
+                ),
+        ),
+      );
+    }
+
+    return PhotoBrowserProvider(
+      controller: _browserController,
+      notificationNames: <String>[_notifyCurrentIndexChanged],
+      builder: (BuildContext context) => builder(),
+    );
+  }
+
+  Widget _buildRightArrow() {
+    Positioned builder() {
+      return Positioned(
+        right: 20,
+        top: MediaQuery.of(context).size.height * 0.5,
+        child: GestureDetector(
+          onTap: () {
+            int index = curIndex >= widget.itemCount - 1
+                ? widget.itemCount - 1
+                : curIndex + 1;
+            if (index == curIndex) return;
+            _pageController.animateToPage(
+              index,
+              duration: Duration(milliseconds: 333),
+              curve: Curves.easeInOut,
+            );
+          },
+          child: curIndex >= widget.itemCount - 1
+              ? Container(width: 36, height: 36, color: Colors.transparent)
+              : Icon(
+                  Icons.keyboard_arrow_right,
+                  color: Colors.white.withAlpha(230),
+                  size: 36,
+                ),
+        ),
+      );
+    }
+
+    return PhotoBrowserProvider(
+      controller: _browserController,
+      notificationNames: <String>[_notifyCurrentIndexChanged],
+      builder: (BuildContext context) => builder(),
     );
   }
 
@@ -552,6 +630,8 @@ class PhotoBrowserController with ChangeNotifier {
   setState(VoidCallback fn) {
     _state?._setState(fn);
   }
+
+  PageController? get pageController => _state?._pageController;
 }
 
 class PhotoBrowserProvider extends InheritedWidget {

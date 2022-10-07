@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -26,7 +27,9 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   @override
   void initState() {
-    for (int i = 0; i < 8; i++) {
+    // video_player 不支持 macOS
+    int num = (Platform.isIOS || Platform.isAndroid) ? 8 : 7;
+    for (int i = 0; i < num; i++) {
       String bigPhoto = domain + 'big_${i + 1}.jpg';
       String thumbPhoto = domain + 'thum_${i + 1}.jpg';
       if (i == 6 || i == 7) {
@@ -84,7 +87,6 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             margin: EdgeInsets.all(5),
             child: GridView.builder(
               itemCount: _thumbPhotos.length,
-              physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 5,

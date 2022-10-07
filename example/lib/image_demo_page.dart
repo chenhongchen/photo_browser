@@ -60,7 +60,6 @@ class _ImageDemoPage extends State<ImageDemoPage> {
             margin: EdgeInsets.all(5),
             child: GridView.builder(
               itemCount: _thumbPhotos.length,
-              physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 5,
