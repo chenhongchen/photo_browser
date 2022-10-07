@@ -14,7 +14,7 @@ abstract class PhotoBrowserPlatform extends PlatformInterface {
   ///
   /// Defaults to [MethodChannelPhotoBrowser].
   static PhotoBrowserPlatform get instance => _instance;
-  
+
   /// Platform-specific implementations should set this with their own
   /// platform-specific class that extends [PhotoBrowserPlatform] when
   /// they register themselves.
