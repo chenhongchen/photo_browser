@@ -101,14 +101,15 @@ class CustomScaleGestureRecognizer extends ScaleGestureRecognizer {
   void _updateDistances() {
     final int count = _pointerLocations.keys.length;
     Offset focalPoint = Offset.zero;
-    for (int pointer in _pointerLocations.keys)
+    for (int pointer in _pointerLocations.keys) {
       focalPoint += _pointerLocations[pointer]!;
+    }
     _currentFocalPoint =
         count > 0 ? focalPoint / count.toDouble() : Offset.zero;
   }
 
   void _decideIfWeAcceptEvent(PointerEvent event) {
-    if (!(event is PointerMoveEvent)) {
+    if (event is! PointerMoveEvent) {
       return;
     }
     final move = _initialFocalPoint! - _currentFocalPoint!;

@@ -19,8 +19,8 @@ typedef PositionBuilder = Positioned Function(
 );
 typedef PositionsBuilder = List<Positioned> Function(BuildContext context);
 
-final String _notifyCurrentIndexChanged = 'currentIndexChanged';
-final String _notifyPullDownScaleChanged = 'pullDownScaleChanged';
+const String _notifyCurrentIndexChanged = 'currentIndexChanged';
+const String _notifyPullDownScaleChanged = 'pullDownScaleChanged';
 
 /// 显示类型
 enum DisplayType {
@@ -70,7 +70,8 @@ class PhotoBrowser extends StatefulWidget {
           return page ?? this;
         },
         //动画时间
-        transitionDuration: transitionDuration ?? Duration(milliseconds: 400),
+        transitionDuration:
+            transitionDuration ?? const Duration(milliseconds: 400),
         //过渡动画构建
         transitionsBuilder: (
           BuildContext context,
@@ -222,9 +223,9 @@ class PhotoBrowser extends StatefulWidget {
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
-  })  : this.allowSwipeDownToPop =
+  })  : allowSwipeDownToPop =
             (allowPullDownToPop == true) ? false : allowSwipeDownToPop,
-        this.showPageTurnBtn = showPageTurnBtn ??
+        showPageTurnBtn = showPageTurnBtn ??
             (Platform.isIOS || Platform.isAndroid ? false : true),
         assert(imageProviderBuilder != null || imageUrlBuilder != null,
             'imageProviderBuilder,imageUrlBuilder can not all null'),
@@ -333,7 +334,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       for (PositionBuilder builder in widget.positionBuilders!) {
         children.add(PhotoBrowserProvider(
             controller: _browserController,
-            notificationNames: <String>[_notifyCurrentIndexChanged],
+            notificationNames: const <String>[_notifyCurrentIndexChanged],
             builder: (BuildContext context) =>
                 builder(context, _curIndex, widget.itemCount)));
       }
@@ -344,7 +345,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
   Widget _buildBackColor() {
     return PhotoBrowserProvider(
       controller: _browserController,
-      notificationNames: <String>[_notifyPullDownScaleChanged],
+      notificationNames: const <String>[_notifyPullDownScaleChanged],
       builder: (BuildContext context) => Container(
           color:
               (widget.backcolor ?? Colors.black).withOpacity(_pullDownScale)),
@@ -365,7 +366,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       itemBuilder: _buildItem,
       scrollDirection: widget.scrollDirection,
       physics: _pullDownPopStatus == PullDownPopStatus.pulling
-          ? NeverScrollableScrollPhysics()
+          ? const NeverScrollableScrollPhysics()
           : widget.scrollPhysics,
     );
   }
@@ -470,7 +471,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
             fontWeight: FontWeight.w400,
             color: Colors.white.withAlpha(230),
             decoration: TextDecoration.none,
-            shadows: <Shadow>[
+            shadows: const <Shadow>[
               Shadow(
                 offset: Offset(1.0, 1.0),
                 blurRadius: 3.0,
@@ -489,7 +490,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
     return PhotoBrowserProvider(
       controller: _browserController,
-      notificationNames: <String>[_notifyCurrentIndexChanged],
+      notificationNames: const <String>[_notifyCurrentIndexChanged],
       builder: (BuildContext context) => builder(),
     );
   }
@@ -505,7 +506,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
             if (index == curIndex) return;
             _pageController.animateToPage(
               index,
-              duration: Duration(milliseconds: 333),
+              duration: const Duration(milliseconds: 333),
               curve: Curves.easeInOut,
             );
           },
@@ -522,7 +523,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
     return PhotoBrowserProvider(
       controller: _browserController,
-      notificationNames: <String>[_notifyCurrentIndexChanged],
+      notificationNames: const <String>[_notifyCurrentIndexChanged],
       builder: (BuildContext context) => builder(),
     );
   }
@@ -540,7 +541,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
             if (index == curIndex) return;
             _pageController.animateToPage(
               index,
-              duration: Duration(milliseconds: 333),
+              duration: const Duration(milliseconds: 333),
               curve: Curves.easeInOut,
             );
           },
@@ -557,7 +558,7 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
     return PhotoBrowserProvider(
       controller: _browserController,
-      notificationNames: <String>[_notifyCurrentIndexChanged],
+      notificationNames: const <String>[_notifyCurrentIndexChanged],
       builder: (BuildContext context) => builder(),
     );
   }
@@ -598,6 +599,7 @@ class PhotoBrowserController with ChangeNotifier {
     super.notifyListeners();
   }
 
+  @override
   void notifyListeners() {
     notificationName = null;
     super.notifyListeners();
@@ -608,8 +610,8 @@ class PhotoBrowserController with ChangeNotifier {
   bool get disposed => _disposed;
 
   _PhotoBrowserState? _state;
-  final Map<int, ImageInfo> imageInfo = Map<int, ImageInfo>();
-  final Map<int, ImageInfo> thumbImageInfo = Map<int, ImageInfo>();
+  final Map<int, ImageInfo> imageInfo = <int, ImageInfo>{};
+  final Map<int, ImageInfo> thumbImageInfo = <int, ImageInfo>{};
 
   static PhotoBrowserController? of(BuildContext context) {
     final PhotoBrowserProvider? provider =
@@ -659,7 +661,7 @@ class _NotificationListener extends StatefulWidget {
   final WidgetBuilder builder;
   final List<String>? notificationNames;
 
-  _NotificationListener(
+  const _NotificationListener(
       {Key? key, required this.builder, this.notificationNames})
       : super(key: key);
 
@@ -675,7 +677,7 @@ class _NotificationListenerState extends State<_NotificationListener> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 0), () {
+    Future.delayed(const Duration(seconds: 0), () {
       _controller = PhotoBrowserController.of(context);
       _controller?.addListener(listener);
     });

@@ -3,12 +3,15 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flt_hc_hud/flt_hc_hud.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/photo_browser.dart';
 
 class ImageDemoPage extends StatefulWidget {
+  const ImageDemoPage({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _ImageDemoPage();
@@ -18,18 +21,18 @@ class ImageDemoPage extends StatefulWidget {
 class _ImageDemoPage extends State<ImageDemoPage> {
   String domain =
       'https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
-  List<String> _bigPhotos = <String>[];
-  List<String> _thumbPhotos = <String>[];
-  List<String> _heroTags = <String>[];
-  PhotoBrowserController _browserController = PhotoBrowserController();
+  final List<String> _bigPhotos = <String>[];
+  final List<String> _thumbPhotos = <String>[];
+  final List<String> _heroTags = <String>[];
+  final PhotoBrowserController _browserController = PhotoBrowserController();
   bool _showTip = true;
 
   @override
   void initState() {
     for (int i = 1; i <= 6; i++) {
-      String bigPhoto = domain + 'big_$i.jpg';
+      String bigPhoto = '${domain}big_$i.jpg';
       _bigPhotos.add(bigPhoto);
-      String thumbPhoto = domain + 'thum_$i.jpg';
+      String thumbPhoto = '${domain}thum_$i.jpg';
       _thumbPhotos.add(thumbPhoto);
       _heroTags.add(thumbPhoto);
     }
@@ -58,10 +61,10 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           BoxConstraints constraints,
         ) {
           return Container(
-            margin: EdgeInsets.all(5),
+            margin: const EdgeInsets.all(5),
             child: GridView.builder(
               itemCount: _thumbPhotos.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 5,
                   mainAxisSpacing: 5,
@@ -116,7 +119,9 @@ class _ImageDemoPage extends State<ImageDemoPage> {
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          print('PhotoBrowser closed');
+          if (kDebugMode) {
+            print('PhotoBrowser closed');
+          }
         });
       },
       child: Stack(
@@ -153,7 +158,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           // 通过控制器pop退出
           _browserController.pop();
         },
-        child: Icon(
+        child: const Icon(
           Icons.close,
           color: Colors.white,
           size: 32,
@@ -176,17 +181,17 @@ class _ImageDemoPage extends State<ImageDemoPage> {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('提示'),
-                  content: Text('需要授权使用相册才能保存，去授权？'),
+                  title: const Text('提示'),
+                  content: const Text('需要授权使用相册才能保存，去授权？'),
                   actions: <Widget>[
                     TextButton(
-                      child: Text('取消'),
+                      child: const Text('取消'),
                       onPressed: () {
                         Navigator.pop(context);
                       },
                     ),
                     TextButton(
-                      child: Text('去授权'),
+                      child: const Text('去授权'),
                       onPressed: () {
                         openAppSettings();
                         Navigator.of(context).pop();
@@ -207,11 +212,12 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           } else if (_browserController.thumbImageInfo[curIndex] != null) {
             imageInfo = _browserController.thumbImageInfo[curIndex];
           }
+
+          if (!mounted) return;
           if (imageInfo == null) {
             HCHud.of(context)?.showErrorAndDismiss(text: '没有发现图片');
             return;
           }
-
           HCHud.of(context)?.showLoading(text: '正在保存...');
 
           // Save image to album
@@ -222,6 +228,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
             Uint8List uint8list = byteData.buffer.asUint8List();
             var result = await ImageGallerySaver.saveImage(
                 Uint8List.fromList(uint8list));
+            if (!mounted) return;
             if (result != null) {
               HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {
@@ -229,7 +236,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
             }
           }
         },
-        child: Icon(
+        child: const Icon(
           Icons.save,
           color: Colors.white,
           size: 32,
@@ -259,7 +266,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
                     fontWeight: FontWeight.w400,
                     color: Colors.white.withAlpha(230),
                     decoration: TextDecoration.none,
-                    shadows: <Shadow>[
+                    shadows: const <Shadow>[
                       Shadow(
                         offset: Offset(1.0, 1.0),
                         blurRadius: 3.0,
@@ -282,13 +289,11 @@ class _ImageDemoPage extends State<ImageDemoPage> {
   }
 
   Widget _failedChild() {
-    return Center(
+    return const Center(
       child: Material(
-        child: Container(
-          child: Text(
-            '加载图片失败',
-            style: TextStyle(fontSize: 16),
-          ),
+        child: Text(
+          '加载图片失败',
+          style: TextStyle(fontSize: 16),
         ),
       ),
     );

@@ -31,22 +31,21 @@ class PullDownPopConfig {
       double? bgColorMinOpacity,
       double? contentMinScale,
       double? changeRate})
-      : this.triggerScale =
+      : triggerScale =
             (triggerScale != null && triggerScale < 1 && triggerScale > 0)
                 ? triggerScale
                 : 0.1,
-        this.bgColorMinOpacity = (bgColorMinOpacity != null &&
+        bgColorMinOpacity = (bgColorMinOpacity != null &&
                 bgColorMinOpacity <= 1 &&
                 bgColorMinOpacity >= 0)
             ? bgColorMinOpacity
             : 0.0,
-        this.contentMinScale = (contentMinScale != null &&
+        contentMinScale = (contentMinScale != null &&
                 contentMinScale <= 1 &&
                 contentMinScale > 0)
             ? contentMinScale
             : 0.4,
-        this.changeRate =
-            (changeRate != null && changeRate <= 1 && changeRate > 0)
-                ? changeRate
-                : 0.25;
+        changeRate = (changeRate != null && changeRate <= 1 && changeRate > 0)
+            ? changeRate
+            : 0.25;
 }

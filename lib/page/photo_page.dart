@@ -11,7 +11,7 @@ typedef LoadingBuilder = Widget Function(
 
 typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
 
-enum _ImageLoadStatus {
+enum ImageLoadStatus {
   loading,
   failed,
   completed,
@@ -21,7 +21,7 @@ enum _ImageLoadStatus {
 class ImageProviderInfo {
   ImageProvider imageProvider;
   Size? imageSize;
-  _ImageLoadStatus? status;
+  ImageLoadStatus? status;
   ImageChunkEvent? imageChunkEvent;
   ImageInfo? imageInfo;
 
@@ -29,7 +29,7 @@ class ImageProviderInfo {
 }
 
 class PhotoPage extends StatefulWidget {
-  PhotoPage({
+  const PhotoPage({
     Key? key,
     required this.imageProvider,
     this.thumbImageProvider,
@@ -154,7 +154,7 @@ class _PhotoPageState extends State<PhotoPage>
   Future<ImageInfo> _getImage(ImageProviderInfo providerInfo) async {
     if (providerInfo.imageInfo != null) return providerInfo.imageInfo!;
     final Completer<ImageInfo> completer = Completer<ImageInfo>();
-    providerInfo.status = _ImageLoadStatus.loading;
+    providerInfo.status = ImageLoadStatus.loading;
     final ImageStream stream = providerInfo.imageProvider.resolve(
       const ImageConfiguration(),
     );
@@ -165,17 +165,18 @@ class _PhotoPageState extends State<PhotoPage>
       if (!completer.isCompleted) {
         completer.complete(info);
         if (mounted) {
-          final setupCallback = () {
+          setupCallback() {
             providerInfo.imageSize = Size(
               info.image.width.toDouble(),
               info.image.height.toDouble(),
             );
-            providerInfo.status = _ImageLoadStatus.completed;
+            providerInfo.status = ImageLoadStatus.completed;
             providerInfo.imageChunkEvent = null;
             providerInfo.imageInfo = info;
             mImageSize = providerInfo.imageSize;
             mSetImageSize();
-          };
+          }
+
           synchronousCall ? setupCallback() : setState(setupCallback);
         }
       }
@@ -190,7 +191,7 @@ class _PhotoPageState extends State<PhotoPage>
       // 释放缓存，避免下次加载直接失败
       providerInfo.imageProvider.evict();
       setState(() {
-        providerInfo.status = _ImageLoadStatus.failed;
+        providerInfo.status = ImageLoadStatus.failed;
       });
       FlutterError.reportError(
         FlutterErrorDetails(exception: exception, stack: stackTrace),
@@ -199,16 +200,16 @@ class _PhotoPageState extends State<PhotoPage>
     stream.addListener(listener);
     completer.future.then((_) {
       stream.removeListener(listener);
-      providerInfo.status = _ImageLoadStatus.completed;
+      providerInfo.status = ImageLoadStatus.completed;
     });
     return completer.future;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_imageProviderInfo.status == _ImageLoadStatus.failed &&
+    if (_imageProviderInfo.status == ImageLoadStatus.failed &&
         (_thumbImageProvideInfo == null ||
-            _thumbImageProvideInfo?.status == _ImageLoadStatus.failed)) {
+            _thumbImageProvideInfo?.status == ImageLoadStatus.failed)) {
       return _buildLoadFailed();
     }
 
@@ -220,7 +221,7 @@ class _PhotoPageState extends State<PhotoPage>
         mSetImageSize(constraints: constraints);
         Widget content;
         if (_thumbImageProvideInfo == null ||
-            _imageProviderInfo.status == _ImageLoadStatus.completed) {
+            _imageProviderInfo.status == ImageLoadStatus.completed) {
           content = _buildContent(context, constraints, _imageProviderInfo);
         } else {
           content =
@@ -244,7 +245,7 @@ class _PhotoPageState extends State<PhotoPage>
 
   Widget _buildContent(BuildContext context, BoxConstraints constraints,
       ImageProviderInfo providerInfo) {
-    if (providerInfo.status == _ImageLoadStatus.completed) {
+    if (providerInfo.status == ImageLoadStatus.completed) {
       return _buildImage(constraints, providerInfo.imageProvider);
     } else {
       return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent);
@@ -350,13 +351,13 @@ class _PhotoPageState extends State<PhotoPage>
       return widget.loadingBuilder!(context, progress);
     }
     return Center(
-      child: Container(
+      child: SizedBox(
         width: 40.0,
         height: 40.0,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor:
-              new AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(230)),
+              AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(230)),
           value: progress,
         ),
       ),

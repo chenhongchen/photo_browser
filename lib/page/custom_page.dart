@@ -15,7 +15,7 @@ class CustomChild {
 }
 
 class CustomPage extends StatefulWidget {
-  CustomPage({
+  const CustomPage({
     Key? key,
     required this.child,
     this.backcolor = Colors.black,
@@ -102,7 +102,7 @@ class _CustomPageState extends State<CustomPage>
         BuildContext context,
         BoxConstraints constraints,
       ) {
-        Future.delayed(Duration(seconds: 0), () {
+        Future.delayed(const Duration(seconds: 0), () {
           mSetImageSize(constraints: constraints);
         });
 
@@ -165,7 +165,7 @@ class _CustomPageState extends State<CustomPage>
         ),
         child: Center(
           child: Transform(
-            transform: new Matrix4.identity()..scale(scale, scale, 1.0),
+            transform: Matrix4.identity()..scale(scale, scale, 1.0),
             child: Hero(
               tag: widget.heroTag!,
               child: Container(

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoView extends StatefulWidget {
+  const VideoView({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _VideoViewState();
@@ -26,7 +28,7 @@ class _VideoViewState extends State<VideoView> {
         _controller.play();
       })
       ..addListener(() {
-        if (_controller.value.position > Duration(milliseconds: 100)) {
+        if (_controller.value.position > const Duration(milliseconds: 100)) {
           setState(() {
             _hiddenIndicator = true;
           });
@@ -55,8 +57,9 @@ class _VideoViewState extends State<VideoView> {
           ),
         ),
         Positioned.fill(
-          child:
-              _hiddenIndicator ? Container() : HCActivityIndicator(radius: 12),
+          child: _hiddenIndicator
+              ? Container()
+              : const HCActivityIndicator(radius: 12),
         ),
         Positioned(
           bottom: 10,

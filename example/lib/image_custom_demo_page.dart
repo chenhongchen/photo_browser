@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flt_hc_hud/flt_hc_hud.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -11,6 +12,8 @@ import 'package:photo_browser/photo_browser.dart';
 import 'package:photo_browser_example/video_view.dart';
 
 class ImageCustomDemoPage extends StatefulWidget {
+  const ImageCustomDemoPage({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _ImageCustomDemoPageState();
@@ -20,18 +23,18 @@ class ImageCustomDemoPage extends StatefulWidget {
 class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   String domain =
       'https://gitee.com/hongchenchen/test_photos_lib/raw/master/pic/';
-  List<String> _bigPhotos = <String>[];
-  List<String> _thumbPhotos = <String>[];
-  List<String> _heroTags = <String>[];
-  PhotoBrowserController _browserController = PhotoBrowserController();
+  final List<String> _bigPhotos = <String>[];
+  final List<String> _thumbPhotos = <String>[];
+  final List<String> _heroTags = <String>[];
+  final PhotoBrowserController _browserController = PhotoBrowserController();
 
   @override
   void initState() {
     // video_player 不支持 macOS
     int num = (Platform.isIOS || Platform.isAndroid) ? 8 : 7;
     for (int i = 0; i < num; i++) {
-      String bigPhoto = domain + 'big_${i + 1}.jpg';
-      String thumbPhoto = domain + 'thum_${i + 1}.jpg';
+      String bigPhoto = '${domain}big_${i + 1}.jpg';
+      String thumbPhoto = '${domain}thum_${i + 1}.jpg';
       if (i == 6 || i == 7) {
         bigPhoto = 'widget_$i';
         thumbPhoto = bigPhoto;
@@ -55,12 +58,12 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
 
   List<Shadow> _shadows() {
     return <Shadow>[
-      Shadow(
+      const Shadow(
         offset: Offset(1.0, 1.0),
         blurRadius: 3.0,
         color: Colors.black,
       ),
-      Shadow(
+      const Shadow(
         offset: Offset(1.0, 1.0),
         blurRadius: 8.0,
         color: Colors.black,
@@ -84,10 +87,10 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           BoxConstraints constraints,
         ) {
           return Container(
-            margin: EdgeInsets.all(5),
+            margin: const EdgeInsets.all(5),
             child: GridView.builder(
               itemCount: _thumbPhotos.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 5,
                   mainAxisSpacing: 5,
@@ -151,7 +154,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               );
             } else {
               return CustomChild(
-                child: VideoView(),
+                child: const VideoView(),
                 allowZoom: false,
               );
             }
@@ -170,7 +173,9 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
         photoBrowser
             .push(context, page: HCHud(child: photoBrowser))
             .then((value) {
-          print('PhotoBrowser closed');
+          if (kDebugMode) {
+            print('PhotoBrowser closed');
+          }
         });
       },
       child: Stack(
@@ -238,7 +243,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           // 通过控制器pop退出
           _browserController.pop();
         },
-        child: Icon(
+        child: const Icon(
           Icons.close,
           color: Colors.white,
           size: 32,
@@ -264,17 +269,17 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('提示'),
-                  content: Text('需要授权使用相册才能保存，去授权？'),
+                  title: const Text('提示'),
+                  content: const Text('需要授权使用相册才能保存，去授权？'),
                   actions: <Widget>[
                     TextButton(
-                      child: Text('取消'),
+                      child: const Text('取消'),
                       onPressed: () {
                         Navigator.pop(context);
                       },
                     ),
                     TextButton(
-                      child: Text('去授权'),
+                      child: const Text('去授权'),
                       onPressed: () {
                         openAppSettings();
                         Navigator.of(context).pop();
@@ -295,11 +300,12 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           } else if (_browserController.thumbImageInfo[curIndex] != null) {
             imageInfo = _browserController.thumbImageInfo[curIndex];
           }
+
+          if (!mounted) return;
           if (imageInfo == null) {
             HCHud.of(context)?.showErrorAndDismiss(text: '没有发现图片');
             return;
           }
-
           HCHud.of(context)?.showLoading(text: '正在保存...');
 
           // Save image to album
@@ -310,6 +316,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             Uint8List uint8list = byteData.buffer.asUint8List();
             var result = await ImageGallerySaver.saveImage(
                 Uint8List.fromList(uint8list));
+            if (!mounted) return;
             if (result != null) {
               HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {
@@ -317,7 +324,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
             }
           }
         },
-        child: Icon(
+        child: const Icon(
           Icons.save,
           color: Colors.white,
           size: 32,
@@ -327,13 +334,11 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
   }
 
   Widget _failedChild() {
-    return Center(
+    return const Center(
       child: Material(
-        child: Container(
-          child: Text(
-            '加载图片失败',
-            style: TextStyle(fontSize: 16),
-          ),
+        child: Text(
+          '加载图片失败',
+          style: TextStyle(fontSize: 16),
         ),
       ),
     );

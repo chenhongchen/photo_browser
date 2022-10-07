@@ -4,13 +4,15 @@ import 'package:photo_browser_example/image_demo_page.dart';
 import 'package:photo_browser_example/image_custom_demo_page.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: HomePage(),
     );
@@ -18,11 +20,13 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +43,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 Navigator.of(context, rootNavigator: true)
                     .push(CupertinoPageRoute(builder: (BuildContext context) {
-                  return ImageDemoPage();
+                  return const ImageDemoPage();
                 }));
               }),
           _buildCell(
@@ -50,7 +54,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 Navigator.of(context, rootNavigator: true)
                     .push(CupertinoPageRoute(builder: (BuildContext context) {
-                  return ImageCustomDemoPage();
+                  return const ImageCustomDemoPage();
                 }));
               }),
         ],
@@ -72,21 +76,17 @@ class _HomePageState extends State<HomePage> {
             color: Colors.transparent,
             child: Row(
               children: [
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Icon(icon, size: 44, color: color),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 10),
-                      Container(
-                        child: Text(cn, overflow: TextOverflow.ellipsis),
-                      ),
-                      Container(
-                        child: Text(en, overflow: TextOverflow.ellipsis),
-                      ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
+                      Text(cn, overflow: TextOverflow.ellipsis),
+                      Text(en, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 )

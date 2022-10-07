@@ -33,7 +33,7 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
   late AnimationController _pullDownBgColorScaleAnimationController;
   Animation<double>? _pullDownBgColorScaleAnimation;
 
-  Hit _hit = Hit();
+  final Hit _hit = Hit();
   Map<Type, GestureRecognizerFactory>? _gestures;
 
   // 下拉pop用到的相关属性
@@ -68,21 +68,21 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
   }
 
   void mInitAnimationController(TickerProvider vsync) {
-    _scaleAnimationController =
-        AnimationController(duration: Duration(milliseconds: 120), vsync: vsync)
-          ..addListener(_handleScaleAnimation);
-    _positionAnimationController =
-        AnimationController(duration: Duration(milliseconds: 120), vsync: vsync)
-          ..addListener(_handlePositionAnimate);
-    _pullDownScaleAnimationController =
-        AnimationController(duration: Duration(milliseconds: 120), vsync: vsync)
-          ..addListener(_handlePullDownScaleAnimation);
-    _pullDownPositionAnimationController =
-        AnimationController(duration: Duration(milliseconds: 120), vsync: vsync)
-          ..addListener(_handlePullDownPositionAnimate);
-    _pullDownBgColorScaleAnimationController =
-        AnimationController(duration: Duration(milliseconds: 120), vsync: vsync)
-          ..addListener(_handlePullDownBgColorScaleAnimation);
+    _scaleAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 120), vsync: vsync)
+      ..addListener(_handleScaleAnimation);
+    _positionAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 120), vsync: vsync)
+      ..addListener(_handlePositionAnimate);
+    _pullDownScaleAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 120), vsync: vsync)
+      ..addListener(_handlePullDownScaleAnimation);
+    _pullDownPositionAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 120), vsync: vsync)
+      ..addListener(_handlePullDownPositionAnimate);
+    _pullDownBgColorScaleAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 120), vsync: vsync)
+      ..addListener(_handlePullDownBgColorScaleAnimation);
   }
 
   void mDisposeAnimationController() {
@@ -190,7 +190,7 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
               constraints.maxHeight != mConstraints?.maxHeight)) {
         mScale = 1;
         mOffset = Offset.zero;
-        Future.delayed(Duration(milliseconds: 0), () {
+        Future.delayed(const Duration(milliseconds: 0), () {
           setState(() {});
         });
       }
@@ -199,8 +199,9 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
 
     if (mImageSize == null) return false;
     if (mConstraints == null) return false;
-    if (mConstraints!.maxWidth == 0 || mConstraints!.maxHeight == 0)
+    if (mConstraints!.maxWidth == 0 || mConstraints!.maxHeight == 0) {
       return false;
+    }
     if (mImageSize!.width == 0 || mImageSize!.height == 0) return false;
 
     if (mImageSize!.width / mImageSize!.height >
@@ -293,9 +294,8 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
 
   Offset _clampOffset(Offset offset) {
     final Size size = context.size ?? Size.zero; //容器的大小
-    final Offset minOffset =
-        new Offset(size.width, size.height) * (1.0 - mScale);
-    return new Offset(
+    final Offset minOffset = Offset(size.width, size.height) * (1.0 - mScale);
+    return Offset(
         offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
   }
 
@@ -392,7 +392,7 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
         GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
       () => DoubleTapGestureRecognizer(debugOwner: this),
       (DoubleTapGestureRecognizer instance) {
-        instance..onDoubleTap = _onDoubleTap;
+        instance.onDoubleTap = _onDoubleTap;
       },
     );
     return _gestures!;
@@ -405,11 +405,11 @@ mixin PageMixin<T extends StatefulWidget> on State<T> {
     double dy = ((mConstraints?.maxHeight ?? 0) - height) * 0.5 * mScale;
     double x = mOffset.dx + mPullDownContentOffset.dx + dx;
     double y = mOffset.dy + mPullDownContentOffset.dy + dy;
-    double _scale = mScale * mPullDownContentScale;
+    double scale = mScale * mPullDownContentScale;
     return Transform(
-      transform: new Matrix4.identity()
+      transform: Matrix4.identity()
         ..translate(x, y)
-        ..scale(_scale, _scale, 1.0),
+        ..scale(scale, scale, 1.0),
       child: child,
     );
   }
