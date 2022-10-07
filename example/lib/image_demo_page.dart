@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -103,7 +104,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
           positions: (BuildContext context) =>
               <Positioned>[_buildCloseBtn(context)],
           positionBuilders: <PositionBuilder>[
-            _buildSaveImageBtn,
+            if (Platform.isIOS || Platform.isAndroid) _buildSaveImageBtn,
             _buildGuide,
           ],
           loadFailedChild: _failedChild(),

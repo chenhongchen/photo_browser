@@ -158,7 +158,9 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           },
           positions: (BuildContext context) =>
               <Positioned>[_buildCloseBtn(context)],
-          positionBuilders: <PositionBuilder>[_buildSaveImageBtn],
+          positionBuilders: <PositionBuilder>[
+            if (Platform.isIOS || Platform.isAndroid) _buildSaveImageBtn,
+          ],
           loadFailedChild: _failedChild(),
         );
 
