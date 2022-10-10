@@ -1,6 +1,6 @@
 name: photo_browser
 description: PhotoBrowser is a zoomable picture and custom view browsing plugin that supports thumbnails and provides picture data that you can use to download to your local album.
-version: 3.0.1
+version: 3.0.2
 homepage: https://github.com/chenhongchen/photo_browser
 
 environment:
