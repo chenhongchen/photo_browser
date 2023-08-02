@@ -245,11 +245,16 @@ class _PhotoPageState extends State<PhotoPage>
 
   Widget _buildContent(BuildContext context, BoxConstraints constraints,
       ImageProviderInfo providerInfo) {
-    if (providerInfo.status == ImageLoadStatus.completed) {
-      return _buildImage(constraints, providerInfo.imageProvider);
-    } else {
-      return _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent);
-    }
+    return Stack(
+      children: [
+        Positioned.fill(
+            child: _buildImage(constraints, providerInfo.imageProvider)),
+        if (providerInfo.status == ImageLoadStatus.loading)
+          Positioned.fill(
+            child: _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent),
+          ),
+      ],
+    );
   }
 
   Widget _buildImage(BoxConstraints constraints, ImageProvider imageProvider) {

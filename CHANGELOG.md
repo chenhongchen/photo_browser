@@ -1,3 +1,7 @@
+## 3.0.3
+
+* Fix push photo hero animation.
+
 ## 3.0.2
 
 * Fix macOS example.
