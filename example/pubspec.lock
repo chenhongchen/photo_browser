@@ -297,7 +297,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1"
-  photo_browser:
+  photos_browser:
     dependency: "direct main"
     description:
       path: ".."

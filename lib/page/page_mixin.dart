@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
-import 'package:photo_browser/define.dart';
-import 'package:photo_browser/pull_down_pop.dart';
+import 'package:photos_browser/define.dart';
+import 'package:photos_browser/pull_down_pop.dart';
 
 mixin PageMixin<T extends StatefulWidget> on State<T> {
   BoxConstraints? mConstraints;

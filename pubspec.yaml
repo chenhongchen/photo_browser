@@ -1,4 +1,4 @@
-name: photo_browser
+name: photos_browser
 description: PhotoBrowser is a zoomable picture and custom view browsing plugin that supports thumbnails and provides picture data that you can use to download to your local album.
 version: 4.0.0
 homepage: https://github.com/iptodays/photo_browser

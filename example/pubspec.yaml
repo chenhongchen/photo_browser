@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  photo_browser:
+  photos_browser:
     # When depending on this package from a real application you should use:
     #   photo_browser: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints

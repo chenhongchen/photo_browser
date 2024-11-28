@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:photo_browser/define.dart';
-import 'package:photo_browser/page/page_mixin.dart';
-import 'package:photo_browser/pull_down_pop.dart';
+import 'package:photos_browser/define.dart';
+import 'package:photos_browser/page/page_mixin.dart';
+import 'package:photos_browser/pull_down_pop.dart';
 
 typedef LoadingBuilder = Widget Function(
   BuildContext context,

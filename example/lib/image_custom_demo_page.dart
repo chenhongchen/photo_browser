@@ -5,8 +5,8 @@ import 'package:flt_hc_hud/flt_hc_hud.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_browser/page/custom_page.dart';
-import 'package:photo_browser/photo_browser.dart';
+import 'package:photos_browser/page/custom_page.dart';
+import 'package:photos_browser/photo_browser.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 
 import 'video_view.dart';
