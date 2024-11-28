@@ -5,7 +5,7 @@ import 'package:flt_hc_hud/flt_hc_hud.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photos_browser/photo_browser.dart';
+import 'package:photo_browser/photo_browser.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 
 class ImageDemoPage extends StatefulWidget {

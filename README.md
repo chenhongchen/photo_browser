@@ -21,7 +21,7 @@ dependencies:
 ### Import it
 
 ```dart
-import 'package:photos_browser/photo_browser.dart';
+import 'package:photo_browser/photo_browser.dart';
 ```
 
 ### Creation and display of PhotoBrowser instance
