@@ -1,18 +1,18 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flt_hc_hud/flt_hc_hud.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/page/custom_page.dart';
 import 'package:photo_browser/photo_browser.dart';
-import 'package:photo_browser_example/video_view.dart';
+import 'package:saver_gallery/saver_gallery.dart';
+
+import 'video_view.dart';
 
 class ImageCustomDemoPage extends StatefulWidget {
-  const ImageCustomDemoPage({Key? key}) : super(key: key);
+  const ImageCustomDemoPage({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -265,6 +265,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
           var status = await Permission.photos.request();
           if (status.isDenied) {
             showDialog(
+              // ignore: use_build_context_synchronously
               context: context,
               barrierDismissible: false,
               builder: (BuildContext context) {
@@ -314,10 +315,13 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           if (byteData != null) {
             Uint8List uint8list = byteData.buffer.asUint8List();
-            var result = await ImageGallerySaver.saveImage(
-                Uint8List.fromList(uint8list));
+            var result = await SaverGallery.saveImage(
+              Uint8List.fromList(uint8list),
+              fileName: 'image',
+              skipIfExists: false,
+            );
             if (!mounted) return;
-            if (result != null) {
+            if (result.isSuccess) {
               HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {
               HCHud.of(context)?.showErrorAndDismiss(text: '保存失败');

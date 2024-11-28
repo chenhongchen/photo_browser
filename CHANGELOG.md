@@ -1,3 +1,8 @@
+## 4.0.0
+
+* Upgrade to null-safety.
+* Use package.
+
 ## 3.0.3
 
 * Fix push photo hero animation.

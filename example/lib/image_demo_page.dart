@@ -5,9 +5,9 @@ import 'dart:ui';
 import 'package:flt_hc_hud/flt_hc_hud.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/photo_browser.dart';
+import 'package:saver_gallery/saver_gallery.dart';
 
 class ImageDemoPage extends StatefulWidget {
   const ImageDemoPage({Key? key}) : super(key: key);
@@ -226,10 +226,13 @@ class _ImageDemoPage extends State<ImageDemoPage> {
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           if (byteData != null) {
             Uint8List uint8list = byteData.buffer.asUint8List();
-            var result = await ImageGallerySaver.saveImage(
-                Uint8List.fromList(uint8list));
+            var result = await SaverGallery.saveImage(
+              Uint8List.fromList(uint8list),
+              fileName: 'image',
+              skipIfExists: false,
+            );
             if (!mounted) return;
-            if (result != null) {
+            if (result.isSuccess) {
               HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {
               HCHud.of(context)?.showErrorAndDismiss(text: '保存失败');
