@@ -1,14 +1,26 @@
+/*
+ * @Author: A kingiswinter@gmail.com
+
+import 'image_demo_page.dart';
+ * @Date: 2024-11-28 16:02:49
+ * @LastEditors: A kingiswinter@gmail.com
+ * @LastEditTime: 2024-11-28 16:03:15
+ * @FilePath: /photo_browser/example/lib/main.dart
+ * 
+ * Copyright (c) 2024 by A kingiswinter@gmail.com, All Rights Reserved.
+ */
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_browser_example/image_demo_page.dart';
-import 'package:photo_browser_example/image_custom_demo_page.dart';
+
+import 'image_custom_demo_page.dart';
+import 'image_demo_page.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +32,7 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   HomePageState createState() => HomePageState();
