@@ -188,7 +188,7 @@ class PhotoBrowser extends StatefulWidget {
   final ValueChanged<int>? onPageChanged;
 
   PhotoBrowser({
-    Key? key,
+    super.key,
     required this.itemCount,
     required this.initIndex,
     this.controller,
@@ -228,8 +228,7 @@ class PhotoBrowser extends StatefulWidget {
         showPageTurnBtn = showPageTurnBtn ??
             (Platform.isIOS || Platform.isAndroid ? false : true),
         assert(imageProviderBuilder != null || imageUrlBuilder != null,
-            'imageProviderBuilder,imageUrlBuilder can not all null'),
-        super(key: key);
+            'imageProviderBuilder,imageUrlBuilder can not all null');
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
@@ -640,16 +639,15 @@ class PhotoBrowserProvider extends InheritedWidget {
   final PhotoBrowserController controller;
 
   PhotoBrowserProvider({
-    Key? key,
+    super.key,
     required this.controller,
     required WidgetBuilder builder,
     List<String>? notificationNames,
   }) : super(
-            key: key,
             child: _NotificationListener(
-              builder: builder,
-              notificationNames: notificationNames,
-            ));
+          builder: builder,
+          notificationNames: notificationNames,
+        ));
 
   @override
   bool updateShouldNotify(covariant PhotoBrowserProvider oldWidget) {
@@ -661,9 +659,7 @@ class _NotificationListener extends StatefulWidget {
   final WidgetBuilder builder;
   final List<String>? notificationNames;
 
-  const _NotificationListener(
-      {Key? key, required this.builder, this.notificationNames})
-      : super(key: key);
+  const _NotificationListener({required this.builder, this.notificationNames});
 
   @override
   State<StatefulWidget> createState() {
@@ -678,6 +674,7 @@ class _NotificationListenerState extends State<_NotificationListener> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 0), () {
+      // ignore: use_build_context_synchronously
       _controller = PhotoBrowserController.of(context);
       _controller?.addListener(listener);
     });

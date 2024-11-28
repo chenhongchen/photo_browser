@@ -30,7 +30,7 @@ class ImageProviderInfo {
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({
-    Key? key,
+    super.key,
     required this.imageProvider,
     this.thumbImageProvider,
     this.loadingBuilder,
@@ -50,7 +50,7 @@ class PhotoPage extends StatefulWidget {
     this.thumbImageLoadSuccess,
     this.onScaleChanged,
     this.pullDownPopChanged,
-  }) : super(key: key);
+  });
 
   /// 大图的imageProvider
   final ImageProvider imageProvider;

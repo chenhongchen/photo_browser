@@ -16,7 +16,7 @@ class CustomChild {
 
 class CustomPage extends StatefulWidget {
   const CustomPage({
-    Key? key,
+    super.key,
     required this.child,
     this.backcolor = Colors.black,
     this.heroTag,
@@ -27,7 +27,7 @@ class CustomPage extends StatefulWidget {
     this.pullDownPopConfig = const PullDownPopConfig(),
     this.onScaleChanged,
     this.pullDownPopChanged,
-  }) : super(key: key);
+  });
 
   /// 自定义子Widget
   final CustomChild child;
