@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flt_hc_hud/flt_hc_hud.dart';
@@ -10,7 +9,7 @@ import 'package:photos_browser/photo_browser.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 
 class ImageDemoPage extends StatefulWidget {
-  const ImageDemoPage({Key? key}) : super(key: key);
+  const ImageDemoPage({super.key});
 
   @override
   State<StatefulWidget> createState() {
