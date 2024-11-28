@@ -15,13 +15,13 @@ PhotoBrowser is a zoomable picture and custom view browsing plugin that supports
 
 ```yaml
 dependencies:
-  photo_browser: 3.0.3
+  photos_browser: 4.0.0
 ```
 
 ### Import it
 
 ```dart
-import 'package:phtots_browser/photo_browser.dart';
+import 'package:photos_browser/photo_browser.dart';
 ```
 
 ### Creation and display of PhotoBrowser instance
