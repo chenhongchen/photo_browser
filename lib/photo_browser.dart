@@ -347,8 +347,8 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       controller: _browserController,
       notificationNames: const <String>[_notifyPullDownScaleChanged],
       builder: (BuildContext context) => Container(
-          color:
-              (widget.backcolor ?? Colors.black).withOpacity(_pullDownScale)),
+          color: (widget.backcolor ?? Colors.black)
+              .withValues(alpha: _pullDownScale)),
     );
   }
 
@@ -584,7 +584,9 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     if (!widget.canPopWhenScrolling &&
         (((_pageController.position.pixels * 1000).toInt() %
                 (_constraints!.maxWidth * 1000).toInt()) !=
-            0)) return;
+            0)) {
+      return;
+    }
     _willPop = true;
     setState(() {});
     if (canPop == true) Navigator.of(context).pop();
@@ -677,7 +679,8 @@ class _NotificationListenerState extends State<_NotificationListener> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 0), () {
+    Future.microtask(() {
+      if (!mounted) return;
       _controller = PhotoBrowserController.of(context);
       _controller?.addListener(listener);
     });

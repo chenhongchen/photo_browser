@@ -1,18 +1,16 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
-
 import 'package:flt_hc_hud/flt_hc_hud.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/page/custom_page.dart';
 import 'package:photo_browser/photo_browser.dart';
 import 'package:photo_browser_example/video_view.dart';
 
 class ImageCustomDemoPage extends StatefulWidget {
-  const ImageCustomDemoPage({Key? key}) : super(key: key);
+  const ImageCustomDemoPage({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -181,7 +179,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
       child: Stack(
         children: [
           Positioned.fill(
-              child: Container(color: Colors.grey.withOpacity(0.6))),
+              child: Container(color: Colors.grey.withValues(alpha: 0.6))),
           Positioned.fill(
             child: Hero(
                 tag: _heroTags[cellIndex],
@@ -263,6 +261,7 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
       child: GestureDetector(
         onTap: () async {
           var status = await Permission.photos.request();
+          if (!context.mounted) return;
           if (status.isDenied) {
             showDialog(
               context: context,
@@ -314,9 +313,9 @@ class _ImageCustomDemoPageState extends State<ImageCustomDemoPage> {
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           if (byteData != null) {
             Uint8List uint8list = byteData.buffer.asUint8List();
-            var result = await ImageGallerySaver.saveImage(
+            var result = await ImageGallerySaverPlus.saveImage(
                 Uint8List.fromList(uint8list));
-            if (!mounted) return;
+            if (!context.mounted) return;
             if (result != null) {
               HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {

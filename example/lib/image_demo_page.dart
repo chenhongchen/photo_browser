@@ -1,16 +1,14 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
-
 import 'package:flt_hc_hud/flt_hc_hud.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_browser/photo_browser.dart';
 
 class ImageDemoPage extends StatefulWidget {
-  const ImageDemoPage({Key? key}) : super(key: key);
+  const ImageDemoPage({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -127,7 +125,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
       child: Stack(
         children: [
           Positioned.fill(
-              child: Container(color: Colors.grey.withOpacity(0.6))),
+              child: Container(color: Colors.grey.withValues(alpha: 0.6))),
           Positioned.fill(
             child: Hero(
                 tag: _heroTags[cellIndex],
@@ -175,6 +173,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
       child: GestureDetector(
         onTap: () async {
           var status = await Permission.photos.request();
+          if (!context.mounted) return;
           if (status.isDenied) {
             showDialog(
               context: context,
@@ -226,9 +225,9 @@ class _ImageDemoPage extends State<ImageDemoPage> {
               await imageInfo.image.toByteData(format: ImageByteFormat.png);
           if (byteData != null) {
             Uint8List uint8list = byteData.buffer.asUint8List();
-            var result = await ImageGallerySaver.saveImage(
+            var result = await ImageGallerySaverPlus.saveImage(
                 Uint8List.fromList(uint8list));
-            if (!mounted) return;
+            if (!context.mounted) return;
             if (result != null) {
               HCHud.of(context)?.showSuccessAndDismiss(text: '保存成功');
             } else {
@@ -256,7 +255,7 @@ class _ImageDemoPage extends State<ImageDemoPage> {
                 _browserController.setState(() {});
               },
               child: Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 alignment: Alignment.center,
                 child: Text(
                   '温馨提示😊：\n可单击或下拉退出浏览',

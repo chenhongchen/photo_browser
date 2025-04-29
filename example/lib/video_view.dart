@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoView extends StatefulWidget {
-  const VideoView({Key? key}) : super(key: key);
+  const VideoView({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -20,7 +20,7 @@ class _VideoViewState extends State<VideoView> {
     super.initState();
     String v1 =
         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
-    _controller = VideoPlayerController.network(v1)
+    _controller = VideoPlayerController.networkUrl(Uri.parse(v1))
       ..setLooping(true)
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.

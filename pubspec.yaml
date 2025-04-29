@@ -1,11 +1,11 @@
 name: photo_browser
 description: PhotoBrowser is a zoomable picture and custom view browsing plugin that supports thumbnails and provides picture data that you can use to download to your local album.
-version: 3.0.3
+version: 3.0.4
 homepage: https://github.com/chenhongchen/photo_browser
 
 environment:
-  sdk: ">=2.17.6 <3.0.0"
-  flutter: ">=2.5.0"
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
 
 dependencies:
   flutter:

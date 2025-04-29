@@ -73,7 +73,7 @@ Widget _buildCell(BuildContext context, int cellIndex) {
     child: Stack(
       children: [
         Positioned.fill(
-            child: Container(color: Colors.grey.withOpacity(0.6))),
+            child: Container(color: Colors.grey.withValues(alpha: 0.6))),
         Positioned.fill(
           child: Hero(
               tag: _heroTags[cellIndex],

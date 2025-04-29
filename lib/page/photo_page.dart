@@ -230,7 +230,7 @@ class _PhotoPageState extends State<PhotoPage>
 
         Color backColor = widget.backcolor == Colors.transparent
             ? Colors.transparent
-            : widget.backcolor.withOpacity(mPullDownBgColorScale);
+            : widget.backcolor.withValues(alpha: mPullDownBgColorScale);
         return mRawGestureDetector(
           child: Container(
             width: constraints.maxWidth,
