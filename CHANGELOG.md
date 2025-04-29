@@ -1,3 +1,9 @@
+## 3.1.0
+
+* Adding namespaces in Android
+* This Android example project demonstrates upgrading AGP from 7.2 to 8.6 to support Gradle 8.0+
+* Set minimum version requirements to Flutter 3.27 and Dart 3.6.0
+
 ## 3.0.3
 
 * Fix push photo hero animation.
