@@ -16,7 +16,7 @@ class CustomChild {
 
 class CustomPage extends StatefulWidget {
   const CustomPage({
-    Key? key,
+    super.key,
     required this.child,
     this.backcolor = Colors.black,
     this.heroTag,
@@ -27,7 +27,7 @@ class CustomPage extends StatefulWidget {
     this.pullDownPopConfig = const PullDownPopConfig(),
     this.onScaleChanged,
     this.pullDownPopChanged,
-  }) : super(key: key);
+  });
 
   /// 自定义子Widget
   final CustomChild child;
@@ -98,19 +98,17 @@ class _CustomPageState extends State<CustomPage>
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (
-        BuildContext context,
-        BoxConstraints constraints,
-      ) {
+      builder: (BuildContext context, BoxConstraints constraints) {
         Future.delayed(const Duration(seconds: 0), () {
           mSetImageSize(constraints: constraints);
         });
 
         Widget content = _buildContent(constraints);
 
-        Color backColor = widget.backcolor == Colors.transparent
-            ? Colors.transparent
-            : widget.backcolor.withValues(alpha: mPullDownBgColorScale);
+        Color backColor =
+            widget.backcolor == Colors.transparent
+                ? Colors.transparent
+                : widget.backcolor.withValues(alpha: mPullDownBgColorScale);
         return mRawGestureDetector(
           child: Container(
             width: constraints.maxWidth,
@@ -168,25 +166,18 @@ class _CustomPageState extends State<CustomPage>
             transform: Matrix4.identity()..scale(scale, scale, 1.0),
             child: Hero(
               tag: widget.heroTag!,
-              child: Container(
-                child: widget.child.child,
-              ),
+              child: Container(child: widget.child.child),
             ),
           ),
         ),
       );
     }
-    return Hero(
-      tag: widget.heroTag!,
-      child: _buildTransformImage(),
-    );
+    return Hero(tag: widget.heroTag!, child: _buildTransformImage());
   }
 
   Widget _buildTransformImage() {
-    return mBuildTransform(Center(
-        child: Container(
-      key: _globalKey,
-      child: widget.child.child,
-    )));
+    return mBuildTransform(
+      Center(child: Container(key: _globalKey, child: widget.child.child)),
+    );
   }
 }

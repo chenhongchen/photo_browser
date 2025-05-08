@@ -1,3 +1,7 @@
+## 3.2.0
+
+* Compatible with Flutter 3.29+
+
 ## 3.1.0
 
 * Adding namespaces in Android

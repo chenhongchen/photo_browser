@@ -1,5 +1,5 @@
-typedef PullDownPopChanged = void Function(
-    PullDownPopStatus status, double pullScale);
+typedef PullDownPopChanged =
+    void Function(PullDownPopStatus status, double pullScale);
 
 /// 下拉关闭状态
 enum PullDownPopStatus {
@@ -26,26 +26,29 @@ class PullDownPopConfig {
   /// 取值范围：(0.0~1.0]，值越小变化越快
   final double changeRate;
 
-  const PullDownPopConfig(
-      {double? triggerScale,
-      double? bgColorMinOpacity,
-      double? contentMinScale,
-      double? changeRate})
-      : triggerScale =
-            (triggerScale != null && triggerScale < 1 && triggerScale > 0)
-                ? triggerScale
-                : 0.1,
-        bgColorMinOpacity = (bgColorMinOpacity != null &&
-                bgColorMinOpacity <= 1 &&
-                bgColorMinOpacity >= 0)
-            ? bgColorMinOpacity
-            : 0.0,
-        contentMinScale = (contentMinScale != null &&
-                contentMinScale <= 1 &&
-                contentMinScale > 0)
-            ? contentMinScale
-            : 0.4,
-        changeRate = (changeRate != null && changeRate <= 1 && changeRate > 0)
-            ? changeRate
-            : 0.25;
+  const PullDownPopConfig({
+    double? triggerScale,
+    double? bgColorMinOpacity,
+    double? contentMinScale,
+    double? changeRate,
+  }) : triggerScale =
+           (triggerScale != null && triggerScale < 1 && triggerScale > 0)
+               ? triggerScale
+               : 0.1,
+       bgColorMinOpacity =
+           (bgColorMinOpacity != null &&
+                   bgColorMinOpacity <= 1 &&
+                   bgColorMinOpacity >= 0)
+               ? bgColorMinOpacity
+               : 0.0,
+       contentMinScale =
+           (contentMinScale != null &&
+                   contentMinScale <= 1 &&
+                   contentMinScale > 0)
+               ? contentMinScale
+               : 0.4,
+       changeRate =
+           (changeRate != null && changeRate <= 1 && changeRate > 0)
+               ? changeRate
+               : 0.25;
 }

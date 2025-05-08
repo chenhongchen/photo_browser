@@ -1,7 +1,6 @@
 export 'package:photo_browser/define.dart';
 export 'package:photo_browser/pull_down_pop.dart';
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_browser/define.dart';
@@ -12,11 +11,8 @@ import 'package:photo_browser/page/photo_page.dart';
 typedef DisplayTypeBuilder = DisplayType Function(int index);
 typedef ImageProviderBuilder = ImageProvider Function(int index);
 typedef CustomChildBuilder = CustomChild Function(int index);
-typedef PositionBuilder = Positioned Function(
-  BuildContext context,
-  int curIndex,
-  int totalNum,
-);
+typedef PositionBuilder =
+    Positioned Function(BuildContext context, int curIndex, int totalNum);
 typedef PositionsBuilder = List<Positioned> Function(BuildContext context);
 
 const String _notifyCurrentIndexChanged = 'currentIndexChanged';
@@ -38,12 +34,14 @@ class PhotoBrowser extends StatefulWidget {
     Widget? page,
   }) async {
     if (routeType == RouteType.normal) {
-      return await Navigator.of(context, rootNavigator: rootNavigator)
-          .push(CupertinoPageRoute(
-              fullscreenDialog: fullscreenDialog,
-              builder: (BuildContext context) {
-                return page ?? this;
-              }));
+      return await Navigator.of(context, rootNavigator: rootNavigator).push(
+        CupertinoPageRoute(
+          fullscreenDialog: fullscreenDialog,
+          builder: (BuildContext context) {
+            return page ?? this;
+          },
+        ),
+      );
     }
     return await _fadePush(
       context,
@@ -65,8 +63,11 @@ class PhotoBrowser extends StatefulWidget {
       PageRouteBuilder(
         opaque: false,
         fullscreenDialog: fullscreenDialog,
-        pageBuilder: (BuildContext context, Animation animation,
-            Animation secondaryAnimation) {
+        pageBuilder: (
+          BuildContext context,
+          Animation animation,
+          Animation secondaryAnimation,
+        ) {
           return page ?? this;
         },
         //动画时间
@@ -83,10 +84,7 @@ class PhotoBrowser extends StatefulWidget {
           return FadeTransition(
             // 透明度从 0.0-1.0
             opacity: Tween(begin: 0.0, end: 1.0).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.fastOutSlowIn,
-              ),
+              CurvedAnimation(parent: animation, curve: Curves.fastOutSlowIn),
             ),
             child: child,
           );
@@ -188,7 +186,7 @@ class PhotoBrowser extends StatefulWidget {
   final ValueChanged<int>? onPageChanged;
 
   PhotoBrowser({
-    Key? key,
+    super.key,
     required this.itemCount,
     required this.initIndex,
     this.controller,
@@ -223,13 +221,15 @@ class PhotoBrowser extends StatefulWidget {
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.onPageChanged,
-  })  : allowSwipeDownToPop =
-            (allowPullDownToPop == true) ? false : allowSwipeDownToPop,
-        showPageTurnBtn = showPageTurnBtn ??
-            (Platform.isIOS || Platform.isAndroid ? false : true),
-        assert(imageProviderBuilder != null || imageUrlBuilder != null,
-            'imageProviderBuilder,imageUrlBuilder can not all null'),
-        super(key: key);
+  }) : allowSwipeDownToPop =
+           (allowPullDownToPop == true) ? false : allowSwipeDownToPop,
+       showPageTurnBtn =
+           showPageTurnBtn ??
+           (Platform.isIOS || Platform.isAndroid ? false : true),
+       assert(
+         imageProviderBuilder != null || imageUrlBuilder != null,
+         'imageProviderBuilder,imageUrlBuilder can not all null',
+       );
 }
 
 class _PhotoBrowserState extends State<PhotoBrowser> {
@@ -310,13 +310,12 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (
-      BuildContext context,
-      BoxConstraints constraints,
-    ) {
-      _constraints = constraints;
-      return _buildContent();
-    });
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        _constraints = constraints;
+        return _buildContent();
+      },
+    );
   }
 
   Widget _buildContent() {
@@ -332,11 +331,15 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     }
     if (widget.positionBuilders != null) {
       for (PositionBuilder builder in widget.positionBuilders!) {
-        children.add(PhotoBrowserProvider(
+        children.add(
+          PhotoBrowserProvider(
             controller: _browserController,
             notificationNames: const <String>[_notifyCurrentIndexChanged],
-            builder: (BuildContext context) =>
-                builder(context, _curIndex, widget.itemCount)));
+            builder:
+                (BuildContext context) =>
+                    builder(context, _curIndex, widget.itemCount),
+          ),
+        );
       }
     }
     return Stack(children: children);
@@ -346,9 +349,12 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     return PhotoBrowserProvider(
       controller: _browserController,
       notificationNames: const <String>[_notifyPullDownScaleChanged],
-      builder: (BuildContext context) => Container(
-          color: (widget.backcolor ?? Colors.black)
-              .withValues(alpha: _pullDownScale)),
+      builder:
+          (BuildContext context) => Container(
+            color: (widget.backcolor ?? Colors.black).withValues(
+              alpha: _pullDownScale,
+            ),
+          ),
     );
   }
 
@@ -365,9 +371,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       itemCount: widget.itemCount,
       itemBuilder: _buildItem,
       scrollDirection: widget.scrollDirection,
-      physics: _pullDownPopStatus == PullDownPopStatus.pulling
-          ? const NeverScrollableScrollPhysics()
-          : widget.scrollPhysics,
+      physics:
+          _pullDownPopStatus == PullDownPopStatus.pulling
+              ? const NeverScrollableScrollPhysics()
+              : widget.scrollPhysics,
     );
   }
 
@@ -379,19 +386,17 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
     } else {
       child = _buildCustomPage(index);
     }
-    bool allowTapToPop = widget.allowTapToPopBuilder != null
-        ? widget.allowTapToPopBuilder!(index)
-        : widget.allowTapToPop;
+    bool allowTapToPop =
+        widget.allowTapToPopBuilder != null
+            ? widget.allowTapToPopBuilder!(index)
+            : widget.allowTapToPop;
     return GestureDetector(
       onTap: allowTapToPop ? _onTap : null,
       onVerticalDragDown:
           !widget.allowSwipeDownToPop ? null : _onVerticalDragDown,
       onVerticalDragUpdate:
           !widget.allowSwipeDownToPop ? null : _onVerticalDragUpdate,
-      child: Container(
-        color: Colors.transparent,
-        child: child,
-      ),
+      child: Container(color: Colors.transparent, child: child),
     );
   }
 
@@ -403,9 +408,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       loadFailedChild: widget.loadFailedChild,
       backcolor: Colors.transparent,
       routeType: widget.routeType,
-      heroTag: widget.heroTagBuilder != null && curIndex == index
-          ? widget.heroTagBuilder!(index)
-          : null,
+      heroTag:
+          widget.heroTagBuilder != null && curIndex == index
+              ? widget.heroTagBuilder!(index)
+              : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       allowPullDownToPop: widget.allowPullDownToPop,
@@ -436,9 +442,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
       child: widget.customChildBuilder!(index),
       backcolor: Colors.transparent,
       routeType: widget.routeType,
-      heroTag: widget.heroTagBuilder != null && curIndex == index
-          ? widget.heroTagBuilder!(index)
-          : null,
+      heroTag:
+          widget.heroTagBuilder != null && curIndex == index
+              ? widget.heroTagBuilder!(index)
+              : null,
       allowShrinkPhoto: widget.allowShrinkPhoto,
       willPop: _willPop,
       allowPullDownToPop: widget.allowPullDownToPop,
@@ -510,13 +517,14 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
               curve: Curves.easeInOut,
             );
           },
-          child: curIndex <= 0
-              ? Container(width: 36, height: 36, color: Colors.transparent)
-              : Icon(
-                  Icons.keyboard_arrow_left,
-                  color: Colors.white.withAlpha(230),
-                  size: 36,
-                ),
+          child:
+              curIndex <= 0
+                  ? Container(width: 36, height: 36, color: Colors.transparent)
+                  : Icon(
+                    Icons.keyboard_arrow_left,
+                    color: Colors.white.withAlpha(230),
+                    size: 36,
+                  ),
         ),
       );
     }
@@ -535,9 +543,10 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
         top: MediaQuery.of(context).size.height * 0.5,
         child: GestureDetector(
           onTap: () {
-            int index = curIndex >= widget.itemCount - 1
-                ? widget.itemCount - 1
-                : curIndex + 1;
+            int index =
+                curIndex >= widget.itemCount - 1
+                    ? widget.itemCount - 1
+                    : curIndex + 1;
             if (index == curIndex) return;
             _pageController.animateToPage(
               index,
@@ -545,13 +554,14 @@ class _PhotoBrowserState extends State<PhotoBrowser> {
               curve: Curves.easeInOut,
             );
           },
-          child: curIndex >= widget.itemCount - 1
-              ? Container(width: 36, height: 36, color: Colors.transparent)
-              : Icon(
-                  Icons.keyboard_arrow_right,
-                  color: Colors.white.withAlpha(230),
-                  size: 36,
-                ),
+          child:
+              curIndex >= widget.itemCount - 1
+                  ? Container(width: 36, height: 36, color: Colors.transparent)
+                  : Icon(
+                    Icons.keyboard_arrow_right,
+                    color: Colors.white.withAlpha(230),
+                    size: 36,
+                  ),
         ),
       );
     }
@@ -642,16 +652,16 @@ class PhotoBrowserProvider extends InheritedWidget {
   final PhotoBrowserController controller;
 
   PhotoBrowserProvider({
-    Key? key,
+    super.key,
     required this.controller,
     required WidgetBuilder builder,
     List<String>? notificationNames,
   }) : super(
-            key: key,
-            child: _NotificationListener(
-              builder: builder,
-              notificationNames: notificationNames,
-            ));
+         child: _NotificationListener(
+           builder: builder,
+           notificationNames: notificationNames,
+         ),
+       );
 
   @override
   bool updateShouldNotify(covariant PhotoBrowserProvider oldWidget) {
@@ -663,9 +673,7 @@ class _NotificationListener extends StatefulWidget {
   final WidgetBuilder builder;
   final List<String>? notificationNames;
 
-  const _NotificationListener(
-      {Key? key, required this.builder, this.notificationNames})
-      : super(key: key);
+  const _NotificationListener({required this.builder, this.notificationNames});
 
   @override
   State<StatefulWidget> createState() {

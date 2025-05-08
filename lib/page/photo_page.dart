@@ -4,18 +4,11 @@ import 'package:photo_browser/define.dart';
 import 'package:photo_browser/page/page_mixin.dart';
 import 'package:photo_browser/pull_down_pop.dart';
 
-typedef LoadingBuilder = Widget Function(
-  BuildContext context,
-  double progress,
-);
+typedef LoadingBuilder = Widget Function(BuildContext context, double progress);
 
 typedef ImageLoadSuccess = void Function(ImageInfo imageInfo);
 
-enum ImageLoadStatus {
-  loading,
-  failed,
-  completed,
-}
+enum ImageLoadStatus { loading, failed, completed }
 
 /// ImageProvider信息
 class ImageProviderInfo {
@@ -30,7 +23,7 @@ class ImageProviderInfo {
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({
-    Key? key,
+    super.key,
     required this.imageProvider,
     this.thumbImageProvider,
     this.loadingBuilder,
@@ -50,7 +43,7 @@ class PhotoPage extends StatefulWidget {
     this.thumbImageLoadSuccess,
     this.onScaleChanged,
     this.pullDownPopChanged,
-  }) : super(key: key);
+  });
 
   /// 大图的imageProvider
   final ImageProvider imageProvider;
@@ -158,45 +151,46 @@ class _PhotoPageState extends State<PhotoPage>
     final ImageStream stream = providerInfo.imageProvider.resolve(
       const ImageConfiguration(),
     );
-    final listener = ImageStreamListener((
-      ImageInfo info,
-      bool synchronousCall,
-    ) {
-      if (!completer.isCompleted) {
-        completer.complete(info);
-        if (mounted) {
-          setupCallback() {
-            providerInfo.imageSize = Size(
-              info.image.width.toDouble(),
-              info.image.height.toDouble(),
-            );
-            providerInfo.status = ImageLoadStatus.completed;
-            providerInfo.imageChunkEvent = null;
-            providerInfo.imageInfo = info;
-            mImageSize = providerInfo.imageSize;
-            mSetImageSize();
-          }
+    final listener = ImageStreamListener(
+      (ImageInfo info, bool synchronousCall) {
+        if (!completer.isCompleted) {
+          completer.complete(info);
+          if (mounted) {
+            setupCallback() {
+              providerInfo.imageSize = Size(
+                info.image.width.toDouble(),
+                info.image.height.toDouble(),
+              );
+              providerInfo.status = ImageLoadStatus.completed;
+              providerInfo.imageChunkEvent = null;
+              providerInfo.imageInfo = info;
+              mImageSize = providerInfo.imageSize;
+              mSetImageSize();
+            }
 
-          synchronousCall ? setupCallback() : setState(setupCallback);
+            synchronousCall ? setupCallback() : setState(setupCallback);
+          }
         }
-      }
-    }, onChunk: (event) {
-      if (mounted) {
-        setState(() => providerInfo.imageChunkEvent = event);
-      }
-    }, onError: (exception, stackTrace) {
-      if (!mounted) {
-        return;
-      }
-      // 释放缓存，避免下次加载直接失败
-      providerInfo.imageProvider.evict();
-      setState(() {
-        providerInfo.status = ImageLoadStatus.failed;
-      });
-      FlutterError.reportError(
-        FlutterErrorDetails(exception: exception, stack: stackTrace),
-      );
-    });
+      },
+      onChunk: (event) {
+        if (mounted) {
+          setState(() => providerInfo.imageChunkEvent = event);
+        }
+      },
+      onError: (exception, stackTrace) {
+        if (!mounted) {
+          return;
+        }
+        // 释放缓存，避免下次加载直接失败
+        providerInfo.imageProvider.evict();
+        setState(() {
+          providerInfo.status = ImageLoadStatus.failed;
+        });
+        FlutterError.reportError(
+          FlutterErrorDetails(exception: exception, stack: stackTrace),
+        );
+      },
+    );
     stream.addListener(listener);
     completer.future.then((_) {
       stream.removeListener(listener);
@@ -214,23 +208,24 @@ class _PhotoPageState extends State<PhotoPage>
     }
 
     return LayoutBuilder(
-      builder: (
-        BuildContext context,
-        BoxConstraints constraints,
-      ) {
+      builder: (BuildContext context, BoxConstraints constraints) {
         mSetImageSize(constraints: constraints);
         Widget content;
         if (_thumbImageProvideInfo == null ||
             _imageProviderInfo.status == ImageLoadStatus.completed) {
           content = _buildContent(context, constraints, _imageProviderInfo);
         } else {
-          content =
-              _buildContent(context, constraints, _thumbImageProvideInfo!);
+          content = _buildContent(
+            context,
+            constraints,
+            _thumbImageProvideInfo!,
+          );
         }
 
-        Color backColor = widget.backcolor == Colors.transparent
-            ? Colors.transparent
-            : widget.backcolor.withValues(alpha: mPullDownBgColorScale);
+        Color backColor =
+            widget.backcolor == Colors.transparent
+                ? Colors.transparent
+                : widget.backcolor.withValues(alpha: mPullDownBgColorScale);
         return mRawGestureDetector(
           child: Container(
             width: constraints.maxWidth,
@@ -243,12 +238,16 @@ class _PhotoPageState extends State<PhotoPage>
     );
   }
 
-  Widget _buildContent(BuildContext context, BoxConstraints constraints,
-      ImageProviderInfo providerInfo) {
+  Widget _buildContent(
+    BuildContext context,
+    BoxConstraints constraints,
+    ImageProviderInfo providerInfo,
+  ) {
     return Stack(
       children: [
         Positioned.fill(
-            child: _buildImage(constraints, providerInfo.imageProvider)),
+          child: _buildImage(constraints, providerInfo.imageProvider),
+        ),
         if (providerInfo.status == ImageLoadStatus.loading)
           Positioned.fill(
             child: _buildLoading(imageChunkEvent: providerInfo.imageChunkEvent),
@@ -263,9 +262,10 @@ class _PhotoPageState extends State<PhotoPage>
         minWidth: double.maxFinite,
         minHeight: double.infinity,
       ),
-      child: widget.heroTag != null
-          ? _buildHeroImage(imageProvider)
-          : _buildTransformImage(imageProvider),
+      child:
+          widget.heroTag != null
+              ? _buildHeroImage(imageProvider)
+              : _buildTransformImage(imageProvider),
     );
   }
 
@@ -313,9 +313,7 @@ class _PhotoPageState extends State<PhotoPage>
         ),
         child: Hero(
           tag: widget.heroTag!,
-          child: _createImage(
-            image: imageProvider,
-          ),
+          child: _createImage(image: imageProvider),
         ),
       );
     }
@@ -326,13 +324,14 @@ class _PhotoPageState extends State<PhotoPage>
   }
 
   Widget _buildTransformImage(ImageProvider imageProvider) {
-    return mBuildTransform(_createImage(
-      image: imageProvider,
-    ));
+    return mBuildTransform(_createImage(image: imageProvider));
   }
 
-  Image _createImage(
-      {required ImageProvider image, double? width, double? height}) {
+  Image _createImage({
+    required ImageProvider image,
+    double? width,
+    double? height,
+  }) {
     return Image(
       image: image,
       gaplessPlayback: widget.gaplessPlayback ?? false,
@@ -349,7 +348,8 @@ class _PhotoPageState extends State<PhotoPage>
     double progress = 0.0;
     if (imageChunkEvent?.cumulativeBytesLoaded != null &&
         imageChunkEvent?.expectedTotalBytes != null) {
-      progress = imageChunkEvent!.cumulativeBytesLoaded /
+      progress =
+          imageChunkEvent!.cumulativeBytesLoaded /
           imageChunkEvent.expectedTotalBytes!;
     }
     if (widget.loadingBuilder != null) {
@@ -361,8 +361,9 @@ class _PhotoPageState extends State<PhotoPage>
         height: 40.0,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor:
-              AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(230)),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Colors.white.withAlpha(230),
+          ),
           value: progress,
         ),
       ),

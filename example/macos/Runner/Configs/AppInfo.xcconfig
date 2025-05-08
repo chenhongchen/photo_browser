@@ -8,7 +8,7 @@
 PRODUCT_NAME = photo_browser_example
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.photoBrowserExample
+PRODUCT_BUNDLE_IDENTIFIER = com.chc.photoBrowserExample
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2022 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 com.chc. All rights reserved.

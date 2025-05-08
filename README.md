@@ -15,7 +15,7 @@ PhotoBrowser is a zoomable picture and custom view browsing plugin that supports
 
 ```yaml
 dependencies:
-  photo_browser: 3.1.0
+  photo_browser: 3.2.0
 ```
 
 ### Import it
